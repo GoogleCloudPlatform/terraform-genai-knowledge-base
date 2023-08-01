@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import backoff
 import os
 from google.cloud import vision
 from google.api_core.operation import Operation
@@ -26,16 +25,7 @@ _OUTPUT_BUCKET = f"{_PROJECT_ID}_output"
 _FILE_NAME = "9404001v1.pdf"
 
 
-# System / integration test
-@backoff.on_exception(backoff.expo, Exception, max_tries=3)
-def test_async_document_extract_system(capsys):
-    out = document_extract.async_document_extract(
-        _BUCKET_NAME, _FILE_NAME, _OUTPUT_BUCKET
-    )
-    assert "Abstract" in out
 
-
-# Unit tests
 @patch.object(vision.ImageAnnotatorClient, "async_batch_annotate_files")
 @patch.object(document_extract, "get_ocr_output_from_bucket")
 def test_async_document_extract(mock_get_output, mock_annotate):

@@ -14,7 +14,7 @@
 # limitations under the License.
 set -e
 
-export PROJECT_ID="velociraptor-16p2-dev"
+export PROJECT_ID="velociraptor-16p1-test-15"
 export TF_PLAN_STORAGE_BUCKET="${PROJECT_ID?}-tf"
 export BUCKET_NAME=${TF_PLAN_STORAGE_BUCKET?}-main
 export TERRAFORM_IMAGE="hashicorp/terraform:1.4.6"
