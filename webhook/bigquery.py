@@ -17,9 +17,6 @@ from typing import Sequence, Mapping
 from datetime import datetime
 
 from google.cloud import bigquery
-from google.cloud import logging
-
-BIGQUERY_UPSERT_LOGGER = "BigQueryUpsertLogger"
 
 
 def write_summarization_to_table(
@@ -83,12 +80,5 @@ def write_summarization_to_table(
     errors = client.insert_rows_json(
         table_name, rows_to_insert, row_ids=bigquery.AutoRowIDs.GENERATE_UUID
     )
-    if errors != []:
-        logging_client = logging.Client()
-        logger = logging_client.logger(BIGQUERY_UPSERT_LOGGER)
-        logger.log(
-            f"Encountered errors while inserting rows: {errors}", severity="ERROR"
-        )
-        return errors
 
-    return []
+    return errors

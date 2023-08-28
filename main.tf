@@ -135,10 +135,10 @@ resource "google_cloudfunctions2_function" "webhook" {
 
   service_config {
     service_account_email            = google_service_account.webhook.email
-    max_instance_count               = 100
+    max_instance_count               = 5
     available_memory                 = "4G"
-    available_cpu                    = 2
-    max_instance_request_concurrency = 16
+    available_cpu                    = 1
+    max_instance_request_concurrency = 5
     timeout_seconds                  = var.gcf_timeout_seconds
     environment_variables = {
       PROJECT_ID    = var.project_id

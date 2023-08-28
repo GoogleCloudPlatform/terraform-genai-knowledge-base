@@ -225,9 +225,10 @@ def extraction_entrypoint(
     )
 
     if len(errors) > 0:
-        logger.log(f"cloud_event_id({event_id}): DB_WRITE_ERROR: {errors}",
-                   severity="ERROR")
-        return errors
+        logger.log(
+            f"cloud_event_id({event_id}): DB_WRITE_ERROR: {errors}", severity="ERROR"
+        )
+        return {"errors": errors}
 
     logger.log(f"cloud_event_id({event_id}): DB_WRITE",
                severity="INFO")
