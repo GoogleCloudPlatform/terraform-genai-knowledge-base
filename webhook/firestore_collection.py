@@ -38,7 +38,7 @@ def write_qas_to_collection(
     bulkwriter = db.bulk_writer()
 
     for qa in question_answer_pairs:
-  
+
         # Create a unique ID for each question
         question_hash = hash(qa[0])
 
