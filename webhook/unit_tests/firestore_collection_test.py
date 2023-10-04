@@ -16,7 +16,7 @@ from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 from google.cloud import firestore
-from firestore_collection import write_qas_to_collection
+from firestore_collection import write_qas_to_collection, get_qas_from_collection
 
 _PROJECT_ID = "fake-project-id"
 _COLLECTION_NAME = "fake-collection"
@@ -84,3 +84,36 @@ def test_write_multiple_qas_to_collection(mock_bulkwriter, mock_document):
     mock_bulkwriter_ref.create.assert_called()
     mock_bulkwriter_ref.update.assert_called()
     mock_bulkwriter_ref.close.assert_called()
+
+
+@patch.object(firestore.Client, "collection")
+def test_get_qas_from_collection(mock_collection):
+    # Arrange
+    mock_collection_ref = MagicMock(spec=firestore.CollectionReference)
+    mock_collection.return_value = mock_collection_ref
+    mock_iterator = MagicMock()
+    mock_collection_ref.stream.return_value = mock_iterator
+    mock_doc = MagicMock(spec=firestore.DocumentSnapshot)
+    mock_doc.to_dict.return_value = {
+        "question": "Who is the Greek goddess of the hunt?",
+        "answer": "Artemis"
+    }
+    mock_doc2 = MagicMock(spec=firestore.DocumentSnapshot)
+    mock_doc2.to_dict.return_value = {
+        "question": "Which Israelite prophet lived at the time of King Ahab?",
+        "answer": "Elijah"
+    }
+    mock_iterator.__iter__.return_value = [mock_doc, mock_doc2]
+
+    # Act
+    qas = get_qas_from_collection(_PROJECT_ID, _COLLECTION_NAME)
+
+    # Assert
+    assert len(qas) > 1
+    assert qas[0] is not None
+    assert qas[0]["answer"] == "Artemis"
+    assert qas[1] is not None
+    assert qas[1]["answer"] == "Elijah"
+
+    mock_collection.assert_called()
+    mock_collection_ref.stream.assert_called()

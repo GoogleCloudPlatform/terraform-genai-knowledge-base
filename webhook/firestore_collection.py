@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from datetime import datetime
-from typing import List, Tuple
+from typing import List, Mapping, Tuple
 
 from google.cloud import firestore
 
@@ -62,3 +62,26 @@ def write_qas_to_collection(
 
     # Send all updates and close the BulkWriter
     bulkwriter.close()
+
+
+def get_qas_from_collection(project_id: str, collection_name: str) -> List[Mapping[str, str]]:
+    """Gets all QA sets as a list of dict objects.
+
+    Arguments:
+      project_id: the project that contains this database
+      collection_name: the collection to store the Q&A pairs in
+
+    Returns:
+        All documents (QAs) in the collection. Each document is a dict object.
+    """
+    db = firestore.Client(project=project_id)
+    collection_ref = db.collection(collection_name)
+    docs_iter = collection_ref.stream()
+
+    all_qas = []
+
+    for doc in docs_iter:
+        qa = doc.to_dict()
+        all_qas.append(qa)
+
+    return all_qas

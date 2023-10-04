@@ -14,16 +14,40 @@
 
 import backoff
 import os
+import pytest
 from datetime import datetime
 
 from google.cloud import firestore
 
-from firestore_collection import write_qas_to_collection
+from firestore_collection import write_qas_to_collection, get_qas_from_collection
 
 
 _PROJECT_ID = os.environ["PROJECT_ID"]
 # Make sure this is a test collection. It is entirely deleted in teardown.
 _COLLECTION_NAME = os.environ["COLLECTION"]
+
+
+@pytest.fixture
+def populate_collection():
+    db = firestore.Client(project=_PROJECT_ID)
+    collection_ref = db.collection(_COLLECTION_NAME)
+    question_1 = "Who is the Greek goddess of the hunt?"
+    question_2 = "Which Israelite prophet lived at the time of King Ahab?"
+    data_rows = [
+        {   
+            "question": question_1,
+            "answer": "Artemis",
+        },
+        {
+            "question": question_2,
+            "answer": "Elijah",
+        },
+    ]
+
+    for d in data_rows:
+        collection_ref.add(d, str(hash(d["question"])))
+
+    yield
 
 
 @backoff.on_exception(backoff.expo, Exception, max_tries=3)
@@ -66,4 +90,28 @@ def test_write_qas_to_collection_it(capsys):
 
     finally:
         # Clean up
+        clean_collection(client, collection)
+
+
+@backoff.on_exception(backoff.expo, Exception, max_tries=3)
+def test_get_qas_from_collection_it(capsys, populate_collection):
+    # Act
+    try:
+        qas = get_qas_from_collection(
+            project_id=_PROJECT_ID,
+            collection_name=_COLLECTION_NAME)
+
+        # Assert
+        assert capsys.readouterr().out == ""
+        got_1 = qas[0]
+        got_2 = qas[1]
+
+        assert got_1 is not None
+        assert got_2 is not None
+
+    finally:
+        # Clean up
+        client = firestore.Client(project=_PROJECT_ID)
+        collection = client.collection(_COLLECTION_NAME)
+
         clean_collection(client, collection)
