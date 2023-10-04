@@ -75,7 +75,7 @@ Deployment: 10 mins
 
 | Name | Description |
 |------|-------------|
-| genai\_doc\_summary\_colab\_url | The URL to launch the notebook tutorial for the Generateive AI Document Summarization Solution |
+| genai\_doc\_summary\_colab\_url | The URL to launch the notebook tutorial for the Generative AI Document Summarization Solution |
 | neos\_walkthrough\_url | The URL to launch the in-console tutorial for the Generative AI Document Summarization solution |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
