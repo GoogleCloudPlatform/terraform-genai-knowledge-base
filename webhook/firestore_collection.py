@@ -16,6 +16,7 @@ from datetime import datetime
 from typing import List, Mapping, Tuple
 
 from google.cloud import firestore
+from google.cloud.firestore_v1 import aggregation
 
 
 def write_qas_to_collection(
@@ -69,7 +70,7 @@ def get_qas_from_collection(project_id: str, collection_name: str) -> List[Mappi
 
     Arguments:
       project_id: the project that contains this database
-      collection_name: the collection to store the Q&A pairs in
+      collection_name: the collection to get the Q&A pairs from
 
     Returns:
         All documents (QAs) in the collection. Each document is a dict object.
@@ -85,3 +86,32 @@ def get_qas_from_collection(project_id: str, collection_name: str) -> List[Mappi
         all_qas.append(qa)
 
     return all_qas
+
+
+def get_qas_count(project_id: str,
+                  collection_name: str,
+                  field: str = "question") -> int:
+    """Gets the COUNT of all questions in the Firestore Collection.
+
+    Arguments:
+      project_id: the project that contains this database
+      collection_name: the collection to get the question count of
+      field: the field to filter on for the COUNT. Default is 'question'.
+
+    Returns:
+        Integer representing the COUNT of all questions in the collection.
+    """
+    db = firestore.Client(project=project_id)
+    collection_ref = db.collection(collection_name)
+
+    query = collection_ref.where(filter=firestore.FieldFilter(field, "!=", ""))
+    aggregate_query = aggregation.AggregationQuery(query)
+    aggregate_query.count(alias="all")
+
+    results = aggregate_query.get()
+    number = 0
+
+    for result in results:
+        number = result[0].value
+
+    return number

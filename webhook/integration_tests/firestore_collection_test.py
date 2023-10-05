@@ -19,7 +19,9 @@ from datetime import datetime
 
 from google.cloud import firestore
 
-from firestore_collection import write_qas_to_collection, get_qas_from_collection
+from firestore_collection import get_qas_count
+from firestore_collection import get_qas_from_collection
+from firestore_collection import write_qas_to_collection
 
 
 _PROJECT_ID = os.environ["PROJECT_ID"]
@@ -108,6 +110,26 @@ def test_get_qas_from_collection_it(capsys, populate_collection):
 
         assert got_1 is not None
         assert got_2 is not None
+
+    finally:
+        # Clean up
+        client = firestore.Client(project=_PROJECT_ID)
+        collection = client.collection(_COLLECTION_NAME)
+
+        clean_collection(client, collection)
+
+
+@backoff.on_exception(backoff.expo, Exception, max_tries=3)
+def test_get_qas_count_it(capsys, populate_collection):
+    # Act
+    try:
+        count = get_qas_count(
+            project_id=_PROJECT_ID,
+            collection_name=_COLLECTION_NAME)
+
+        # Assert
+        assert capsys.readouterr().out == ""
+        assert count == 2
 
     finally:
         # Clean up

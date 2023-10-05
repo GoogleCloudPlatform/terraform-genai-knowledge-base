@@ -16,7 +16,12 @@ from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 from google.cloud import firestore
-from firestore_collection import write_qas_to_collection, get_qas_from_collection
+from google.cloud.firestore_v1 import base_query
+from google.cloud.firestore_v1 import base_aggregation
+
+from firestore_collection import get_qas_count
+from firestore_collection import get_qas_from_collection
+from firestore_collection import write_qas_to_collection
 
 _PROJECT_ID = "fake-project-id"
 _COLLECTION_NAME = "fake-collection"
@@ -117,3 +122,24 @@ def test_get_qas_from_collection(mock_collection):
 
     mock_collection.assert_called()
     mock_collection_ref.stream.assert_called()
+
+
+@patch.object(firestore.Client, "collection")
+@patch("google.cloud.firestore_v1.aggregation.AggregationQuery")
+def test_get_qas_count(mock_aggregation, mock_collection):
+    # Arrange
+    mock_collection_ref = MagicMock(spec=firestore.CollectionReference)
+    mock_collection.return_value = mock_collection_ref
+    mock_query = MagicMock(spec=base_query.BaseQuery)
+    mock_collection_ref.where.return_value = mock_query
+    mock_result = MagicMock(spec=base_aggregation.AggregationResult)
+    mock_result.value = 2
+    mock_aggregation.return_value.get.return_value = [[mock_result]]
+
+    # Act
+    count = get_qas_count(_PROJECT_ID, _COLLECTION_NAME)
+
+    # Assert
+    mock_aggregation.assert_called()
+    mock_aggregation.return_value.get.assert_called()
+    assert count == 2
