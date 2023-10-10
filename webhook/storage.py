@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import json
+from typing import List, Mapping
 
 from google.cloud import storage
 
@@ -31,19 +32,23 @@ def upload_to_gcs(bucket: str, name: str, data: str):
     blob.upload_from_string(data)
 
 
-def upload_tuning_data_to_gcs(bucket: str, name: str, tuning_dataset: list[dict]):
+def upload_tuning_data_to_gcs(
+        bucket: str,
+        name: str,
+        tuning_dataset: List[Mapping[str, str]]
+        ):
     """Upload a string to Google Cloud Storage bucket.
 
     Args:
       bucket (str): the name of the Storage bucket. Do not include "gs://"
       name (str): the name of the file to create in the bucket
-      tuning_dataset (list[dict]): the Q&A pair of tuning dataset to store
+      tuning_dataset (List[Mapping[str, str]]): the Q&A pair of tuning dataset to store
 
     """
     with open(name, 'w') as outfile:
-      for entry in tuning_dataset:
-          json.dump(entry, outfile)
-          outfile.write('\n')
+        for entry in tuning_dataset:
+            json.dump(entry, outfile)
+            outfile.write('\n')
 
     client = storage.Client()
     bucket = client.get_bucket(bucket)

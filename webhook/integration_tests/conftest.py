@@ -12,19 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-flask==2.3.2
-# pyyaml installation is broken due to cython issues
-# https://github.com/yaml/pyyaml/issues/724
-pandas==1.3.5; python_version == '3.7'
-pandas==2.0.1; python_version > '3.7'
-pyyaml==5.3.1
-functions-framework==3.4.0
-google-auth==2.22.0
-google-cloud-aiplatform[pipelines]==1.28.1
-google-cloud-firestore==2.12.0
-google-cloud-logging==3.6.0
-google-cloud-pipeline-components==2.4.1
-google-cloud-storage==2.10.0
-google-cloud-vision==3.4.4
-kfp==2.3.0
-requests==2.31.0
+import pytest
+from firestore_collection_test import populate_collection

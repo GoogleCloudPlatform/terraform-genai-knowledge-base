@@ -1,0 +1,185 @@
+# PIPELINE DEFINITION
+# Name: extractive-qa-pipeline
+# Description: Fine-tunes an extractive QA LLM
+# Inputs:
+#    bucket_name: str
+#    collection_name: str
+#    project_id: str
+components:
+  comp-get-qas-from-collection:
+    executorLabel: exec-get-qas-from-collection
+    inputDefinitions:
+      parameters:
+        bucket_name:
+          parameterType: STRING
+        collection_name:
+          description: the collection to get the Q&A pairs from
+          parameterType: STRING
+        project_id:
+          description: the project that contains this database
+          parameterType: STRING
+    outputDefinitions:
+      parameters:
+        Output:
+          parameterType: STRING
+  comp-tuning:
+    executorLabel: exec-tuning
+    inputDefinitions:
+      parameters:
+        gcs_qa_file:
+          defaultValue: ''
+          description: Cloud Storage FUSE URI of a file containing questions & answers
+          isOptional: true
+          parameterType: STRING
+        location:
+          defaultValue: us-central1
+          description: Google Cloud region, used to initialize Vertex AI
+          isOptional: true
+          parameterType: STRING
+        project_id:
+          description: Google Cloud project ID, used to initialize Vertex AI
+          parameterType: STRING
+        tuned_model_name:
+          defaultValue: ''
+          description: name of a previously tuned model
+          isOptional: true
+          parameterType: STRING
+deploymentSpec:
+  executors:
+    exec-get-qas-from-collection:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - get_qas_from_collection
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.3.0'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&\
+          \  python3 -m pip install --quiet --no-warn-script-location 'google-cloud-firestore'\
+          \ && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef get_qas_from_collection(\n    *,\n    project_id: str,\n    collection_name:\
+          \ str,\n    bucket_name: str,\n) -> str:\n    \"\"\"Gets all QA sets as\
+          \ a list of dict objects.\n\n    Arguments:\n      project_id: the project\
+          \ that contains this database\n      collection_name: the collection to\
+          \ get the Q&A pairs from\n\n    Returns:\n        All documents (QAs) in\
+          \ the collection. Each document is a dict object.\n    \"\"\"\n    import\
+          \ json\n    from google.cloud import firestore\n\n    db = firestore.Client(project=project_id)\n\
+          \    collection_ref = db.collection(collection_name)\n    docs_iter = collection_ref.stream()\n\
+          \n    all_qas = []\n\n    for doc in docs_iter:\n        qa = doc.to_dict()\n\
+          \        all_qas.append(qa)\n\n    gcs_qa_file = f\"/gcs/{bucket_name}/extractive-qa/qas.json\"\
+          \n\n    with open(gcs_qa_file, \"w\") as f:\n        f.write(json.dumps(gcs_qa_file))\n\
+          \n    return gcs_qa_file\n\n"
+        image: python:3.7
+    exec-tuning:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - tuning
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.3.0'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&\
+          \  python3 -m pip install --quiet --no-warn-script-location 'google-cloud-aiplatform'\
+          \ 'pandas' && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef tuning(\n        *,\n        project_id: str,\n        location:\
+          \ str = \"us-central1\",\n        gcs_qa_file: str = \"\",\n        tuned_model_name:\
+          \ str = \"\",\n) -> None:\n    \"\"\"Tune a new model, based on Q&A data\
+          \ stored in a Firestore collection.\n\n    Args:\n        project_id: Google\
+          \ Cloud project ID, used to initialize Vertex AI\n        location: Google\
+          \ Cloud region, used to initialize Vertex AI\n        gcs_qa_file: Cloud\
+          \ Storage FUSE URI of a file containing questions & answers\n        tuned_model_name:\
+          \ name of a previously tuned model\n    \"\"\"\n    import json\n    import\
+          \ pandas as pd\n    import vertexai\n    from vertexai.preview.language_models\
+          \ import TextGenerationModel\n\n    vertexai.init(\n        project=project_id,\n\
+          \        location=location,\n    )\n\n    if tuned_model_name == \"\":\n\
+          \        model = TextGenerationModel.from_pretrained(\"google/text-bison@001\"\
+          )\n\n    with open(gcs_qa_file) as f:\n        qas = json.load(f)\n\n  \
+          \  jsonl_dataset = [{\"input_question\": qa[\"question\"],\n           \
+          \           \"output_text\": qa[\"answers\"]} for qa in qas]\n    model.tune_model(\n\
+          \        training_data=pd.DataFrame(data=jsonl_dataset),\n        # Optional:\n\
+          \        train_steps=10,\n        tuning_job_location=\"europe-west4\",\n\
+          \        tuned_model_location=location,\n    )\n\n"
+        image: python:3.7
+pipelineInfo:
+  description: Fine-tunes an extractive QA LLM
+  name: extractive-qa-pipeline
+root:
+  dag:
+    tasks:
+      get-qas-from-collection:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-get-qas-from-collection
+        inputs:
+          parameters:
+            bucket_name:
+              componentInputParameter: bucket_name
+            collection_name:
+              componentInputParameter: collection_name
+            project_id:
+              componentInputParameter: project_id
+        taskInfo:
+          name: get-qas-from-collection
+      tuning:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-tuning
+        dependentTasks:
+        - get-qas-from-collection
+        inputs:
+          parameters:
+            gcs_qa_file:
+              taskOutputParameter:
+                outputParameterKey: Output
+                producerTask: get-qas-from-collection
+            project_id:
+              componentInputParameter: project_id
+        taskInfo:
+          name: tuning
+  inputDefinitions:
+    parameters:
+      bucket_name:
+        description: the Cloud Storage bucket to store artifacts
+        parameterType: STRING
+      collection_name:
+        description: the Firestore collection that stores the Q&As
+        parameterType: STRING
+      project_id:
+        description: the Google Cloud project ID for this run
+        parameterType: STRING
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.3.0
