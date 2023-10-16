@@ -79,12 +79,14 @@ deploymentSpec:
           \ that contains this database\n      collection_name: the collection to\
           \ get the Q&A pairs from\n\n    Returns:\n        All documents (QAs) in\
           \ the collection. Each document is a dict object.\n    \"\"\"\n    import\
-          \ json\n    from google.cloud import firestore\n\n    db = firestore.Client(project=project_id)\n\
-          \    collection_ref = db.collection(collection_name)\n    docs_iter = collection_ref.stream()\n\
-          \n    all_qas = []\n\n    for doc in docs_iter:\n        qa = doc.to_dict()\n\
-          \        all_qas.append(qa)\n\n    gcs_qa_file = f\"/gcs/{bucket_name}/extractive-qa/qas.json\"\
-          \n\n    with open(gcs_qa_file, \"w\") as f:\n        f.write(json.dumps(gcs_qa_file))\n\
-          \n    return gcs_qa_file\n\n"
+          \ json\n    import os\n    from google.cloud import firestore\n\n    db\
+          \ = firestore.Client(project=project_id)\n    collection_ref = db.collection(collection_name)\n\
+          \    docs_iter = collection_ref.stream()\n\n    all_qas = []\n\n    for\
+          \ doc in docs_iter:\n        qa = doc.to_dict()\n        all_qas.append(qa)\n\
+          \n    gcs_qa_dir = f\"/gcs/{bucket_name}/extractive-qa\"\n    gcs_qa_file\
+          \ = f\"{gcs_qa_dir}/qas.json\"\n\n    if not os.path.exists(gcs_qa_dir):\n\
+          \        os.mkdir(gcs_qa_dir)\n\n    with open(gcs_qa_file, \"w\") as f:\n\
+          \        f.write(json.dumps(gcs_qa_file))\n\n    return gcs_qa_file\n\n"
         image: python:3.7
     exec-tuning:
       container:

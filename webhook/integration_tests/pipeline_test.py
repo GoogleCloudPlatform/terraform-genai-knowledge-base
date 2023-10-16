@@ -16,10 +16,7 @@ import backoff
 import os
 import pytest
 
-from google.cloud import firestore
-
 from pipeline import start_tuning_pipeline
-from firestore_collection_test import clean_collection
 
 _PROJECT_ID = os.environ["PROJECT_ID"]
 _COLLECTION_NAME = os.environ["COLLECTION"]
@@ -29,17 +26,12 @@ _BUCKET_NAME = os.environ["BUCKET"]
 @backoff.on_exception(backoff.expo, Exception, max_tries=3)
 @pytest.mark.usefixtures("populate_collection")
 def test_start_tuning_pipeline_it(capsys, populate_collection):
-    try:
-        # Act
-        job_id = start_tuning_pipeline(
-            project_id=_PROJECT_ID,
-            collection_name=_COLLECTION_NAME,
-            bucket_name=_BUCKET_NAME
-        )
+    # Act
+    job_id = start_tuning_pipeline(
+        project_id=_PROJECT_ID,
+        collection_name=_COLLECTION_NAME,
+        bucket_name=_BUCKET_NAME
+    )
 
-        # Assert
-        assert job_id is not None
-    finally:
-        client = firestore.Client(project=_PROJECT_ID)
-        collection_ref = client.collection(_COLLECTION_NAME)
-        clean_collection(client=client, coll_ref=collection_ref)
+    # Assert
+    assert job_id is not None

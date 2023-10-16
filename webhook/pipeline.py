@@ -20,7 +20,8 @@ from google.cloud import aiplatform
 
 The @component and @pipeline functions defined in this file have been
 pre-compiled for you. The resulting DAG / YAML template is stored in the
-'extractive-qa.yaml' file. The functions are present here for your reference.
+'extractive-qa.yaml' file. The `get_qas_from_collection()` and `tuning`
+functions are provided here for your reference.
 
 If you want to edit this pipeline or make your own, follow the directions
 provided here:
@@ -46,6 +47,7 @@ def get_qas_from_collection(
         All documents (QAs) in the collection. Each document is a dict object.
     """
     import json
+    import os
     from google.cloud import firestore
 
     db = firestore.Client(project=project_id)
@@ -58,7 +60,11 @@ def get_qas_from_collection(
         qa = doc.to_dict()
         all_qas.append(qa)
 
-    gcs_qa_file = f"/gcs/{bucket_name}/extractive-qa/qas.json"
+    gcs_qa_dir = f"/gcs/{bucket_name}/extractive-qa"
+    gcs_qa_file = f"{gcs_qa_dir}/qas.json"
+
+    if not os.path.exists(gcs_qa_dir):
+        os.mkdir(gcs_qa_dir)
 
     with open(gcs_qa_file, "w") as f:
         f.write(json.dumps(gcs_qa_file))
@@ -156,7 +162,8 @@ def start_tuning_pipeline(
             "project_id": project_id,
             "collection_name": collection_name,
             "bucket_name": bucket_name
-        }
+        },
+        enable_caching=False
     )
     job.submit()
     return job.name
