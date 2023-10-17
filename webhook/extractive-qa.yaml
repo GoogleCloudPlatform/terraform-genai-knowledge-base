@@ -86,7 +86,7 @@ deploymentSpec:
           \n    gcs_qa_dir = f\"/gcs/{bucket_name}/extractive-qa\"\n    gcs_qa_file\
           \ = f\"{gcs_qa_dir}/qas.json\"\n\n    if not os.path.exists(gcs_qa_dir):\n\
           \        os.mkdir(gcs_qa_dir)\n\n    with open(gcs_qa_file, \"w\") as f:\n\
-          \        f.write(json.dumps(gcs_qa_file))\n\n    return gcs_qa_file\n\n"
+          \        f.write(json.dumps(all_qas))\n\n    return gcs_qa_file\n\n"
         image: python:3.7
     exec-tuning:
       container:
@@ -103,7 +103,7 @@ deploymentSpec:
           \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.3.0'\
           \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&\
           \  python3 -m pip install --quiet --no-warn-script-location 'google-cloud-aiplatform'\
-          \ 'pandas' && \"$0\" \"$@\"\n"
+          \ 'importlib-metadata' 'pandas' 'pyyaml' && \"$0\" \"$@\"\n"
         - sh
         - -ec
         - 'program_path=$(mktemp -d)
@@ -133,7 +133,7 @@ deploymentSpec:
           \        training_data=pd.DataFrame(data=jsonl_dataset),\n        # Optional:\n\
           \        train_steps=10,\n        tuning_job_location=\"europe-west4\",\n\
           \        tuned_model_location=location,\n    )\n\n"
-        image: python:3.7
+        image: python:3.9
 pipelineInfo:
   description: Fine-tunes an extractive QA LLM
   name: extractive-qa-pipeline

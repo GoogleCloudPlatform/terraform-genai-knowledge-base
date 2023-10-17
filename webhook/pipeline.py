@@ -67,12 +67,20 @@ def get_qas_from_collection(
         os.mkdir(gcs_qa_dir)
 
     with open(gcs_qa_file, "w") as f:
-        f.write(json.dumps(gcs_qa_file))
+        f.write(json.dumps(all_qas))
 
     return gcs_qa_file
 
 
-@component(packages_to_install=["google-cloud-aiplatform", "pandas"])
+@component(
+        base_image="python:3.9",
+        packages_to_install=[
+            "google-cloud-aiplatform",
+            "importlib-metadata",
+            "pandas",
+            "pyyaml",
+        ]
+)
 def tuning(
         *,
         project_id: str,

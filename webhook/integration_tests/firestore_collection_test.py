@@ -34,10 +34,11 @@ def populate_collection():
     collection_ref = db.collection(_COLLECTION_NAME)
     question_1 = "Who is the Greek goddess of the hunt?"
     question_2 = "Which Israelite prophet lived at the time of King Ahab?"
+    # TODO: Fix this to match correct DB schema
     data_rows = [
         {   
             "question": question_1,
-            "answer": "Artemis",
+            "answers": "Artemis",
         },
         {
             "question": question_2,

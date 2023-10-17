@@ -41,11 +41,11 @@ def populate_collection():
         data_rows = [
             {
                 "question": question_1,
-                "answer": "Artemis",
+                "answers": ["Artemis"],
             },
             {
                 "question": question_2,
-                "answer": "Elijah",
+                "answers": ["Elijah"],
             },
         ]
 
