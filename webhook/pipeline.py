@@ -30,7 +30,10 @@ https://cloud.google.com/vertex-ai/docs/pipelines/build-pipeline
 """
 
 
-@component(packages_to_install=["google-cloud-firestore"])
+@component(packages_to_install=[
+    "google-cloud-firestore"
+    "google-cloud-storage"
+])
 def get_qas_from_collection(
     *,
     project_id: str,
@@ -47,8 +50,8 @@ def get_qas_from_collection(
         All documents (QAs) in the collection. Each document is a dict object.
     """
     import json
-    import os
     from google.cloud import firestore
+    from google.cloud import storage
 
     db = firestore.Client(project=project_id)
     collection_ref = db.collection(collection_name)
@@ -60,14 +63,15 @@ def get_qas_from_collection(
         qa = doc.to_dict()
         all_qas.append(qa)
 
-    gcs_qa_dir = f"/gcs/{bucket_name}/extractive-qa"
+    # TODO: Switch to GCS FUSE
+    gcs_qa_dir = f"gs://{bucket_name}/extractive-qa"
     gcs_qa_file = f"{gcs_qa_dir}/qas.json"
+    
+    storage_client = storage.Client(project=project_id)
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(f"extractive-qa/qas.json")
 
-    if not os.path.exists(gcs_qa_dir):
-        os.mkdir(gcs_qa_dir)
-
-    with open(gcs_qa_file, "w") as f:
-        f.write(json.dumps(all_qas))
+    blob.upload_from_string(json.dumps(all_qas))
 
     return gcs_qa_file
 
@@ -76,6 +80,7 @@ def get_qas_from_collection(
         base_image="python:3.9",
         packages_to_install=[
             "google-cloud-aiplatform",
+            "google-cloud-storage",
             "importlib-metadata",
             "pandas",
             "pyyaml",
@@ -98,6 +103,9 @@ def tuning(
     """
     import json
     import pandas as pd
+
+    from google.cloud import storage
+
     import vertexai
     from vertexai.preview.language_models import TextGenerationModel
 
@@ -109,18 +117,25 @@ def tuning(
     if tuned_model_name == "":
         model = TextGenerationModel.from_pretrained("google/text-bison@001")
 
-    with open(gcs_qa_file) as f:
-        qas = json.load(f)
+    storage_client = storage.Client(project=project_id)
+    uri_paths = gcs_qa_file.split("/")
+    bucket = storage_client.bucket(uri_paths[2])
+    blob_path = "/".join(uri_paths[3:])
+    blob = bucket.blob(blob_path)
+    jsonl_as_str = blob.download_as_string()
+    
+    qas = json.loads(jsonl_as_str)
+    jsonl_dataset = [{"input_text": qa["question"],
+                      "output_text": qa["answers"][0]["answer"]} for qa in qas]
 
-    jsonl_dataset = [{"input_question": qa["question"],
-                      "output_text": qa["answers"]} for qa in qas]
-    model.tune_model(
+    job = model.tune_model(
         training_data=pd.DataFrame(data=jsonl_dataset),
         # Optional:
         train_steps=10,
         tuning_job_location="europe-west4",
         tuned_model_location=location,
     )
+    return job
 
 
 @pipeline(
