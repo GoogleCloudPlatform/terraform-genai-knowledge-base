@@ -58,3 +58,13 @@ variable "time_to_enable_apis" {
   type        = string
   default     = "180s"
 }
+
+variable "init" {
+  type        = bool
+  description = "Initialize resource or not"
+}
+
+variable "collection_fields" {
+  description = "collection id with respect to its fields"
+  type        = map(any)
+}

@@ -19,7 +19,6 @@ from google.cloud import firestore
 from google.cloud.firestore_v1 import aggregation
 
 
-
 def write_qas_to_collection(
     project_id: str,
     collection_name: str,

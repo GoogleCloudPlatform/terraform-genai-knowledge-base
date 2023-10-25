@@ -246,3 +246,29 @@ resource "google_eventarc_trigger" "summarization" {
     google_project_iam_member.pubsub_publisher,
   ]
 }
+
+resource "google_firestore_database" "default" {
+  count       = var.init ? 1 : 0
+  project     = var.project_id
+  name        = "(default)"
+  location_id = "nam5" //US
+  type        = "FIRESTORE_NATIVE"
+}
+
+resource "google_firestore_index" "meta" {
+  depends_on = [
+    google_firestore_database.default
+  ]
+
+  for_each   = var.collection_fields
+  collection = each.key
+  dynamic "fields" {
+    for_each = each.value
+    iterator = field
+    content {
+      field_path   = lookup(field.value, "field_path", null)
+      order        = lookup(field.value, "order", null)
+      array_config = lookup(field.value, "array_config", null)
+    }
+  }
+}
