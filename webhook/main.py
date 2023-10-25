@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import datetime
+import json
 import os
 import requests
 import flask
@@ -39,6 +40,7 @@ _OUTPUT_BUCKET = os.environ["OUTPUT_BUCKET"]
 _LOCATION = os.environ["LOCATION"]
 _CREDENTIALS, _ = default(scopes=['https://www.googleapis.com/auth/cloud-platform'])
 _MODEL_NAME = "text-bison@001"
+_DATABASE_NAME = os.environ["DATABASE"]
 _COLLECTION_NAME = os.environ["COLLECTION"]
 _TUNING_SIZE_INTERVALS = os.environ["TUNING_INTERVALS"]
 
@@ -150,7 +152,7 @@ def extraction_entrypoint(
         output_filename,
         extracted_text,
     )
-    logger.log(f"cloud_event_id({event_id}): EXTRACTION_UPLOAD {upload_to_gcs}",
+    logger.log(f"cloud_event_id({event_id}): PDF_TEXT_UPLOAD {upload_to_gcs}",
                severity="INFO")
 
     qa_pairs = extract_questions(
@@ -158,31 +160,31 @@ def extraction_entrypoint(
         model_name=_MODEL_NAME,
         text=extracted_text_cleaned,
     )
-    logger.log(f"cloud_event_id({event_id}): TUNING_COMPLETE", severity="INFO")
-
-    upload_to_gcs(
-        _OUTPUT_BUCKET,
-        output_filename,
-        qa_pairs,
-    )
-    logger.log(f"cloud_event_id({event_id}): EXTRACTION_UPLOAD {upload_to_gcs}",
-               severity="INFO")
+    logger.log(f"cloud_event_id({event_id}): QA_EXTRACTION", severity="INFO")
 
     write_qas_to_collection(
         project_id=_PROJECT_ID,
+        database_name=_DATABASE_NAME,
         collection_name=_COLLECTION_NAME,
         question_answer_pairs=qa_pairs,
         input_file_gcs_uri=f"gs://{bucket}/{name}",
         time_created=time_created,
     )
-
     logger.log(f"cloud_event_id({event_id}): DB_WRITE", severity="INFO")
 
-    count = get_qas_count(_PROJECT_ID, _COLLECTION_NAME)
+    count = get_qas_count(project_id=_PROJECT_ID,
+                          database_name=_DATABASE_NAME,
+                          collection_name=_COLLECTION_NAME)
     if (count % _TUNING_SIZE_INTERVALS) == 0:
+        logger.log(f"cloud_event_id({event_id}): START_TUNING", severity="INFO")
         start_tuning_pipeline(
             project_id=_PROJECT_ID,
+            database_name=_DATABASE_NAME,
             collection_name=_COLLECTION_NAME,
             bucket_name=_OUTPUT_BUCKET,
             location=_LOCATION,
         )
+        return flask.Response(status=200)
+
+    logger.log(f"cloud_event_id({event_id}): FINISHED", severity="INFO")
+    return flask.Response(status=200)

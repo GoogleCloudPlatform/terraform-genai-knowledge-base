@@ -37,6 +37,7 @@ https://cloud.google.com/vertex-ai/docs/pipelines/build-pipeline
 def get_qas_from_collection(
     *,
     project_id: str,
+    database_name: str,
     collection_name: str,
     bucket_name: str,
 ) -> str:
@@ -53,7 +54,7 @@ def get_qas_from_collection(
     from google.cloud import firestore
     from google.cloud import storage
 
-    db = firestore.Client(project=project_id)
+    db = firestore.Client(project=project_id, database=database_name)
     collection_ref = db.collection(collection_name)
     docs_iter = collection_ref.stream()
 
@@ -144,6 +145,7 @@ def tuning(
 )
 def tuning_pipeline(
     project_id: str,
+    database_name: str,
     collection_name: str,
     bucket_name: str
 ):
@@ -156,6 +158,7 @@ def tuning_pipeline(
     """
     firestore_operation = get_qas_from_collection(
         project_id=project_id,
+        database_name=database_name,
         collection_name=collection_name,
         bucket_name=bucket_name
     )
@@ -169,6 +172,7 @@ def tuning_pipeline(
 def start_tuning_pipeline(
         *,
         project_id: str,
+        database_name: str,
         location: str = "us-central1",
         collection_name: str,
         bucket_name: str
@@ -183,6 +187,7 @@ def start_tuning_pipeline(
         pipeline_root=f"gs://{bucket_name}/extractive-qa/pipeline_root/",
         parameter_values={
             "project_id": project_id,
+            "database_name": database_name,
             "collection_name": collection_name,
             "bucket_name": bucket_name
         },

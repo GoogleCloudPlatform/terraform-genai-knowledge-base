@@ -15,26 +15,23 @@
 apiVersion: blueprints.cloud.google.com/v1alpha1
 kind: BlueprintMetadata
 metadata:
-  name: terraform-genai-doc-summarization
+  name: terraform-genai-extractive-qa
   annotations:
     config.kubernetes.io/local-config: "true"
 spec:
   info:
-    title: Generative AI Document Summarization
+    title: Generative AI Enterprise Knowledge Base
     source:
-      repo: https://github.com/balajismaniam/terraform-genai-doc-summarization.git
+      repo: https://github.com/balajismaniam/terraform-genai-extractive-qa.git
       sourceType: git
     version: 0.0.1
     actuationTool:
       flavor: Terraform
       version: '>= 0.13'
     description:
-      tagline: Create summaries of a large corpus of documents using Generative AI.
+      tagline: TAGLINE
       detailed: |-
-        This solution showcases how to summarize a large corpus of documents using Generative AI. It provides an
-        end-to-end demonstration of document summarization going all the way from raw documents, detecting text
-        in the documents and summarizing the documents on-demand using Vertex AI LLM APIs, Cloud Vision Optical
-        Character Recognition (OCR) and BigQuery.
+        DESCRIPTION.
       preDeploy: To deploy this blueprint you must have an active billing account and billing permissions.
     icon: assets/icon.png
     deploymentDuration:
@@ -50,9 +47,9 @@ spec:
     - productId: VISION_SECTION
       pageUrl: ""
       label: Vertex AI Vision
-    - productId: search_BIGQUERY_SECTION
+    - productId: search_FIRESTORE_SECTION
       pageUrl: ""
-      label: BigQuery
+      label: Cloud Firestore
     - productId: FUNCTIONS_SECTION
       pageUrl: ""
       label: Cloud Functions
@@ -65,15 +62,15 @@ spec:
       description:
       - 1. The developer follows a tutorial on a Jupyter Notebook, where they upload a PDF — either through Vertex AI Workbench or Colaboratory.
       - 2. The uploaded PDF file is sent to a function running on Cloud Functions. This function handles PDF file processing.
-      - 3. The Cloud Functions function uses Cloud Vision to extract all text from the PDF file.
-      - 4. The Cloud Functions function stores the extracted text inside a Cloud Storage bucket.
-      - 5. The Cloud Functions function uses Vertex AI’s LLM API to summarize the extracted text.
-      - 6. The Cloud Functions function stores the text summaries of PDFs in BigQuery tables.
+      - 3. The Cloud Function uses Cloud Vision to extract all text from the PDF file.
+      - 4. The Cloud Function stores the extracted text inside a Cloud Storage bucket.
+      - 5. The Cloud Function uses Vertex AI’s LLM API to summarize the extracted text.
+      - 6. The Cloud Function stores the text summaries of PDFs in BigQuery tables.
       - 7. As an alternative to uploading PDF files through Jupyter Notebook, the developer can upload a PDF file directly to a Cloud Storage
       - bucket — for instance, through the Console UI or gcloud. This upload triggers Eventarc to begin the Document Processing phase.
       - 8. As a result of the direct upload to Cloud Storage, Eventarc triggers the Document Processing phase, handled by Cloud Functions.
     documentation:
-    - title: Generative AI Document Summary
+    - title: Generative AI Enterprise Knowledge Base
       url: https://cloud.google.com/architecture/ai-ml/generative-ai-document-summarization
     examples:
     - name: simple_example

@@ -62,9 +62,17 @@ variable "time_to_enable_apis" {
 variable "init" {
   type        = bool
   description = "Initialize resource or not"
+  default     = true
 }
 
-variable "collection_fields" {
-  description = "collection id with respect to its fields"
-  type        = map(any)
+variable "database_name" {
+  description = "Name of the database"
+  type        = string
+  default     = "extractive-qas"
+}
+
+variable "collection_name" {
+  description = "Name of the collection"
+  type        = string
+  default     = "questions-and-answers"
 }

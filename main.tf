@@ -36,6 +36,7 @@ module "project_services" {
     "iam.googleapis.com",
     "notebooks.googleapis.com",
     "dataform.googleapis.com",
+    "firestore.googleapis.com",
   ]
 }
 
@@ -111,6 +112,7 @@ resource "google_project_iam_member" "webhook_sa_roles" {
     "roles/artifactregistry.reader",
     "roles/bigquery.dataEditor",
     "roles/aiplatform.user",
+    "roles/datastore.owner",
   ])
   role   = each.key
   member = "serviceAccount:${google_service_account.webhook.email}"
@@ -144,8 +146,9 @@ resource "google_cloudfunctions2_function" "webhook" {
       PROJECT_ID    = var.project_id
       LOCATION      = var.region
       OUTPUT_BUCKET = google_storage_bucket.output.name
-      DATASET_ID    = google_bigquery_dataset.default.dataset_id
-      TABLE_ID      = google_bigquery_table.default.table_id
+      DATABASE      = var.database_name
+      COLLECTION    = var.collection_name
+      TUNING_INTERVALS = 10
     }
   }
   depends_on = [
@@ -223,7 +226,7 @@ resource "google_project_iam_member" "pubsub_publisher" {
 
 resource "google_eventarc_trigger" "summarization" {
   project  = var.project_id
-  name     = "terraformdev"
+  name     = "extractive-qa-eventarc-trigger"
   location = var.region
   matching_criteria {
     attribute = "type"
@@ -247,28 +250,10 @@ resource "google_eventarc_trigger" "summarization" {
   ]
 }
 
-resource "google_firestore_database" "default" {
+resource "google_firestore_database" "database" {
   count       = var.init ? 1 : 0
   project     = var.project_id
-  name        = "(default)"
+  name        = var.database_name
   location_id = "nam5" //US
   type        = "FIRESTORE_NATIVE"
-}
-
-resource "google_firestore_index" "meta" {
-  depends_on = [
-    google_firestore_database.default
-  ]
-
-  for_each   = var.collection_fields
-  collection = each.key
-  dynamic "fields" {
-    for_each = each.value
-    iterator = field
-    content {
-      field_path   = lookup(field.value, "field_path", null)
-      order        = lookup(field.value, "order", null)
-      array_config = lookup(field.value, "array_config", null)
-    }
-  }
 }

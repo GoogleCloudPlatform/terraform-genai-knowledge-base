@@ -20,11 +20,13 @@ from google.cloud.firestore_v1 import aggregation
 
 
 def write_qas_to_collection(
-    project_id: str,
-    collection_name: str,
-    question_answer_pairs: List[Tuple[str, str]],
-    input_file_gcs_uri: str,
-    time_created: datetime,
+        *,
+        project_id: str,
+        collection_name: str,
+        database_name: str,
+        question_answer_pairs: List[Tuple[str, str]],
+        input_file_gcs_uri: str,
+        time_created: datetime,
 ):
     """Writes question and answer pairs to the specified Firestore collection.
 
@@ -35,7 +37,7 @@ def write_qas_to_collection(
       input_file_gcs_uri: the Cloud Storage URI for the source PDF
       time_created: the time that this PDF was uploaded
     """
-    db = firestore.Client(project=project_id)
+    db = firestore.Client(project=project_id, database=database_name)
     bulkwriter = db.bulk_writer()
 
     for qa in question_answer_pairs:
@@ -65,9 +67,13 @@ def write_qas_to_collection(
     bulkwriter.close()
 
 
-def get_qas_count(project_id: str,
-                  collection_name: str,
-                  field: str = "question") -> int:
+def get_qas_count(
+        *,
+        project_id: str,
+        database_name: str,
+        collection_name: str,
+        field: str = "question"
+) -> int:
     """Gets the COUNT of all questions in the Firestore Collection.
 
     Arguments:
@@ -78,7 +84,7 @@ def get_qas_count(project_id: str,
     Returns:
         Integer representing the COUNT of all questions in the collection.
     """
-    db = firestore.Client(project=project_id)
+    db = firestore.Client(project=project_id, database=database_name)
     collection_ref = db.collection(collection_name)
 
     query = collection_ref.where(filter=firestore.FieldFilter(field, "!=", ""))
