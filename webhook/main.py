@@ -124,7 +124,7 @@ def cloud_event_entrypoint(event_id, bucket, name, time_created) -> None:
         f"cloud_event_id({event_id}): OCR  gs://{bucket}/{name}", severity="INFO"
     )
 
-    extraction_entrypoint(
+    return extraction_entrypoint(
         name,
         extracted_text,
         time_created=time_created,
