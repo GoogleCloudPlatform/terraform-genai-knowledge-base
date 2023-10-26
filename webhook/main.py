@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import datetime
-import json
 import os
 import requests
 import flask
@@ -28,7 +27,7 @@ import google.oauth2.id_token
 
 from document_extract import async_document_extract
 from firestore_collection import get_qas_count, write_qas_to_collection
-from model_tuning import extract_questions
+from extraction import extract_questions
 from pipeline import start_tuning_pipeline
 from storage import upload_to_gcs
 from utils import coerce_datetime_zulu, clean_text

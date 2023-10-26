@@ -12,8 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import List, Tuple
+
+import ipdb
+
 import vertexai
 from vertexai.preview.language_models import TextGenerationModel
+
+_COUNT = 20
 
 
 def extract_questions(
@@ -50,7 +56,8 @@ def extract_questions(
     model = TextGenerationModel.from_pretrained(model_name)
 
     response = model.predict(
-        f"""Extract at least 20 Questions based on the following article: {text}\nQuestions:""",
+        f"""Extract at least {_COUNT} questions and answers based on the following article: 
+        {text} Questions: Answers:""",
         temperature=temperature,
         max_output_tokens=max_decode_steps,
         top_k=top_k,
@@ -58,4 +65,38 @@ def extract_questions(
     )
     question_list = response.text.splitlines()
 
-    return question_list
+    ipdb.set_trace()
+
+    print(question_list)
+    return convert_questions_list_to_tuples(qas=question_list)
+
+
+def convert_questions_list_to_tuples(*, qas: List[str]) -> List[Tuple[str, str]]:
+    """Convert a list of questions and answers to a list of tuples
+
+    Args:
+        qas (List[str]): the list of questions and answers
+
+    Returns:
+        A list of tuples containing the questions and answers
+    """
+    count = 0
+    qa_pairs = []
+    while count < _COUNT:
+        question = qas[count]
+        count += 1
+
+        if question == "":
+            continue
+
+        answer = qas[count]
+        qa_pairs.append((question, answer))
+
+        count += 1
+
+        if count >= len(qas):
+            break
+
+        if qas[count] == "":
+            count += 1
+    return qa_pairs

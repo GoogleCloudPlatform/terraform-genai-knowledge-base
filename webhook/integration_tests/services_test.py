@@ -21,7 +21,7 @@ from google.cloud import storage
 
 from bigquery import write_summarization_to_table
 from document_extract import async_document_extract
-from model_tuning import tuning
+from webhook.extraction import tuning
 from storage import upload_to_gcs
 from utils import clean_text
 
