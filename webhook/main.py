@@ -42,7 +42,7 @@ _CREDENTIALS, _ = default(scopes=['https://www.googleapis.com/auth/cloud-platfor
 _MODEL_NAME = "text-bison@001"
 _DATABASE_NAME = os.environ["DATABASE"]
 _COLLECTION_NAME = os.environ["COLLECTION"]
-_TUNING_SIZE_INTERVALS = os.environ["TUNING_INTERVALS"]
+_TUNING_SIZE_INTERVALS = int(os.environ["TUNING_INTERVALS"])
 
 
 def default_marshaller(o: object) -> str:
@@ -102,8 +102,6 @@ def entrypoint(request: object) -> Mapping[str, str]:
             time_created=datetime.datetime.now(datetime.timezone.utc),
             event_id="CURL_TRIGGER",
         )
-
-    return flask.Response(status=500)
 
 
 def cloud_event_entrypoint(event_id, bucket, name, time_created) -> None:

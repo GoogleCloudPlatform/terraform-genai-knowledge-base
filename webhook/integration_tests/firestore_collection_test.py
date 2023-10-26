@@ -26,23 +26,25 @@ from firestore_collection import write_qas_to_collection
 _PROJECT_ID = os.environ["PROJECT_ID"]
 # Make sure this is a test collection. It is entirely deleted in teardown.
 _COLLECTION_NAME = os.environ["COLLECTION"]
+_DATABASE_NAME = "(default)"
 
 
+# Fixtures
 @pytest.fixture
 def populate_collection():
-    db = firestore.Client(project=_PROJECT_ID)
+    db = firestore.Client(project=_PROJECT_ID, database=_DATABASE_NAME)
     collection_ref = db.collection(_COLLECTION_NAME)
     question_1 = "Who is the Greek goddess of the hunt?"
     question_2 = "Which Israelite prophet lived at the time of King Ahab?"
     # TODO: Fix this to match correct DB schema
     data_rows = [
-        {   
+        {
             "question": question_1,
-            "answers": "Artemis",
+            "answers": ["Artemis"],
         },
         {
             "question": question_2,
-            "answer": "Elijah",
+            "answer": ["Elijah"],
         },
     ]
 
@@ -77,6 +79,7 @@ def test_write_qas_to_collection_it(capsys):
     try:
         write_qas_to_collection(
             project_id=_PROJECT_ID,
+            database_name=_DATABASE_NAME,
             collection_name=_COLLECTION_NAME,
             question_answer_pairs=data_rows,
             input_file_gcs_uri=gcs_uri,
@@ -101,6 +104,7 @@ def test_get_qas_count_it(capsys, populate_collection):
     try:
         count = get_qas_count(
             project_id=_PROJECT_ID,
+            database_name=_DATABASE_NAME,
             collection_name=_COLLECTION_NAME)
 
         # Assert

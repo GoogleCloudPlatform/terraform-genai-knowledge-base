@@ -65,12 +65,6 @@ variable "init" {
   default     = true
 }
 
-variable "database_name" {
-  description = "Name of the database"
-  type        = string
-  default     = "extractive-qas"
-}
-
 variable "collection_name" {
   description = "Name of the collection"
   type        = string

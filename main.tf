@@ -40,6 +40,10 @@ module "project_services" {
   ]
 }
 
+locals {
+  database_name = "extractive-qa-${random_id.random_code.hex}"
+}
+
 data "google_project" "project" {
   project_id = var.project_id
   depends_on = [
@@ -62,6 +66,10 @@ resource "google_project_iam_member" "eventarc_sa_role" {
   project = data.google_project.project.project_id
   role    = "roles/eventarc.serviceAgent"
   member  = "serviceAccount:${google_project_service_identity.eventarc.email}"
+}
+
+resource "random_id" "random_code" {
+  byte_length = 4
 }
 
 resource "null_resource" "previous_time" {}
@@ -146,7 +154,7 @@ resource "google_cloudfunctions2_function" "webhook" {
       PROJECT_ID    = var.project_id
       LOCATION      = var.region
       OUTPUT_BUCKET = google_storage_bucket.output.name
-      DATABASE      = var.database_name
+      DATABASE      = local.database_name
       COLLECTION    = var.collection_name
       TUNING_INTERVALS = 10
     }
@@ -253,7 +261,7 @@ resource "google_eventarc_trigger" "summarization" {
 resource "google_firestore_database" "database" {
   count       = var.init ? 1 : 0
   project     = var.project_id
-  name        = var.database_name
+  name        = local.database_name
   location_id = "nam5" //US
   type        = "FIRESTORE_NATIVE"
 }

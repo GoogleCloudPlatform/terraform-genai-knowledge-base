@@ -19,14 +19,12 @@ from google.cloud import firestore
 from google.cloud.firestore_v1 import base_query
 from google.cloud.firestore_v1 import base_aggregation
 
-import kfp
-
 from firestore_collection import get_qas_count
-from firestore_collection import get_qas_from_collection
 from firestore_collection import write_qas_to_collection
 
 _PROJECT_ID = "fake-project-id"
 _COLLECTION_NAME = "fake-collection"
+_DATABASE_NAME = "fake-database"
 _BUCKET_NAME = "fake-bucket"
 _GCS_URI = "gs://i/dont/exist"
 
@@ -47,11 +45,12 @@ def test_write_qas_to_collection(mock_bulkwriter, mock_document):
 
     # Act
     write_qas_to_collection(
-        _PROJECT_ID,
-        _COLLECTION_NAME,
-        [data_row],
-        _GCS_URI,
-        timestamp)
+        project_id=_PROJECT_ID,
+        database_name=_DATABASE_NAME,
+        collection_name=_COLLECTION_NAME,
+        question_answer_pairs=[data_row],
+        input_file_gcs_uri=_GCS_URI,
+        time_created=timestamp)
 
     # Assert
     mock_document.assert_called_with(_COLLECTION_NAME, str(hash(data_row[0])))
@@ -80,11 +79,12 @@ def test_write_multiple_qas_to_collection(mock_bulkwriter, mock_document):
 
     # Act
     write_qas_to_collection(
-        _PROJECT_ID,
-        _COLLECTION_NAME,
-        data_rows,
-        _GCS_URI,
-        timestamp)
+        project_id=_PROJECT_ID,
+        database_name=_DATABASE_NAME,
+        collection_name=_COLLECTION_NAME,
+        question_answer_pairs=data_rows,
+        input_file_gcs_uri=_GCS_URI,
+        time_created=timestamp)
 
     # Assert
     mock_document.assert_called()
@@ -107,7 +107,9 @@ def test_get_qas_count(mock_aggregation, mock_collection):
     mock_aggregation.return_value.get.return_value = [[mock_result]]
 
     # Act
-    count = get_qas_count(_PROJECT_ID, _COLLECTION_NAME)
+    count = get_qas_count(project_id=_PROJECT_ID, 
+                          database_name=_DATABASE_NAME, 
+                          collection_name=_COLLECTION_NAME)
 
     # Assert
     mock_aggregation.assert_called()
