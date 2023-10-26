@@ -14,8 +14,6 @@
 
 from typing import List, Tuple
 
-import ipdb
-
 import vertexai
 from vertexai.preview.language_models import TextGenerationModel
 
@@ -64,8 +62,6 @@ def extract_questions(
         top_p=top_p,
     )
     question_list = response.text.splitlines()
-
-    ipdb.set_trace()
 
     print(question_list)
     return convert_questions_list_to_tuples(qas=question_list)
