@@ -119,7 +119,7 @@ resource "google_project_iam_member" "webhook_sa_roles" {
     "roles/logging.logWriter",
     "roles/artifactregistry.reader",
     "roles/bigquery.dataEditor",
-    "roles/aiplatform.user",
+    "roles/aiplatform.serviceAgent",
     "roles/datastore.owner",
   ])
   role   = each.key
