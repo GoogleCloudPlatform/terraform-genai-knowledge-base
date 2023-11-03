@@ -23,20 +23,20 @@ module "project_services" {
 
   activate_apis = [
     // cloudresourcemanager.googleapis.com is a prerequisite
-    "serviceusage.googleapis.com",
-    "vision.googleapis.com",
-    "cloudfunctions.googleapis.com",
-    "serviceusage.googleapis.com",
-    "artifactregistry.googleapis.com",
-    "eventarc.googleapis.com",
     "aiplatform.googleapis.com",
-    "storage.googleapis.com",
+    "artifactregistry.googleapis.com",
     "cloudbuild.googleapis.com",
-    "run.googleapis.com",
+    "cloudfunctions.googleapis.com",
+    "dataform.googleapis.com",
+    "eventarc.googleapis.com",
+    "firestore.googleapis.com",
     "iam.googleapis.com",
     "notebooks.googleapis.com",
-    "dataform.googleapis.com",
-    "firestore.googleapis.com",
+    "run.googleapis.com",
+    "serviceusage.googleapis.com",
+    "serviceusage.googleapis.com",
+    "storage.googleapis.com",
+    "vision.googleapis.com",
   ]
 }
 
@@ -113,14 +113,14 @@ resource "google_service_account" "webhook" {
 resource "google_project_iam_member" "webhook_sa_roles" {
   project = var.project_id
   for_each = toset([
-    "roles/run.invoker",
-    "roles/cloudfunctions.invoker",
-    "roles/storage.admin",
-    "roles/logging.logWriter",
+    "roles/aiplatform.serviceAgent",
     "roles/artifactregistry.reader",
     "roles/bigquery.dataEditor",
-    "roles/aiplatform.serviceAgent",
+    "roles/cloudfunctions.invoker",
     "roles/datastore.owner",
+    "roles/logging.logWriter",
+    "roles/run.invoker",
+    "roles/storage.admin",
   ])
   role   = each.key
   member = "serviceAccount:${google_service_account.webhook.email}"
@@ -163,13 +163,12 @@ resource "google_cloudfunctions2_function" "webhook" {
     module.project_services,
     time_sleep.wait_for_apis,
     google_project_iam_member.webhook_sa_roles,
-
   ]
 }
 
 resource "google_storage_bucket" "uploads" {
   project                     = var.project_id
-  name                        = "${var.project_id}_uploads"
+  name                        = "${var.project_id}-uploads"
   location                    = var.region
   force_destroy               = true
   uniform_bucket_level_access = true
@@ -177,7 +176,7 @@ resource "google_storage_bucket" "uploads" {
 
 resource "google_storage_bucket" "output" {
   project                     = var.project_id
-  name                        = "${var.project_id}_output"
+  name                        = "${var.project_id}-output"
   location                    = var.region
   force_destroy               = true
   uniform_bucket_level_access = true

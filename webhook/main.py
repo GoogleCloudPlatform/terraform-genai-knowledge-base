@@ -16,6 +16,7 @@ import datetime
 import os
 import requests
 import flask
+import sys
 
 from typing import Mapping
 
@@ -32,12 +33,12 @@ from pipeline import start_tuning_pipeline
 from storage import upload_to_gcs
 from utils import coerce_datetime_zulu, clean_text
 
-_FUNCTIONS_VERTEX_EVENT_LOGGER = 'extractive-qa-by-llm'
+_FUNCTIONS_VERTEX_EVENT_LOGGER = "extractive-qa-by-llm"
 
 _PROJECT_ID = os.environ["PROJECT_ID"]
 _OUTPUT_BUCKET = os.environ["OUTPUT_BUCKET"]
 _LOCATION = os.environ["LOCATION"]
-_CREDENTIALS, _ = default(scopes=['https://www.googleapis.com/auth/cloud-platform'])
+_CREDENTIALS, _ = default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
 _MODEL_NAME = "text-bison@001"
 _DATABASE_NAME = os.environ["DATABASE"]
 _COLLECTION_NAME = os.environ["COLLECTION"]
@@ -50,114 +51,127 @@ def default_marshaller(o: object) -> str:
     return str(o)
 
 
-def redirect_and_reply(previous_data):
+def redirect_and_reply(data):
     endpoint = f'https://{_LOCATION}-{_PROJECT_ID}.cloudfunctions.net/{os.environ["K_SERVICE"]}'
-    logging_client = logging.Client()
-    logger = logging_client.logger(_FUNCTIONS_VERTEX_EVENT_LOGGER)
-
     auth_req = google.auth.transport.requests.Request()
     id_token = google.oauth2.id_token.fetch_id_token(auth_req, endpoint)
-    data = {
-        'name': previous_data["name"],
-        'id': previous_data["id"],
-        'bucket': previous_data["bucket"],
-        'timeCreated': previous_data["timeCreated"],
-    }
-    headers = {}
-    headers["Authorization"] = f"Bearer {id_token}"
-    logger.log(f'TRIGGERING JOB FLOW: {endpoint}')
     try:
         requests.post(
             endpoint,
-            json=data,
+            json={key: data[key] for key in ["name", "id", "bucket", "timeCreated"]},
             timeout=1,
-            headers=headers,
+            headers={"Authorization": f"Bearer {id_token}"},
         )
     except requests.exceptions.Timeout:
         return flask.Response(status=200)
-    except Exception:
+    except Exception as e:
+        print(e, file=sys.stderr)
         return flask.Response(status=500)
     return flask.Response(status=200)
 
 
 def entrypoint(request: object) -> Mapping[str, str]:
+    logging_client = logging.Client()
+    logger = logging_client.logger(_FUNCTIONS_VERTEX_EVENT_LOGGER)
+
     data = request.get_json()
     if data.get("kind", None) == "storage#object":
         # Entrypoint called by Pub-Sub (Eventarc)
+        print(f"EVENTARC_TRIGGER: {data['id']}")
+        logger.log(
+            {"cloud_event_id": data["id"], "event_type": "EVENTARC_TRIGGER"},
+            severity="INFO",
+        )
         return redirect_and_reply(data)
 
-    if 'bucket' in data:
+    if "bucket" in data:
         # Entrypoint called by REST (possibly by redirect_and_replay)
         return cloud_event_entrypoint(
+            logger=logger,
             name=data["name"],
-            event_id=data["id"],
+            cloud_event_id=data["id"],
             bucket=data["bucket"],
             time_created=coerce_datetime_zulu(data["timeCreated"]),
         )
     else:
         return extraction_entrypoint(
-            name=data['name'],
-            extracted_text=data['text'],
+            logger=logger,
+            name=data["name"],
+            extracted_text=data["text"],
             time_created=datetime.datetime.now(datetime.timezone.utc),
             event_id="CURL_TRIGGER",
         )
 
 
-def cloud_event_entrypoint(event_id, bucket, name, time_created) -> None:
+def cloud_event_entrypoint(logger, cloud_event_id, bucket, name, time_created) -> None:
     """Entrypoint for events arising from EventArc
-    
+
     Arguments:
-        event_id: the EventArc event ID
+        cloud_event_id: the EventArc event ID
         bucket: the GCS bucket the document is in
         name: the name of the document in the GCS bucket
-        time_created: the time the document was uploaded   
+        time_created: the time the document was uploaded
     """
-    orig_pdf_uri = f"gs://{bucket}/{name}"
-    logging_client = logging.Client()
-
-    logger = logging_client.logger(_FUNCTIONS_VERTEX_EVENT_LOGGER)
-    logger.log(f"cloud_event_id({event_id}): UPLOAD {orig_pdf_uri}",
-               severity="INFO")
+    print(f"PDF_UPLOAD: {cloud_event_id} gs://{bucket}/{name}")
+    logger.log(
+        {"cloud_event_id": cloud_event_id, "event_type": "PDF_UPLOAD"},
+        severity="INFO",
+    )
 
     extracted_text = async_document_extract(bucket, name, output_bucket=_OUTPUT_BUCKET)
+
+    print(f"OCR: {cloud_event_id} {len(extracted_text)=}")
     logger.log(
-        f"cloud_event_id({event_id}): OCR  gs://{bucket}/{name}", severity="INFO"
+        {"cloud_event_id": cloud_event_id, "event_type": "OCR"},
+        severity="INFO",
     )
 
     return extraction_entrypoint(
+        logger,
         name,
         extracted_text,
         time_created=time_created,
-        event_id=event_id,
+        event_id=cloud_event_id,
         bucket=bucket,
     )
 
 
 def extraction_entrypoint(
-        name: str,
-        extracted_text: str,
-        time_created: datetime.datetime,
-        bucket: str = None,
-        event_id: str = None):
-    logging_client = logging.Client()
-    logger = logging_client.logger(_FUNCTIONS_VERTEX_EVENT_LOGGER)
-
-    output_filename = f'system-test/{name.replace(".pdf", "")}_tuning_dataset.txt'
+    logger,
+    name: str,
+    extracted_text: str,
+    time_created: datetime.datetime,
+    bucket: str = None,
+    event_id: str = None,
+):
+    output_filename = f'system-test/{name.replace(".pdf", "")}-tuning-dataset.txt'
     extracted_text_cleaned = clean_text(extracted_text)
     upload_to_gcs(
         _OUTPUT_BUCKET,
         output_filename,
         extracted_text,
     )
-    logger.log(f"cloud_event_id({event_id}): PDF_TEXT_UPLOAD {upload_to_gcs}",
-               severity="INFO")
+
+    print(f"TEXT_UPLOAD: {event_id} gs://{_OUTPUT_BUCKET}/{output_filename}")
+    logger.log(
+        {"cloud_event_id": event_id, "event_type": "TEXT_UPLOAD"},
+        severity="INFO",
+    )
 
     qa_pairs = extract_questions(
         project_id=_PROJECT_ID,
         model_name=_MODEL_NAME,
         text=extracted_text_cleaned,
     )
-    logger.log(f"cloud_event_id({event_id}): QA_EXTRACTION", severity="INFO")
+
+    print(f"QA_EXTRACTION: {event_id} {len(qa_pairs)=}")
+    for q, a in qa_pairs:
+        print(f"  Q: {q}")
+        print(f"  A: {a}")
+    logger.log(
+        {"cloud_event_id": event_id, "event_type": "QA_EXTRACTION"},
+        severity="INFO",
+    )
 
     write_qas_to_collection(
         project_id=_PROJECT_ID,
@@ -167,13 +181,25 @@ def extraction_entrypoint(
         input_file_gcs_uri=f"gs://{bucket}/{name}",
         time_created=time_created,
     )
-    logger.log(f"cloud_event_id({event_id}): DB_WRITE", severity="INFO")
 
-    count = get_qas_count(project_id=_PROJECT_ID,
-                          database_name=_DATABASE_NAME,
-                          collection_name=_COLLECTION_NAME)
-    if (count % _TUNING_SIZE_INTERVALS) == 0:
-        logger.log(f"cloud_event_id({event_id}): START_TUNING", severity="INFO")
+    print(f"DB_WRITE: {event_id} {_DATABASE_NAME} {_COLLECTION_NAME}")
+    logger.log(
+        {"cloud_event_id": event_id, "event_type": "DB_WRITE"},
+        severity="INFO",
+    )
+
+    count = get_qas_count(
+        project_id=_PROJECT_ID,
+        database_name=_DATABASE_NAME,
+        collection_name=_COLLECTION_NAME,
+    )
+    # if (count % _TUNING_SIZE_INTERVALS) == 0:
+    if True:
+        print(f"START_TUNING: {event_id} {count=}")
+        logger.log(
+            {"cloud_event_id": event_id, "event_type": "START_TUNING"},
+            severity="INFO",
+        )
         start_tuning_pipeline(
             project_id=_PROJECT_ID,
             database_name=_DATABASE_NAME,
@@ -183,5 +209,9 @@ def extraction_entrypoint(
         )
         return flask.Response(status=200)
 
-    logger.log(f"cloud_event_id({event_id}): FINISHED", severity="INFO")
+    print(f"DONE: {event_id} {count=}")
+    logger.log(
+        {"cloud_event_id": event_id, "event_type": "DONE"},
+        severity="INFO",
+    )
     return flask.Response(status=200)

@@ -30,10 +30,7 @@ https://cloud.google.com/vertex-ai/docs/pipelines/build-pipeline
 """
 
 
-@component(packages_to_install=[
-    "google-cloud-firestore"
-    "google-cloud-storage"
-])
+@component(packages_to_install=["google-cloud-firestore", "google-cloud-storage"])
 def get_qas_from_collection(
     *,
     project_id: str,
@@ -67,7 +64,7 @@ def get_qas_from_collection(
     # TODO: Switch to GCS FUSE
     gcs_qa_dir = f"gs://{bucket_name}/extractive-qa"
     gcs_qa_file = f"{gcs_qa_dir}/qas.json"
-    
+
     storage_client = storage.Client(project=project_id)
     bucket = storage_client.bucket(bucket_name)
     blob = bucket.blob(f"extractive-qa/qas.json")
@@ -78,21 +75,21 @@ def get_qas_from_collection(
 
 
 @component(
-        base_image="python:3.9",
-        packages_to_install=[
-            "google-cloud-aiplatform",
-            "google-cloud-storage",
-            "importlib-metadata",
-            "pandas",
-            "pyyaml",
-        ]
+    base_image="python:3.9",
+    packages_to_install=[
+        "google-cloud-aiplatform",
+        "google-cloud-storage",
+        "importlib-metadata",
+        "pandas",
+        "pyyaml",
+    ],
 )
 def tuning(
-        *,
-        project_id: str,
-        location: str = "us-central1",
-        gcs_qa_file: str = "",
-        tuned_model_name: str = "",
+    *,
+    project_id: str,
+    location: str = "us-central1",
+    gcs_qa_file: str = "",
+    tuned_model_name: str = "",
 ) -> None:
     """Tune a new model, based on Q&A data stored in a Firestore collection.
 
@@ -124,10 +121,12 @@ def tuning(
     blob_path = "/".join(uri_paths[3:])
     blob = bucket.blob(blob_path)
     jsonl_as_str = blob.download_as_string()
-    
+
     qas = json.loads(jsonl_as_str)
-    jsonl_dataset = [{"input_text": qa["question"],
-                      "output_text": qa["answers"][0]["answer"]} for qa in qas]
+    jsonl_dataset = [
+        {"input_text": qa["question"], "output_text": qa["answers"][0]["answer"]}
+        for qa in qas
+    ]
 
     job = model.tune_model(
         training_data=pd.DataFrame(data=jsonl_dataset),
@@ -139,15 +138,9 @@ def tuning(
     return job
 
 
-@pipeline(
-    name="extractive-qa-pipeline",
-    description="Fine-tunes an extractive QA LLM"
-)
+@pipeline(name="extractive-qa-pipeline", description="Fine-tunes an extractive QA LLM")
 def tuning_pipeline(
-    project_id: str,
-    database_name: str,
-    collection_name: str,
-    bucket_name: str
+    project_id: str, database_name: str, collection_name: str, bucket_name: str
 ):
     """Use questions & answers stored in Firestore to finetune a Vertex LLM.
 
@@ -160,22 +153,19 @@ def tuning_pipeline(
         project_id=project_id,
         database_name=database_name,
         collection_name=collection_name,
-        bucket_name=bucket_name
+        bucket_name=bucket_name,
     )
 
-    tuning(
-        project_id=project_id,
-        gcs_qa_file=firestore_operation.output
-    )
+    tuning(project_id=project_id, gcs_qa_file=firestore_operation.output)
 
 
 def start_tuning_pipeline(
-        *,
-        project_id: str,
-        database_name: str,
-        location: str = "us-central1",
-        collection_name: str,
-        bucket_name: str
+    *,
+    project_id: str,
+    database_name: str,
+    location: str = "us-central1",
+    collection_name: str,
+    bucket_name: str,
 ):
     aiplatform.init(project=project_id, location=location)
 
@@ -189,9 +179,9 @@ def start_tuning_pipeline(
             "project_id": project_id,
             "database_name": database_name,
             "collection_name": collection_name,
-            "bucket_name": bucket_name
+            "bucket_name": bucket_name,
         },
-        enable_caching=False
+        enable_caching=False,
     )
     job.submit()
     return job.name

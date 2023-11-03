@@ -12,25 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Tuple
+from __future__ import annotations
+
+from collections.abc import Iterator
+import re
 
 import vertexai
 from vertexai.preview.language_models import TextGenerationModel
 
 _COUNT = 20
 
+QUESTION_RE = re.compile(r"^Q:\s*", re.MULTILINE)
+
 
 def extract_questions(
-        *,
-        project_id: str,
-        model_name: str,
-        text: str,
-        temperature: float = 0.2,
-        max_decode_steps: int = 1024,
-        top_p: float = 0.8,
-        top_k: int = 40,
-        location: str = "us-central1",
-) -> str:
+    *,
+    project_id: str,
+    model_name: str,
+    text: str,
+    temperature: float = 0.2,
+    max_decode_steps: int = 1024,
+    top_p: float = 0.8,
+    top_k: int = 40,
+    location: str = "us-central1",
+) -> list[tuple[str, str]]:
     """Extract questions & answers using a large language model (LLM)
 
     Args:
@@ -46,53 +51,34 @@ def extract_questions(
     Returns:
         The summarization of the content
     """
-    vertexai.init(
-        project=project_id,
-        location=location,
-    )
+    vertexai.init(project=project_id, location=location)
 
     model = TextGenerationModel.from_pretrained(model_name)
-
+    prompt = [
+        text,
+        f"Give me {_COUNT} specific questions and answers that can be answered from the above text.",
+        "Q:",
+    ]
     response = model.predict(
-        f"""Extract at least {_COUNT} questions and answers based on the following article: 
-        {text} Questions: Answers:""",
+        "\n".join(prompt),
         temperature=temperature,
         max_output_tokens=max_decode_steps,
         top_k=top_k,
         top_p=top_p,
     )
-    question_list = response.text.splitlines()
-
-    print(question_list)
-    return convert_questions_list_to_tuples(qas=question_list)
+    return list(question_answer_tuples(f"Q: {response.text}"))
 
 
-def convert_questions_list_to_tuples(*, qas: List[str]) -> List[Tuple[str, str]]:
+def question_answer_tuples(qa_text: str) -> Iterator[tuple[str, str]]:
     """Convert a list of questions and answers to a list of tuples
 
     Args:
-        qas (List[str]): the list of questions and answers
+        qas (list[str]): the list of questions and answers
 
     Returns:
         A list of tuples containing the questions and answers
     """
-    count = 0
-    qa_pairs = []
-    while count < _COUNT:
-        question = qas[count]
-        count += 1
-
-        if question == "":
-            continue
-
-        answer = qas[count]
-        qa_pairs.append((question, answer))
-
-        count += 1
-
-        if count >= len(qas):
-            break
-
-        if qas[count] == "":
-            count += 1
-    return qa_pairs
+    for qa in QUESTION_RE.split(qa_text):
+        if "\nA:" in qa:
+            question, answer = qa.split("\nA:")
+            yield (question.strip(), answer.strip())
