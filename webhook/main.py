@@ -12,206 +12,114 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import datetime
+from datetime import datetime
+import flask
+import json
+import logging
 import os
 import requests
-import flask
-import sys
 
-from typing import Mapping
-
-from google.auth import default
-from google.cloud import logging
 import google.auth.transport.requests
 import google.oauth2.id_token
 
+import documentai_utils
+import firestore_utils
+import storage_utils
+import vertexai_utils
 
-from document_extract import async_document_extract
-from firestore_collection import get_qas_count, write_qas_to_collection
-from extraction import extract_questions
-from pipeline import start_tuning_pipeline
-from storage import upload_to_gcs
-from utils import coerce_datetime_zulu, clean_text
+PROJECT_ID = os.environ["PROJECT_ID"]
+LOCATION = os.environ["LOCATION"]
+OUTPUT_BUCKET = os.environ["OUTPUT_BUCKET"]
+DOCAI_PROCESSOR = os.environ["DOCAI_PROCESSOR"]
+DATABASE = os.environ["DATABASE"]
+COLLECTION = os.environ["COLLECTION"]
 
-_FUNCTIONS_VERTEX_EVENT_LOGGER = "extractive-qa-by-llm"
-
-_PROJECT_ID = os.environ["PROJECT_ID"]
-_OUTPUT_BUCKET = os.environ["OUTPUT_BUCKET"]
-_LOCATION = os.environ["LOCATION"]
-_CREDENTIALS, _ = default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
-_MODEL_NAME = "text-bison@001"
-_DATABASE_NAME = os.environ["DATABASE"]
-_COLLECTION_NAME = os.environ["COLLECTION"]
-_TUNING_SIZE_INTERVALS = int(os.environ["TUNING_INTERVALS"])
+MODEL_NAME = "text-bison@001"
 
 
-def default_marshaller(o: object) -> str:
-    if isinstance(o, (datetime.date, datetime.datetime)):
-        return o.isoformat()
-    return str(o)
+def entrypoint(request: flask.Request) -> flask.Response:
+    data = request.get_json()
+    if data.get("kind", None) == "storage#object":
+        # Entrypoint called by the Eventarc trigger.
+        return ack_and_process(data, fields=["name", "id", "bucket", "timeCreated"])
+
+    try:
+        process_document(
+            event_id=data["id"],
+            bucket=data["bucket"],
+            input_name=data["name"],
+            time_uploaded=datetime.fromisoformat(data["timeCreated"]),
+        )
+    except Exception as e:
+        logging.exception(e, stack_info=True)
+    return flask.Response(status=200)
 
 
-def redirect_and_reply(data):
-    endpoint = f'https://{_LOCATION}-{_PROJECT_ID}.cloudfunctions.net/{os.environ["K_SERVICE"]}'
+def ack_and_process(data: dict, fields: list[str]) -> None:
+    # Each document can take a while to process.
+    # The Eventarc trigger might want to retry if it doesn't finish in time.
+    # Events are acked on a 200 status response so it won't retry.
+    print(f"📬 {data['id']}: New file uploaded")
+    endpoint = (
+        f"https://{LOCATION}-{PROJECT_ID}.cloudfunctions.net/{os.environ['K_SERVICE']}"
+    )
     auth_req = google.auth.transport.requests.Request()
     id_token = google.oauth2.id_token.fetch_id_token(auth_req, endpoint)
     try:
+        # Resend the request, but don't wait for the response.
         requests.post(
             endpoint,
-            json={key: data[key] for key in ["name", "id", "bucket", "timeCreated"]},
-            timeout=1,
+            json={key: data[key] for key in fields},
             headers={"Authorization": f"Bearer {id_token}"},
+            timeout=0.1,
         )
     except requests.exceptions.Timeout:
-        return flask.Response(status=200)
-    except Exception as e:
-        print(e, file=sys.stderr)
-        return flask.Response(status=500)
+        pass
+    # Ack the event immediately to avoid retries.
     return flask.Response(status=200)
 
 
-def entrypoint(request: object) -> Mapping[str, str]:
-    logging_client = logging.Client()
-    logger = logging_client.logger(_FUNCTIONS_VERTEX_EVENT_LOGGER)
-
-    data = request.get_json()
-    if data.get("kind", None) == "storage#object":
-        # Entrypoint called by Pub-Sub (Eventarc)
-        print(f"EVENTARC_TRIGGER: {data['id']}")
-        logger.log(
-            {"cloud_event_id": data["id"], "event_type": "EVENTARC_TRIGGER"},
-            severity="INFO",
-        )
-        return redirect_and_reply(data)
-
-    if "bucket" in data:
-        # Entrypoint called by REST (possibly by redirect_and_replay)
-        return cloud_event_entrypoint(
-            logger=logger,
-            name=data["name"],
-            cloud_event_id=data["id"],
-            bucket=data["bucket"],
-            time_created=coerce_datetime_zulu(data["timeCreated"]),
-        )
-    else:
-        return extraction_entrypoint(
-            logger=logger,
-            name=data["name"],
-            extracted_text=data["text"],
-            time_created=datetime.datetime.now(datetime.timezone.utc),
-            event_id="CURL_TRIGGER",
-        )
-
-
-def cloud_event_entrypoint(logger, cloud_event_id, bucket, name, time_created) -> None:
-    """Entrypoint for events arising from EventArc
-
-    Arguments:
-        cloud_event_id: the EventArc event ID
-        bucket: the GCS bucket the document is in
-        name: the name of the document in the GCS bucket
-        time_created: the time the document was uploaded
-    """
-    print(f"PDF_UPLOAD: {cloud_event_id} gs://{bucket}/{name}")
-    logger.log(
-        {"cloud_event_id": cloud_event_id, "event_type": "PDF_UPLOAD"},
-        severity="INFO",
+def process_document(
+    event_id: str,
+    bucket: str,
+    input_name: str,
+    time_uploaded: datetime,
+) -> None:
+    input_gcs_uri = f"gs://{bucket}/{input_name}"
+    print(f"📖 {event_id}: Getting document text")
+    text = documentai_utils.get_document_text(
+        PROJECT_ID,
+        input_gcs_uri,
+        DOCAI_PROCESSOR,
     )
 
-    extracted_text = async_document_extract(bucket, name, output_bucket=_OUTPUT_BUCKET)
+    print(f"🔍 {event_id}: Generating Q&As with model: {MODEL_NAME}")
+    question_answers = vertexai_utils.generate_questions(text, MODEL_NAME)
+    for q, a in question_answers:
+        print(f"  - Q: {q}")
+        print(f"    A: {a}")
 
-    print(f"OCR: {cloud_event_id} {len(extracted_text)=}")
-    logger.log(
-        {"cloud_event_id": cloud_event_id, "event_type": "OCR"},
-        severity="INFO",
+    print(f"🗂️ {event_id}: Saving Q&As to Firestore: {len(question_answers)=}")
+    firestore_utils.write(
+        database=DATABASE,
+        collection=COLLECTION,
+        entries={
+            question: {
+                "answer": answer,
+                "event_id": event_id,
+                "time_uploaded": time_uploaded,
+            }
+            for question, answer in question_answers
+        },
     )
 
-    return extraction_entrypoint(
-        logger,
-        name,
-        extracted_text,
-        time_created=time_created,
-        event_id=cloud_event_id,
-        bucket=bucket,
-    )
+    dataset_name = "dataset.jsonl"
+    print(f"📝 {event_id}: Writing tuning dataset: gs://{OUTPUT_BUCKET}/{dataset_name}")
+    dataset_size = 0
+    with storage_utils.write(OUTPUT_BUCKET, dataset_name) as f:
+        for question, entry in firestore_utils.read(DATABASE, COLLECTION):
+            line = {"input_text": question, "output_text": entry["answer"]}
+            f.write(f"{json.dumps(line)}\n")
+            dataset_size += 1
 
-
-def extraction_entrypoint(
-    logger,
-    name: str,
-    extracted_text: str,
-    time_created: datetime.datetime,
-    bucket: str = None,
-    event_id: str = None,
-):
-    output_filename = f'system-test/{name.replace(".pdf", "")}-tuning-dataset.txt'
-    extracted_text_cleaned = clean_text(extracted_text)
-    upload_to_gcs(
-        _OUTPUT_BUCKET,
-        output_filename,
-        extracted_text,
-    )
-
-    print(f"TEXT_UPLOAD: {event_id} gs://{_OUTPUT_BUCKET}/{output_filename}")
-    logger.log(
-        {"cloud_event_id": event_id, "event_type": "TEXT_UPLOAD"},
-        severity="INFO",
-    )
-
-    qa_pairs = extract_questions(
-        project_id=_PROJECT_ID,
-        model_name=_MODEL_NAME,
-        text=extracted_text_cleaned,
-    )
-
-    print(f"QA_EXTRACTION: {event_id} {len(qa_pairs)=}")
-    for q, a in qa_pairs:
-        print(f"  Q: {q}")
-        print(f"  A: {a}")
-    logger.log(
-        {"cloud_event_id": event_id, "event_type": "QA_EXTRACTION"},
-        severity="INFO",
-    )
-
-    write_qas_to_collection(
-        project_id=_PROJECT_ID,
-        database_name=_DATABASE_NAME,
-        collection_name=_COLLECTION_NAME,
-        question_answer_pairs=qa_pairs,
-        input_file_gcs_uri=f"gs://{bucket}/{name}",
-        time_created=time_created,
-    )
-
-    print(f"DB_WRITE: {event_id} {_DATABASE_NAME} {_COLLECTION_NAME}")
-    logger.log(
-        {"cloud_event_id": event_id, "event_type": "DB_WRITE"},
-        severity="INFO",
-    )
-
-    count = get_qas_count(
-        project_id=_PROJECT_ID,
-        database_name=_DATABASE_NAME,
-        collection_name=_COLLECTION_NAME,
-    )
-    # if (count % _TUNING_SIZE_INTERVALS) == 0:
-    if True:
-        print(f"START_TUNING: {event_id} {count=}")
-        logger.log(
-            {"cloud_event_id": event_id, "event_type": "START_TUNING"},
-            severity="INFO",
-        )
-        start_tuning_pipeline(
-            project_id=_PROJECT_ID,
-            database_name=_DATABASE_NAME,
-            collection_name=_COLLECTION_NAME,
-            bucket_name=_OUTPUT_BUCKET,
-            location=_LOCATION,
-        )
-        return flask.Response(status=200)
-
-    print(f"DONE: {event_id} {count=}")
-    logger.log(
-        {"cloud_event_id": event_id, "event_type": "DONE"},
-        severity="INFO",
-    )
-    return flask.Response(status=200)
+    print(f"✅ {event_id}: Done! {dataset_size=}")

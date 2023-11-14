@@ -15,7 +15,7 @@
 import backoff
 import os
 
-from extraction import extract_questions
+from webhook.vertexai_utils import generate_questions
 
 
 _MODEL_NAME = "text-bison@001"
@@ -42,14 +42,14 @@ quantum algorithms.
 
 @backoff.on_exception(backoff.expo, Exception, max_tries=3)
 def test_extract_questions():
-    question_list = extract_questions(
+    question_list = generate_questions(
         project_id=_PROJECT_ID,
         model_name=_MODEL_NAME,
         temperature=0.2,
         max_decode_steps=1024,
         top_p=0.8,
         top_k=40,
-        text=extracted_text,
+        text_gcs_uri=extracted_text,
         location="us-central1",
     )
 

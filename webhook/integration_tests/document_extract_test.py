@@ -15,7 +15,7 @@
 import backoff
 import os
 
-import document_extract
+import webhook.documentai_utils as documentai_utils
 
 _PROJECT_ID = os.environ["PROJECT_ID"]
 _BUCKET_NAME = os.environ["BUCKET"]
@@ -25,7 +25,7 @@ _FILE_NAME = "9404001v1.pdf"
 
 @backoff.on_exception(backoff.expo, Exception, max_tries=3)
 def test_async_document_extract_system(capsys):
-    out = document_extract.async_document_extract(
+    out = documentai_utils.async_document_extract(
         _BUCKET_NAME, _FILE_NAME, _OUTPUT_BUCKET
     )
     assert "Abstract" in out

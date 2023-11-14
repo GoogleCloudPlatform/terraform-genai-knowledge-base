@@ -20,13 +20,13 @@ from google.auth import default
 from google.cloud import storage
 
 from bigquery import write_summarization_to_table
-from document_extract import async_document_extract
-from webhook.extraction import tuning
-from storage import upload_to_gcs
+from webhook.documentai_utils import async_document_extract
+from webhook.vertexai_utils import tuning
+from webhook.storage_utils import upload_to_gcs
 from utils import clean_text
 
 _PROJECT_ID = os.environ["PROJECT_ID"]
-_CREDENTIALS, _ = default(scopes=['https://www.googleapis.com/auth/cloud-platform'])
+_CREDENTIALS, _ = default(scopes=["https://www.googleapis.com/auth/cloud-platform"])
 _BUCKET_NAME = os.environ["BUCKET"]
 _OUTPUT_BUCKET = f"{_PROJECT_ID}_output"
 _DATASET_ID = "summary_dataset"

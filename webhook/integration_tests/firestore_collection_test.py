@@ -19,8 +19,8 @@ from datetime import datetime
 
 from google.cloud import firestore
 
-from firestore_collection import get_qas_count
-from firestore_collection import write_qas_to_collection
+from webhook.firestore_utils import get_qas_count
+from webhook.firestore_utils import write_qas_to_collection
 
 
 _PROJECT_ID = os.environ["PROJECT_ID"]
@@ -55,8 +55,7 @@ def populate_collection():
 
 
 @backoff.on_exception(backoff.expo, Exception, max_tries=3)
-def clean_collection(client: firestore.Client,
-                     coll_ref: firestore.CollectionReference):
+def clean_collection(client: firestore.Client, coll_ref: firestore.CollectionReference):
     client.recursive_delete(coll_ref)
 
 
@@ -81,9 +80,10 @@ def test_write_qas_to_collection_it(capsys):
             project_id=_PROJECT_ID,
             database_name=_DATABASE_NAME,
             collection_name=_COLLECTION_NAME,
-            question_answer_pairs=data_rows,
-            input_file_gcs_uri=gcs_uri,
-            time_created=timestamp)
+            question_answers=data_rows,
+            input_gcs_uri=gcs_uri,
+            time_uploaded=timestamp,
+        )
 
         # Assert
         assert capsys.readouterr().out == ""
@@ -105,7 +105,8 @@ def test_get_qas_count_it(capsys, populate_collection):
         count = get_qas_count(
             project_id=_PROJECT_ID,
             database_name=_DATABASE_NAME,
-            collection_name=_COLLECTION_NAME)
+            collection_name=_COLLECTION_NAME,
+        )
 
         # Assert
         assert capsys.readouterr().out == ""

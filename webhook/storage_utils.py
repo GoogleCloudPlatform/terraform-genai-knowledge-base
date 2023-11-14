@@ -12,26 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import backoff
-import datetime
-import os
+import io
 
 from google.cloud import storage
-from webhook.storage_utils import upload_to_gcs
 
 
-_BUCKET_NAME = os.environ["BUCKET"]
-_FILE_NAME = "system-test/fake.text"
+def read(bucket: str, name: str) -> io.TextIOBase:
+    storage_client = storage.Client()
+    f = storage_client.get_bucket(bucket).blob(name).open("r")
+    assert isinstance(f, io.TextIOBase), type(f)
+    return f
 
 
-@backoff.on_exception(backoff.expo, Exception, max_tries=3)
-def test_upload_to_gcs():
-    want = datetime.datetime.now().isoformat()
-
-    upload_to_gcs(bucket=_BUCKET_NAME, name=_FILE_NAME, data=want)
-
-    client = storage.Client()
-    bucket = client.bucket(_BUCKET_NAME)
-    blob = bucket.blob(_FILE_NAME)
-    got = str(blob.download_as_text())
-    assert want in got
+def write(bucket: str, name: str) -> io.TextIOBase:
+    storage_client = storage.Client()
+    f = storage_client.get_bucket(bucket).blob(name).open("w")
+    assert isinstance(f, io.TextIOBase), type(f)
+    return f

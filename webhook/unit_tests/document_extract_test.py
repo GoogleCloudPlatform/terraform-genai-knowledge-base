@@ -17,7 +17,7 @@ from google.cloud import vision
 from google.api_core.operation import Operation
 from unittest.mock import MagicMock, patch
 
-import document_extract
+import webhook.documentai_utils as documentai_utils
 
 _PROJECT_ID = os.environ["PROJECT_ID"]
 _BUCKET_NAME = os.environ["BUCKET"]
@@ -25,9 +25,8 @@ _OUTPUT_BUCKET = f"{_PROJECT_ID}_output"
 _FILE_NAME = "9404001v1.pdf"
 
 
-
 @patch.object(vision.ImageAnnotatorClient, "async_batch_annotate_files")
-@patch.object(document_extract, "get_ocr_output_from_bucket")
+@patch.object(documentai_utils, "get_ocr_output_from_bucket")
 def test_async_document_extract(mock_get_output, mock_annotate):
     want = "this is fake complete output"
     mock_annotate.return_value = MagicMock(spec=Operation)
@@ -55,7 +54,7 @@ def test_async_document_extract(mock_get_output, mock_annotate):
     )
 
     # Act
-    got = document_extract.async_document_extract(bucket, name, output_bucket, timeout)
+    got = documentai_utils.async_document_extract(bucket, name, output_bucket, timeout)
 
     # Assert
     assert want == got

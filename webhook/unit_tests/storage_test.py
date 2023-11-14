@@ -16,7 +16,7 @@ import os
 from unittest.mock import MagicMock, patch
 
 from google.cloud import storage
-from storage import upload_to_gcs
+from webhook.storage_utils import upload_to_gcs
 
 
 _BUCKET_NAME = os.environ["BUCKET"]

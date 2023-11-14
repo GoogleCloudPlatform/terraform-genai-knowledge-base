@@ -12,31 +12,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import annotations
-
 from collections.abc import Iterator
 import re
 
 import vertexai
 from vertexai.preview.language_models import TextGenerationModel
 
-_COUNT = 20
-
 QUESTION_RE = re.compile(r"^Q:\s*", re.MULTILINE)
 
+PROMPT_TEMPLATE = """
+TEXT:
+{text}
 
-def extract_questions(
-    *,
-    project_id: str,
-    model_name: str,
+Give me 20 specific questions and answers that can be answered from the above text.
+Q:"""
+
+
+def generate_questions(
     text: str,
+    model_name: str,
     temperature: float = 0.2,
     max_decode_steps: int = 1024,
     top_p: float = 0.8,
     top_k: int = 40,
-    location: str = "us-central1",
 ) -> list[tuple[str, str]]:
     """Extract questions & answers using a large language model (LLM)
+
+    For more information, see:
+        https://cloud.google.com/vertex-ai/docs/generative-ai/learn/models
 
     Args:
         project_id (str): the Google Cloud project ID
@@ -51,25 +54,21 @@ def extract_questions(
     Returns:
         The summarization of the content
     """
-    vertexai.init(project=project_id, location=location)
+    vertexai.init()
 
+    # Ask the model to generate the questions and answers.
     model = TextGenerationModel.from_pretrained(model_name)
-    prompt = [
-        text,
-        f"Give me {_COUNT} specific questions and answers that can be answered from the above text.",
-        "Q:",
-    ]
     response = model.predict(
-        "\n".join(prompt),
+        PROMPT_TEMPLATE.format(text=text),
         temperature=temperature,
         max_output_tokens=max_decode_steps,
         top_k=top_k,
         top_p=top_p,
     )
-    return list(question_answer_tuples(f"Q: {response.text}"))
+    return list(split_question_answers(f"Q: {response.text}"))
 
 
-def question_answer_tuples(qa_text: str) -> Iterator[tuple[str, str]]:
+def split_question_answers(qa_text: str) -> Iterator[tuple[str, str]]:
     """Convert a list of questions and answers to a list of tuples
 
     Args:

@@ -19,7 +19,7 @@ import vertexai
 from vertexai.preview.language_models import TextGenerationModel
 
 
-from extraction import extract_questions
+from webhook.vertexai_utils import generate_questions
 
 _PROJECT_ID = "fake-project-id"
 _BUCKET_NAME = "fake-bucket"
@@ -63,18 +63,18 @@ def test_tuning_mock(mock_get_model, mock_init):
     mock_get_model.return_value = mock_model
 
     # Act
-    got = extract_questions(
+    got = generate_questions(
         project_id=project_id,
         model_name=model_name,
         temperature=temperature,
         max_decode_steps=max_decode_steps,
         top_p=top_p,
         top_k=top_k,
-        text=content,
+        text_gcs_uri=content,
         location=location,
     )
 
     # Assert
-    assert ('1. fake question?', 'fake answer') in got
+    assert ("1. fake question?", "fake answer") in got
     mock_init.assert_called_with(project=project_id, location=location)
     mock_model.predict.assert_called()
