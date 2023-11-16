@@ -28,9 +28,3 @@ variable "location" {
   type        = string
   default     = "us-central1"
 }
-
-variable "collection_name" {
-  description = "Name of the collection"
-  type        = string
-  default     = "questions-and-answers"
-}

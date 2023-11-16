@@ -87,11 +87,9 @@ resource "google_cloudfunctions2_function" "webhook" {
     service_account_email = google_service_account.webhook.email
     environment_variables = {
       PROJECT_ID      = module.project_services.project_id
-      LOCATION        = var.location
       OUTPUT_BUCKET   = google_storage_bucket.output.name
       DOCAI_PROCESSOR = google_document_ai_processor.document_processor.name
-      DATABASE        = google_firestore_database.database.name
-      COLLECTION      = var.collection_name
+      FS_DATABASE     = google_firestore_database.database.name
     }
   }
 }
