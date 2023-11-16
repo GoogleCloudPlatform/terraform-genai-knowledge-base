@@ -21,7 +21,8 @@ from google.cloud import storage
 def get_document_text(
     project_id: str,
     gcs_uri: str,
-    docai_processor: str,
+    processor: str,
+    mime_type: str,
 ) -> str:
     """Perform Optical Character Recognition (OCR) with Document AI on Cloud Storage files.
 
@@ -34,34 +35,11 @@ def get_document_text(
     client = documentai.DocumentProcessorServiceClient()
     response = client.process_document(
         request=documentai.ProcessRequest(
-            name=client.processor_path(project_id, "us", docai_processor),
+            name=client.processor_path(project_id, "us", processor),
             gcs_document=documentai.GcsDocument(
                 gcs_uri=gcs_uri,
-                mime_type=infer_mime_type(gcs_uri),
+                mime_type=mime_type,
             ),
         ),
     )
     return response.document.text
-
-
-# https://cloud.google.com/document-ai/docs/file-types
-def infer_mime_type(filename: str) -> str:
-    match Path(filename).suffix:
-        case ".pdf":
-            return "application/pdf"
-        case ".gif":
-            return "image/gif"
-        case ".tiff" | ".tif":
-            return "image/tiff"
-        case ".jpg" | ".jpeg":
-            return "image/jpeg"
-        case ".png":
-            return "image/png"
-        case ".bmp":
-            return "image/bmp"
-        case ".webp":
-            return "image/webp"
-        case ext:
-            raise ValueError(
-                f"file format {ext} is not supported, see: https://cloud.google.com/document-ai/docs/file-types"
-            )
