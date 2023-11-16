@@ -22,155 +22,115 @@ module "project_services" {
   project_id = var.project_id
 
   activate_apis = [
-    # cloudresourcemanager.googleapis.com is a prerequisite
     "aiplatform.googleapis.com",
-    "artifactregistry.googleapis.com",
     "cloudbuild.googleapis.com",
     "cloudfunctions.googleapis.com",
-    "dataform.googleapis.com",
     "documentai.googleapis.com",
     "eventarc.googleapis.com",
     "firestore.googleapis.com",
-    "iam.googleapis.com",
-    "notebooks.googleapis.com",
     "run.googleapis.com",
-    "serviceusage.googleapis.com",
-    "serviceusage.googleapis.com",
     "storage.googleapis.com",
-    "vision.googleapis.com",
   ]
+}
+
+resource "random_id" "unique_id" {
+  byte_length = 4
 }
 
 locals {
-  database_name = "question-answering-${random_id.random_code.hex}"
+  database_name = "question-answering-${random_id.unique_id.hex}"
 }
-
-resource "random_id" "random_code" {
-  byte_length = 4
-}
-
-resource "random_id" "rand" {
-  byte_length = 4
-}
-
-data "google_project" "project" {
-  project_id = var.project_id
-  depends_on = [
-    module.project_services,
-  ]
-}
-
-resource "null_resource" "previous_time" {}
 
 #-- Cloud Storage buckets --#
 resource "google_storage_bucket" "uploads" {
-  project                     = var.project_id
+  project                     = module.project_services.project_id
   name                        = "${var.project_id}-uploads"
-  location                    = var.region
+  location                    = var.location
   force_destroy               = true
   uniform_bucket_level_access = true
 }
 
 resource "google_storage_bucket" "output" {
-  project                     = var.project_id
+  project                     = module.project_services.project_id
   name                        = "${var.project_id}-output"
-  location                    = var.region
+  location                    = var.location
   force_destroy               = true
   uniform_bucket_level_access = true
 }
 
-resource "google_storage_bucket" "main" {
-  project                     = var.project_id
-  name                        = "${var.bucket_name}-${random_id.rand.hex}"
-  location                    = "US"
+resource "google_storage_bucket" "webhook" {
+  project                     = module.project_services.project_id
+  name                        = "${var.project_id}-staging"
+  location                    = var.location
+  force_destroy               = true
   uniform_bucket_level_access = true
 }
 
 #-- Cloud Function webhook --#
 resource "google_cloudfunctions2_function" "webhook" {
-  project  = var.project_id
-  name     = var.webhook_name
-  location = var.region
+  project  = module.project_services.project_id
+  name     = "webhook"
+  location = var.location
 
   build_config {
-    runtime     = "python312"
-    entry_point = "entrypoint"
+    runtime = "python312"
     source {
       storage_source {
-        bucket = "${var.bucket_name}-${random_id.rand.hex}"
+        bucket = google_storage_bucket.webhook.name
         object = google_storage_bucket_object.webhook.name
       }
     }
   }
 
   service_config {
-    service_account_email            = google_service_account.webhook.email
-    max_instance_count               = 5
-    available_memory                 = "4G"
-    available_cpu                    = 1
-    max_instance_request_concurrency = 5
-    timeout_seconds                  = var.gcf_timeout_seconds
+    available_memory      = "1G"
+    service_account_email = google_service_account.webhook.email
     environment_variables = {
-      PROJECT_ID      = var.project_id
-      LOCATION        = var.region
+      PROJECT_ID      = module.project_services.project_id
+      LOCATION        = var.location
       OUTPUT_BUCKET   = google_storage_bucket.output.name
       DOCAI_PROCESSOR = google_document_ai_processor.document_processor.name
-      DATABASE        = local.database_name
+      DATABASE        = google_firestore_database.database.name
       COLLECTION      = var.collection_name
     }
   }
-  depends_on = [
-    module.project_services,
-    time_sleep.wait_for_apis,
-    google_document_ai_processor.document_processor,
-    google_project_iam_member.webhook_sa_roles,
-  ]
 }
 
-resource "google_service_account" "webhook" {
-  project      = var.project_id
-  account_id   = "webhook-service-account"
-  display_name = "Serverless webhook service account"
-  depends_on = [
-    module.project_services,
-  ]
-}
-
-resource "google_project_iam_member" "webhook_sa_roles" {
-  project = var.project_id
+resource "google_project_iam_member" "webhook" {
+  project  = module.project_services.project_id
+  member   = "serviceAccount:${google_service_account.webhook.email}"
   for_each = toset([
-    "roles/aiplatform.serviceAgent",  # https://cloud.google.com/vertex-ai/docs/general/access-control
+    "roles/aiplatform.serviceAgent",  # https://cloud.google.com/iam/docs/service-agents
     "roles/datastore.user",           # https://cloud.google.com/datastore/docs/access/iam
     "roles/documentai.apiUser",       # https://cloud.google.com/document-ai/docs/access-control/iam-roles
   ])
-  role   = each.key
-  member = "serviceAccount:${google_service_account.webhook.email}"
+  role = each.key
 }
-
-resource "google_document_ai_processor" "document_processor" {
-  project  = var.project_id
-  location = "us"
-  display_name = "document-processor"
-  type = "OCR_PROCESSOR"
+resource "google_service_account" "webhook" {
+  project      = module.project_services.project_id
+  account_id   = "webhook-service-account"
+  display_name = "Cloud Functions webhook service account"
 }
 
 data "archive_file" "webhook" {
   type        = "zip"
-  source_dir  = var.webhook_path
-  output_path = abspath("./.tmp/${var.webhook_name}.zip")
+  source_dir  = "webhook"
+  output_path = abspath("./.tmp/webhook.zip")
 }
 
 resource "google_storage_bucket_object" "webhook" {
-  name   = "${var.webhook_name}.${data.archive_file.webhook.output_base64sha256}.zip"
-  bucket = google_storage_bucket.main.name
+  name   = "webhook.${data.archive_file.webhook.output_base64sha256}.zip"
+  bucket = google_storage_bucket.webhook.name
   source = data.archive_file.webhook.output_path
 }
 
-#-- EventArc trigger --#
+#-- Eventarc trigger --#
 resource "google_eventarc_trigger" "trigger" {
-  project  = var.project_id
-  name     = "qa-eventarc-trigger"
-  location = var.region
+  project         = module.project_services.project_id
+  location        = var.location
+  name            = "eventarc-trigger"
+  service_account = google_service_account.trigger.email
+
   matching_criteria {
     attribute = "type"
     value     = "google.cloud.storage.object.v1.finalized"
@@ -179,119 +139,63 @@ resource "google_eventarc_trigger" "trigger" {
     attribute = "bucket"
     value     = google_storage_bucket.uploads.name
   }
+
   destination {
     cloud_run_service {
       service = google_cloudfunctions2_function.webhook.name
-      region  = var.region
+      region  = var.location
     }
   }
-  service_account = google_service_account.trigger.email
-  depends_on = [
-    google_project_iam_member.trigger_sa_roles,
-  ]
 }
 
-resource "google_service_account" "trigger" {
-  project      = var.project_id
-  account_id   = "trigger-service-account"
-  display_name = "EventArc trigger service account"
-  depends_on = [
-    module.project_services,
-  ]
-}
-
-resource "google_project_iam_member" "trigger_sa_roles" {
-  project  = var.project_id
+resource "google_project_iam_member" "trigger" {
+  project  = module.project_services.project_id
+  member   = "serviceAccount:${google_service_account.trigger.email}"
   for_each = toset([
-    "roles/eventarc.eventReceiver",
-    "roles/run.invoker",
+    "roles/eventarc.eventReceiver",  # https://cloud.google.com/eventarc/docs/access-control
+    "roles/run.invoker",             # https://cloud.google.com/run/docs/reference/iam/roles
   ])
-  role   = each.key
-  member = "serviceAccount:${google_service_account.trigger.email}"
+  role = each.key
+}
+resource "google_service_account" "trigger" {
+  project      = module.project_services.project_id
+  account_id   = "trigger-service-account"
+  display_name = "Eventarc trigger service account"
 }
 
-resource "google_project_iam_member" "pubsub_publisher" {
-  project = var.project_id
-  role    = "roles/pubsub.publisher"
-  member  = "serviceAccount:${data.google_storage_project_service_account.gcs_account.email_address}"
-  depends_on = [
-    module.project_services,
-    data.google_storage_project_service_account.gcs_account,
-  ]
+#-- Cloud Storage Eventarc agent --#
+resource "google_project_iam_member" "gcs_account" {
+  project  = module.project_services.project_id
+  member   = "serviceAccount:${data.google_storage_project_service_account.gcs_account.email_address}"
+  role     = "roles/pubsub.publisher"  # https://cloud.google.com/pubsub/docs/access-control
 }
-
 data "google_storage_project_service_account" "gcs_account" {
-  project    = var.project_id
-  depends_on = [time_sleep.wait_for_apis]
+  project  = module.project_services.project_id
 }
 
-resource "google_project_service_identity" "eventarc" {
+resource "google_project_iam_member" "eventarc_agent" {
+  project = module.project_services.project_id
+  member  = "serviceAccount:${google_project_service_identity.eventarc_agent.email}"
+  role    = "roles/eventarc.serviceAgent"  # https://cloud.google.com/iam/docs/service-agents
+}
+resource "google_project_service_identity" "eventarc_agent" {
   provider = google-beta
-  project = data.google_project.project.project_id
+  project = module.project_services.project_id
   service = "eventarc.googleapis.com"
-  depends_on = [
-    module.project_services,
-  ]
 }
 
-resource "google_project_iam_member" "eventarc_sa_role" {
-  project = data.google_project.project.project_id
-  role    = "roles/eventarc.serviceAgent"
-  member  = "serviceAccount:${google_project_service_identity.eventarc.email}"
+#-- Document AI --#
+resource "google_document_ai_processor" "document_processor" {
+  project      = module.project_services.project_id
+  location     = "us"
+  display_name = "document-processor"
+  type         = "OCR_PROCESSOR"
 }
 
-#-- Firestore database --#
+#-- Firestore --#
 resource "google_firestore_database" "database" {
-  count       = var.init ? 1 : 0
-  project     = var.project_id
+  project     = module.project_services.project_id
   name        = local.database_name
-  location_id = "nam5" # US
+  location_id = "nam5"  # US
   type        = "FIRESTORE_NATIVE"
 }
-
-#-- Wait until the APIs are enabled --#
-resource "time_sleep" "wait_for_apis" {
-  create_duration = var.time_to_enable_apis
-  depends_on = [
-    null_resource.previous_time,
-    module.project_services,
-    google_project_iam_member.eventarc_sa_role,
-  ]
-}
-
-# resource "google_service_account" "upload_trigger" {
-#   project      = var.project_id
-#   account_id   = "upload-trigger-service-account"
-#   display_name = "Eventarc Service Account"
-#   depends_on = [
-#     module.project_services,
-#   ]
-# }
-
-# resource "google_project_iam_member" "event_receiver" {
-#   project = var.project_id
-#   role    = "roles/eventarc.eventReceiver"
-#   member  = "serviceAccount:${google_service_account.upload_trigger.email}"
-#   depends_on = [
-#     module.project_services,
-#   ]
-# }
-
-# resource "google_project_iam_member" "run_invoker" {
-#   project = var.project_id
-#   role    = "roles/run.invoker"
-#   member  = "serviceAccount:${google_service_account.upload_trigger.email}"
-#   depends_on = [
-#     module.project_services,
-#   ]
-# }
-
-# resource "google_project_iam_member" "pubsub_publisher" {
-#   project = var.project_id
-#   role    = "roles/pubsub.publisher"
-#   member  = "serviceAccount:${data.google_storage_project_service_account.gcs_account.email_address}"
-#   depends_on = [
-#     module.project_services,
-#     data.google_storage_project_service_account.gcs_account,
-#   ]
-# }
