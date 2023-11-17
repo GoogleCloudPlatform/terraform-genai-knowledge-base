@@ -89,18 +89,18 @@ resource "google_cloudfunctions2_function" "webhook" {
       PROJECT_ID      = module.project_services.project_id
       OUTPUT_BUCKET   = google_storage_bucket.output.name
       DOCAI_PROCESSOR = google_document_ai_processor.document_processor.name
-      FS_DATABASE     = google_firestore_database.database.name
+      DATABASE        = google_firestore_database.database.name
     }
   }
 }
 
 resource "google_project_iam_member" "webhook" {
-  project  = module.project_services.project_id
-  member   = "serviceAccount:${google_service_account.webhook.email}"
+  project = module.project_services.project_id
+  member  = "serviceAccount:${google_service_account.webhook.email}"
   for_each = toset([
-    "roles/aiplatform.serviceAgent",  # https://cloud.google.com/iam/docs/service-agents
-    "roles/datastore.user",           # https://cloud.google.com/datastore/docs/access/iam
-    "roles/documentai.apiUser",       # https://cloud.google.com/document-ai/docs/access-control/iam-roles
+    "roles/aiplatform.serviceAgent", # https://cloud.google.com/iam/docs/service-agents
+    "roles/datastore.user",          # https://cloud.google.com/datastore/docs/access/iam
+    "roles/documentai.apiUser",      # https://cloud.google.com/document-ai/docs/access-control/iam-roles
   ])
   role = each.key
 }
@@ -147,11 +147,11 @@ resource "google_eventarc_trigger" "trigger" {
 }
 
 resource "google_project_iam_member" "trigger" {
-  project  = module.project_services.project_id
-  member   = "serviceAccount:${google_service_account.trigger.email}"
+  project = module.project_services.project_id
+  member  = "serviceAccount:${google_service_account.trigger.email}"
   for_each = toset([
-    "roles/eventarc.eventReceiver",  # https://cloud.google.com/eventarc/docs/access-control
-    "roles/run.invoker",             # https://cloud.google.com/run/docs/reference/iam/roles
+    "roles/eventarc.eventReceiver", # https://cloud.google.com/eventarc/docs/access-control
+    "roles/run.invoker",            # https://cloud.google.com/run/docs/reference/iam/roles
   ])
   role = each.key
 }
@@ -163,23 +163,23 @@ resource "google_service_account" "trigger" {
 
 #-- Cloud Storage Eventarc agent --#
 resource "google_project_iam_member" "gcs_account" {
-  project  = module.project_services.project_id
-  member   = "serviceAccount:${data.google_storage_project_service_account.gcs_account.email_address}"
-  role     = "roles/pubsub.publisher"  # https://cloud.google.com/pubsub/docs/access-control
+  project = module.project_services.project_id
+  member  = "serviceAccount:${data.google_storage_project_service_account.gcs_account.email_address}"
+  role    = "roles/pubsub.publisher" # https://cloud.google.com/pubsub/docs/access-control
 }
 data "google_storage_project_service_account" "gcs_account" {
-  project  = module.project_services.project_id
+  project = module.project_services.project_id
 }
 
 resource "google_project_iam_member" "eventarc_agent" {
   project = module.project_services.project_id
   member  = "serviceAccount:${google_project_service_identity.eventarc_agent.email}"
-  role    = "roles/eventarc.serviceAgent"  # https://cloud.google.com/iam/docs/service-agents
+  role    = "roles/eventarc.serviceAgent" # https://cloud.google.com/iam/docs/service-agents
 }
 resource "google_project_service_identity" "eventarc_agent" {
   provider = google-beta
-  project = module.project_services.project_id
-  service = "eventarc.googleapis.com"
+  project  = module.project_services.project_id
+  service  = "eventarc.googleapis.com"
 }
 
 #-- Document AI --#
@@ -194,6 +194,6 @@ resource "google_document_ai_processor" "document_processor" {
 resource "google_firestore_database" "database" {
   project     = module.project_services.project_id
   name        = local.database_name
-  location_id = "nam5"  # US
+  location_id = "nam5" # US
   type        = "FIRESTORE_NATIVE"
 }

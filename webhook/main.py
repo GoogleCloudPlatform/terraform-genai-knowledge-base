@@ -28,8 +28,8 @@ import vertexai_utils
 PROJECT_ID = os.environ["PROJECT_ID"]
 OUTPUT_BUCKET = os.environ["OUTPUT_BUCKET"]
 DOCAI_PROCESSOR = os.environ["DOCAI_PROCESSOR"]
-FS_DATABASE = os.environ["FS_DATABASE"]
-FS_COLLECTION = os.environ.get("FS_COLLECTION", "question-answers")
+DATABASE = os.environ["DATABASE"]
+COLLECTION = os.environ.get("COLLECTION", "question-answers")
 
 MODEL_NAME = "text-bison@001"
 
@@ -75,8 +75,8 @@ def process_document(
 
     print(f"🗂️ {event_id}: Saving Q&As to Firestore: {len(question_answers)=}")
     firestore_utils.write(
-        database=FS_DATABASE,
-        collection=FS_COLLECTION,
+        database=DATABASE,
+        collection=COLLECTION,
         entries={
             question: {
                 "answer": answer,
@@ -91,7 +91,7 @@ def process_document(
     print(f"📝 {event_id}: Writing tuning dataset: gs://{OUTPUT_BUCKET}/{dataset_name}")
     dataset_size = 0
     with storage_utils.write(OUTPUT_BUCKET, dataset_name) as f:
-        for question, entry in firestore_utils.read(FS_DATABASE, FS_COLLECTION):
+        for question, entry in firestore_utils.read(DATABASE, COLLECTION):
             line = {"input_text": question, "output_text": entry["answer"]}
             f.write(f"{json.dumps(line)}\n")
             dataset_size += 1
