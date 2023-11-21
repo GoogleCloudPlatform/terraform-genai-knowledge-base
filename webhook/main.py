@@ -25,13 +25,16 @@ import firestore_utils
 import storage_utils
 import vertexai_utils
 
+# Project resources.
 PROJECT_ID = os.environ["PROJECT_ID"]
-OUTPUT_BUCKET = os.environ["OUTPUT_BUCKET"]
-DOCAI_PROCESSOR = os.environ["DOCAI_PROCESSOR"]
+LOCATION = os.environ["LOCATION"]
 DATABASE = os.environ["DATABASE"]
-COLLECTION = os.environ.get("COLLECTION", "question-answers")
+DATASET_COLLECTION = os.environ.get("QA_COLLECTION", "dataset")
+EVENTS_COLLECTION = os.environ.get("EVENTS_COLLECTION", "events")
 
-MODEL_NAME = "text-bison@001"
+# Output dataset.
+OUTPUT_BUCKET = os.environ["OUTPUT_BUCKET"]
+DATASET_NAME = os.environ.get("DATASET_NAME", "dataset.jsonl")
 
 
 @functions_framework.cloud_event
@@ -55,43 +58,47 @@ def process_document(
     mime_type: str,
     time_uploaded: datetime,
 ) -> None:
+    database = firestore_utils.client(DATABASE)
+    doc = database.document(EVENTS_COLLECTION, event_id)
+    if doc.get().exists:
+        # We've already processed this event, this is probably an event retry.
+        return
+    event_entry = {
+        "bucket": bucket,
+        "input_name": input_name,
+        "mime_type": mime_type,
+        "time_uploaded": time_uploaded,
+    }
+    doc.create(event_entry)
+
     input_gcs_uri = f"gs://{bucket}/{input_name}"
     print(f"📖 {event_id}: Getting document text")
     text = documentai_utils.get_document_text(
         project_id=PROJECT_ID,
         gcs_uri=input_gcs_uri,
-        processor=DOCAI_PROCESSOR,
         mime_type=mime_type,
     )
 
-    print(f"🔍 {event_id}: Generating Q&As with model: {MODEL_NAME}")
-    question_answers = vertexai_utils.generate_questions(
-        text=text,
-        model_name=MODEL_NAME,
-    )
+    print(f"🔍 {event_id}: Generating Q&As with model")
+    question_answers = vertexai_utils.generate_questions(text, LOCATION)
     for q, a in question_answers:
         print(f"  - Q: {q}")
         print(f"    A: {a}")
 
     print(f"🗂️ {event_id}: Saving Q&As to Firestore: {len(question_answers)=}")
-    firestore_utils.write(
-        database=DATABASE,
-        collection=COLLECTION,
-        entries={
-            question: {
-                "answer": answer,
-                "event_id": event_id,
-                "time_uploaded": time_uploaded,
-            }
-            for question, answer in question_answers
-        },
-    )
+    entries = {
+        question: {
+            "answer": answer,
+            "event_id": event_id,
+        }
+        for question, answer in question_answers
+    }
+    firestore_utils.write(database, DATASET_COLLECTION, entries)
 
-    dataset_name = "dataset.jsonl"
-    print(f"📝 {event_id}: Writing tuning dataset: gs://{OUTPUT_BUCKET}/{dataset_name}")
+    print(f"📝 {event_id}: Writing tuning dataset: gs://{OUTPUT_BUCKET}/{DATASET_NAME}")
     dataset_size = 0
-    with storage_utils.write(OUTPUT_BUCKET, dataset_name) as f:
-        for question, entry in firestore_utils.read(DATABASE, COLLECTION):
+    with storage_utils.write(OUTPUT_BUCKET, DATASET_NAME) as f:
+        for question, entry in firestore_utils.read(database, DATASET_COLLECTION):
             line = {"input_text": question, "output_text": entry["answer"]}
             f.write(f"{json.dumps(line)}\n")
             dataset_size += 1

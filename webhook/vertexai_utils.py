@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections.abc import Iterator
 import re
 
 import vertexai
@@ -28,14 +27,7 @@ Give me 20 specific questions and answers that can be answered from the above te
 Q:"""
 
 
-def generate_questions(
-    text: str,
-    model_name: str,
-    temperature: float = 0.2,
-    max_decode_steps: int = 1024,
-    top_p: float = 0.8,
-    top_k: int = 40,
-) -> list[tuple[str, str]]:
+def generate_questions(text: str, location: str) -> list[tuple[str, str]]:
     """Extract questions & answers using a large language model (LLM)
 
     For more information, see:
@@ -54,30 +46,19 @@ def generate_questions(
     Returns:
         The summarization of the content
     """
-    vertexai.init()
+    vertexai.init(location=location)
 
     # Ask the model to generate the questions and answers.
-    model = TextGenerationModel.from_pretrained(model_name)
+    model = TextGenerationModel.from_pretrained("text-bison@001")
     response = model.predict(
         PROMPT_TEMPLATE.format(text=text),
-        temperature=temperature,
-        max_output_tokens=max_decode_steps,
-        top_k=top_k,
-        top_p=top_p,
+        temperature=0.2,
+        max_output_tokens=1024,
+        top_k=40,
+        top_p=0.8,
     )
-    return list(split_question_answers(f"Q: {response.text}"))
-
-
-def split_question_answers(qa_text: str) -> Iterator[tuple[str, str]]:
-    """Convert a list of questions and answers to a list of tuples
-
-    Args:
-        qas (list[str]): the list of questions and answers
-
-    Returns:
-        A list of tuples containing the questions and answers
-    """
-    for qa in QUESTION_RE.split(qa_text):
-        if "\nA:" in qa:
-            question, answer = qa.split("\nA:")
-            yield (question.strip(), answer.strip())
+    return [
+        tuple(map(str.strip, question_answer.split("\nA:", 1)))
+        for question_answer in QUESTION_RE.split(f"Q: {response.text}")
+        if "\nA:" in question_answer
+    ]

@@ -17,16 +17,18 @@ from collections.abc import Iterator
 from google.cloud import firestore
 
 
-def read(database: str, collection: str) -> Iterator[tuple[str, dict]]:
-    firestore_client = firestore.Client(database=database)
-    for doc in firestore_client.collection(collection).stream():
+def client(database_name: str) -> firestore.Client:
+    return firestore.Client(database=database_name)
+
+
+def read(client: firestore.Client, collection: str) -> Iterator[tuple[str, dict]]:
+    for doc in client.collection(collection).stream():
         yield (doc.id, doc.to_dict())
 
 
-def write(database: str, collection: str, entries: dict[str, dict]) -> None:
-    firestore_client = firestore.Client(database=database)
+def write(client: firestore.Client, collection: str, entries: dict[str, dict]) -> None:
     for key, value in entries.items():
-        doc = firestore_client.document(collection, key)
+        doc = client.document(collection, key)
         if doc.get().exists:
             doc.update(value)
         else:

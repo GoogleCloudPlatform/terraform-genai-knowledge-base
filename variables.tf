@@ -28,3 +28,15 @@ variable "location" {
   type        = string
   default     = "us-central1"
 }
+
+variable "documentai_location" {
+  description = "Document AI location"
+  type        = string
+  default     = "us"
+}
+
+variable "firestore_location" {
+  description = "Firestore location"
+  type        = string
+  default     = "nam5" # US
+}

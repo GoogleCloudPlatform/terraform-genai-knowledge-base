@@ -42,25 +42,17 @@ locals {
 }
 
 #-- Cloud Storage buckets --#
-resource "google_storage_bucket" "uploads" {
+resource "google_storage_bucket" "docs" {
   project                     = module.project_services.project_id
-  name                        = "${var.project_id}-uploads"
+  name                        = "${var.project_id}-docs"
   location                    = var.location
   force_destroy               = true
   uniform_bucket_level_access = true
 }
 
-resource "google_storage_bucket" "output" {
+resource "google_storage_bucket" "storage" {
   project                     = module.project_services.project_id
-  name                        = "${var.project_id}-output"
-  location                    = var.location
-  force_destroy               = true
-  uniform_bucket_level_access = true
-}
-
-resource "google_storage_bucket" "webhook" {
-  project                     = module.project_services.project_id
-  name                        = "${var.project_id}-staging"
+  name                        = "${var.project_id}-storage"
   location                    = var.location
   force_destroy               = true
   uniform_bucket_level_access = true
@@ -76,8 +68,8 @@ resource "google_cloudfunctions2_function" "webhook" {
     runtime = "python312"
     source {
       storage_source {
-        bucket = google_storage_bucket.webhook.name
-        object = google_storage_bucket_object.webhook.name
+        bucket = google_storage_bucket.storage.name
+        object = google_storage_bucket_object.webhook_staging.name
       }
     }
   }
@@ -87,8 +79,10 @@ resource "google_cloudfunctions2_function" "webhook" {
     service_account_email = google_service_account.webhook.email
     environment_variables = {
       PROJECT_ID      = module.project_services.project_id
-      OUTPUT_BUCKET   = google_storage_bucket.output.name
+      LOCATION        = var.location
+      OUTPUT_BUCKET   = google_storage_bucket.storage.name
       DOCAI_PROCESSOR = google_document_ai_processor.document_processor.name
+      DOCAI_LOCATION  = google_document_ai_processor.document_processor.location
       DATABASE        = google_firestore_database.database.name
     }
   }
@@ -110,16 +104,16 @@ resource "google_service_account" "webhook" {
   display_name = "Cloud Functions webhook service account"
 }
 
-data "archive_file" "webhook" {
+data "archive_file" "webhook_staging" {
   type        = "zip"
   source_dir  = "webhook"
   output_path = abspath("./.tmp/webhook.zip")
 }
 
-resource "google_storage_bucket_object" "webhook" {
-  name   = "webhook.${data.archive_file.webhook.output_base64sha256}.zip"
-  bucket = google_storage_bucket.webhook.name
-  source = data.archive_file.webhook.output_path
+resource "google_storage_bucket_object" "webhook_staging" {
+  name   = "staging/webhook.${data.archive_file.webhook_staging.output_base64sha256}.zip"
+  bucket = google_storage_bucket.storage.name
+  source = data.archive_file.webhook_staging.output_path
 }
 
 #-- Eventarc trigger --#
@@ -135,7 +129,7 @@ resource "google_eventarc_trigger" "trigger" {
   }
   matching_criteria {
     attribute = "bucket"
-    value     = google_storage_bucket.uploads.name
+    value     = google_storage_bucket.docs.name
   }
 
   destination {
@@ -185,7 +179,7 @@ resource "google_project_service_identity" "eventarc_agent" {
 #-- Document AI --#
 resource "google_document_ai_processor" "document_processor" {
   project      = module.project_services.project_id
-  location     = "us"
+  location     = var.documentai_location
   display_name = "document-processor"
   type         = "OCR_PROCESSOR"
 }
@@ -194,6 +188,6 @@ resource "google_document_ai_processor" "document_processor" {
 resource "google_firestore_database" "database" {
   project     = module.project_services.project_id
   name        = local.database_name
-  location_id = "nam5" # US
+  location_id = var.firestore_location
   type        = "FIRESTORE_NATIVE"
 }
