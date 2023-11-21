@@ -29,14 +29,6 @@ terraform {
       source  = "hashicorp/archive"
       version = ">= 2"
     }
-    null = {
-      source  = "hashicorp/null"
-      version = "~> 3.2"
-    }
-    time = {
-      source  = "hashicorp/time"
-      version = "~> 0.9.1"
-    }
     random = {
       source  = "hashicorp/random"
       version = "~> 3.4"
@@ -44,6 +36,6 @@ terraform {
   }
 
   provider_meta "google" {
-    module_name = "blueprints/terraform/gen-ai-document-summarization/v0.1.1"
+    module_name = "blueprints/terraform/genai-extractive-qa/v0.1.1"
   }
 }

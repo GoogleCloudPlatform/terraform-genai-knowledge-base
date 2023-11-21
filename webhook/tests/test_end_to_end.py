@@ -12,4 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-pytest==7.4.3
+import unittest
+
+
+class TestEndToEnd(unittest.TestCase):
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_end_to_end(self):
+        s = "hello world"
+        self.assertEqual(s.split(), ["hello", "world"])
+        # check that s.split fails when the separator is not a string
+        with self.assertRaises(TypeError):
+            s.split(2)
+
+
+if __name__ == "__main__":
+    unittest.main()

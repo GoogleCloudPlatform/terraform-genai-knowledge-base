@@ -23,13 +23,13 @@ DOCAI_LOCATION = os.environ["DOCAI_LOCATION"]
 
 
 def get_document_text(project_id: str, gcs_uri: str, mime_type: str) -> str:
-    """Perform Optical Character Recognition (OCR) with Document AI on Cloud Storage files.
+    """Perform Optical Character Recognition (OCR) with Document AI on a Cloud Storage files.
 
     For more information, see:
         https://cloud.google.com/document-ai/docs/process-documents-ocr
 
     Args:
-        input_file_gcs_uri: GCS URI of the PDF/TIFF file.
+        gcs_uri: GCS URI of the document file.
     """
     # You must set the `api_endpoint` if you use a location other than "us".
     client = documentai.DocumentProcessorServiceClient(
