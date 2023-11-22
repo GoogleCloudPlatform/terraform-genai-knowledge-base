@@ -12,17 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pathlib import Path
 import os
 
 from google.cloud import documentai
 from google.api_core.client_options import ClientOptions
 
-DOCAI_PROCESSOR = os.environ["DOCAI_PROCESSOR"]
-DOCAI_LOCATION = os.environ["DOCAI_LOCATION"]
+DOCAI_LOCATION = os.environ.get("DOCAI_LOCATION", "us")
 
 
-def get_document_text(project_id: str, gcs_uri: str, mime_type: str) -> str:
+def get_document_text(
+    project_id: str,
+    gcs_uri: str,
+    mime_type: str,
+    processor_id: str,
+) -> str:
     """Perform Optical Character Recognition (OCR) with Document AI on a Cloud Storage files.
 
     For more information, see:
@@ -39,7 +42,7 @@ def get_document_text(project_id: str, gcs_uri: str, mime_type: str) -> str:
     )
     response = client.process_document(
         request=documentai.ProcessRequest(
-            name=client.processor_path(project_id, "us", DOCAI_PROCESSOR),
+            name=processor_id,
             gcs_document=documentai.GcsDocument(
                 gcs_uri=gcs_uri,
                 mime_type=mime_type,

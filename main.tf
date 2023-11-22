@@ -81,7 +81,7 @@ resource "google_cloudfunctions2_function" "webhook" {
       PROJECT_ID      = module.project_services.project_id
       LOCATION        = var.location
       OUTPUT_BUCKET   = google_storage_bucket.storage.name
-      DOCAI_PROCESSOR = google_document_ai_processor.document_processor.name
+      DOCAI_PROCESSOR = google_document_ai_processor.document_processor.id
       DOCAI_LOCATION  = google_document_ai_processor.document_processor.location
       DATABASE        = google_firestore_database.database.name
     }
