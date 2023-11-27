@@ -21,21 +21,21 @@ steps:
   - 'TF_VAR_org_id=$_ORG_ID'
   - 'TF_VAR_folder_id=$_FOLDER_ID'
   - 'TF_VAR_billing_account=$_LR_BILLING_ACCOUNT'
-- id: simple-example-init
+- id: init
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestSimpleExample --stage init --verbose']
-- id: simple-example-apply
+  args: ['/bin/bash', '-c', 'cft test run all --stage init --verbose']
+- id: apply
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestSimpleExample --stage apply --verbose']
-- id: simple-example-verify
+  args: ['/bin/bash', '-c', 'cft test run all --stage apply --verbose']
+- id: verify
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestSimpleExample --stage verify --verbose']
-- id: simple-example-teardown
+  args: ['/bin/bash', '-c', 'cft test run all --stage verify --verbose']
+- id: destroy
   name: 'gcr.io/cloud-foundation-cicd/$_DOCKER_IMAGE_DEVELOPER_TOOLS:$_DOCKER_TAG_VERSION_DEVELOPER_TOOLS'
-  args: ['/bin/bash', '-c', 'cft test run TestSimpleExample --stage teardown --verbose']
+  args: ['/bin/bash', '-c', 'cft test run all --stage destroy --verbose']
 tags:
 - 'ci'
 - 'integration'
 substitutions:
   _DOCKER_IMAGE_DEVELOPER_TOOLS: 'cft/developer-tools'
-  _DOCKER_TAG_VERSION_DEVELOPER_TOOLS: '1'
+  _DOCKER_TAG_VERSION_DEVELOPER_TOOLS: '1.17'
