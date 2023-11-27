@@ -32,7 +32,7 @@ print(f"{UUID=}")
 LOCATION = "us-central1"
 
 
-def run_cmd(*cmd: tuple[str]) -> None:
+def run_cmd(*cmd: str) -> None:
     print(f">> {cmd}")
     subprocess.run(cmd, check=True)
 
