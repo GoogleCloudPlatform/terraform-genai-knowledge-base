@@ -40,3 +40,11 @@ variable "firestore_location" {
   type        = string
   default     = "nam5" # US
 }
+
+# Used for testing.
+variable "webhook_path" {
+  description = "Path to the webhook source directory"
+  type        = string
+  default     = "webhook"
+}
+

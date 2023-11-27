@@ -106,7 +106,7 @@ resource "google_service_account" "webhook" {
 
 data "archive_file" "webhook_staging" {
   type        = "zip"
-  source_dir  = "webhook"
+  source_dir  = var.webhook_path
   output_path = abspath("./.tmp/webhook.zip")
 }
 
