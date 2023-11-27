@@ -186,8 +186,9 @@ resource "google_document_ai_processor" "document_processor" {
 
 #-- Firestore --#
 resource "google_firestore_database" "database" {
-  project     = module.project_services.project_id
-  name        = local.database_name
-  location_id = var.firestore_location
-  type        = "FIRESTORE_NATIVE"
+  project         = module.project_services.project_id
+  name            = local.database_name
+  location_id     = var.firestore_location
+  type            = "FIRESTORE_NATIVE"
+  deletion_policy = "DELETE"
 }
