@@ -5,7 +5,7 @@
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| project\_id | GCP project for provisioning cloud resources. | `any` | n/a | yes |
+| project\_id | The Google Cloud project ID to deploy to | `string` | n/a | yes |
 
 ## Outputs
 

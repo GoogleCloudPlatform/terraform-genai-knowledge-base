@@ -63,19 +63,17 @@ Deployment: 10 mins
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| bucket\_name | The name of the bucket to create | `string` | `"genai-doc-summary-webhook"` | no |
-| gcf\_timeout\_seconds | GCF execution timeout | `number` | `900` | no |
+| documentai\_location | Document AI location | `string` | `"us"` | no |
+| firestore\_location | Firestore location | `string` | `"nam5"` | no |
+| location | Google Cloud location | `string` | `"us-central1"` | no |
 | project\_id | The Google Cloud project ID to deploy to | `string` | n/a | yes |
-| region | Google Cloud region | `string` | `"us-central1"` | no |
-| time\_to\_enable\_apis | Wait time to enable APIs in new projects | `string` | `"180s"` | no |
-| webhook\_name | Name of the webhook | `string` | `"webhook"` | no |
-| webhook\_path | Path to the webhook directory | `string` | `"webhook"` | no |
+| webhook\_path | Path to the webhook source directory | `string` | `"webhook"` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| genai\_doc\_summary\_colab\_url | The URL to launch the notebook tutorial for the Generative AI Document Summarization Solution |
+| genai\_doc\_summary\_colab\_url | The URL to launch the notebook tutorial for the Generateive AI Document Summarization Solution |
 | neos\_walkthrough\_url | The URL to launch the in-console tutorial for the Generative AI Document Summarization solution |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
