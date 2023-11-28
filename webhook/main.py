@@ -23,7 +23,6 @@ import functions_framework
 from process_document import process_document
 
 # Required variables.
-PROJECT_ID = os.environ["PROJECT_ID"]
 DATABASE = os.environ["DATABASE"]
 DOCAI_PROCESSOR = os.environ["DOCAI_PROCESSOR"]
 OUTPUT_BUCKET = os.environ["OUTPUT_BUCKET"]
@@ -33,7 +32,6 @@ OUTPUT_BUCKET = os.environ["OUTPUT_BUCKET"]
 def webhook(event: CloudEvent) -> None:
     try:
         process_document(
-            project_id=PROJECT_ID,
             event_id=event.data["id"],
             input_bucket=event.data["bucket"],
             input_name=event.data["name"],

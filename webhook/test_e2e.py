@@ -20,6 +20,7 @@ import subprocess
 import uuid
 
 from google.cloud import documentai
+from google.cloud import firestore
 from google.cloud import storage
 
 import storage_utils
@@ -100,13 +101,11 @@ def database() -> Iterator[str]:
 
 
 def test_end_to_end(
-    project: str,
     bucket_name: str,
     docai_processor_id: str,
     database: str,
 ) -> None:
     process_document(
-        project_id=project,
         event_id=f"test-event-id-{UUID}",
         input_bucket="arxiv-dataset",
         input_name="arxiv/cmp-lg/pdf/9410/9410009v1.pdf",
@@ -124,7 +123,7 @@ def test_end_to_end(
         assert len(lines) > 0, "expected a non-empty dataset in the output bucket"
 
     # Make sure the Firestore database is populated.
-    db = firestore_utils.client(database)
+    db = firestore.Client(database=database)
     entries = list(firestore_utils.read(db, DATASET_COLLECTION))
     print(f"database {len(entries)=}")
     assert len(entries) == len(lines), "database entries do not match the dataset"

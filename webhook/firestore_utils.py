@@ -17,13 +17,9 @@ from collections.abc import Iterator
 from google.cloud import firestore
 
 
-def client(database_name: str) -> firestore.Client:
-    return firestore.Client(database=database_name)
-
-
 def read(client: firestore.Client, collection: str) -> Iterator[tuple[str, dict]]:
     for doc in client.collection(collection).stream():
-        yield (doc.id, doc.to_dict())
+        yield (doc.id, doc.to_dict() or {})
 
 
 def write(client: firestore.Client, collection: str, entries: dict[str, dict]) -> None:

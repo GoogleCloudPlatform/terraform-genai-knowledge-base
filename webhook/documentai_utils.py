@@ -21,7 +21,6 @@ DOCAI_LOCATION = os.environ.get("DOCAI_LOCATION", "us")
 
 
 def get_document_text(
-    project_id: str,
     gcs_uri: str,
     mime_type: str,
     processor_id: str,
