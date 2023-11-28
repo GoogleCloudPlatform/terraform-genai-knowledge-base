@@ -16,7 +16,7 @@
 
 module "project_services" {
   source                      = "terraform-google-modules/project-factory/google//modules/project_services"
-  version                     = "~> 14.2"
+  version                     = "~> 14.4"
   disable_services_on_destroy = false
 
   project_id = var.project_id
@@ -190,5 +190,5 @@ resource "google_firestore_database" "database" {
   name            = local.database_name
   location_id     = var.firestore_location
   type            = "FIRESTORE_NATIVE"
-  deletion_policy = "DELETE"
+  # deletion_policy = "DELETE"
 }
