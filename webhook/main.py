@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from datetime import datetime
-import json
 import logging
 import os
 
@@ -29,7 +28,7 @@ OUTPUT_BUCKET = os.environ["OUTPUT_BUCKET"]
 
 
 @functions_framework.cloud_event
-def webhook(event: CloudEvent) -> None:
+def on_cloud_event(event: CloudEvent) -> None:
     try:
         process_document(
             event_id=event.data["id"],

@@ -62,18 +62,18 @@ def process_document(
     )
 
     print(f"🔍 {event_id}: Generating Q&As with model")
-    question_answers = vertexai_utils.generate_questions(text, LOCATION)
-    for q, a in question_answers:
+    questions_answers = vertexai_utils.generate_questions(text, LOCATION)
+    for q, a in questions_answers:
         print(f"  - Q: {q}")
         print(f"    A: {a}")
 
-    print(f"🗂️ {event_id}: Saving Q&As to Firestore: {len(question_answers)=}")
+    print(f"🗂️ {event_id}: Saving Q&As to Firestore: {len(questions_answers)=}")
     entries = {
         question: {
             "answer": answer,
             "event_id": event_id,
         }
-        for question, answer in question_answers
+        for question, answer in questions_answers
     }
     firestore_utils.write(db, DATASET_COLLECTION, entries)
 
