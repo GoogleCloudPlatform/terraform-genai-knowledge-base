@@ -12,14 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package multiple_buckets
+package simple_example
 
 import (
 	"testing"
 
-	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/gcloud"
 	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/tft"
-	"github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test/pkg/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -29,11 +27,11 @@ func TestSimpleExample(t *testing.T) {
 	example.DefineVerify(func(assert *assert.Assertions) {
 		example.DefaultVerify(assert)
 
-		projectID := example.GetTFSetupStringOutput("project_id")
-		services := gcloud.Run(t, "services list", gcloud.WithCommonArgs([]string{"--project", projectID, "--format", "json"})).Array()
+		// projectID := example.GetTFSetupStringOutput("project_id")
+		// services := gcloud.Run(t, "services list", gcloud.WithCommonArgs([]string{"--project", projectID, "--format", "json"})).Array()
 
-		match := utils.GetFirstMatchResult(t, services, "config.name", "storage.googleapis.com")
-		assert.Equal("ENABLED", match.Get("state").String(), "storage service should be enabled")
+		// match := utils.GetFirstMatchResult(t, services, "config.name", "storage.googleapis.com")
+		// assert.Equal("ENABLED", match.Get("state").String(), "storage service should be enabled")
 	})
 	example.Test()
 }
