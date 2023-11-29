@@ -34,11 +34,11 @@ module "project_services" {
 }
 
 resource "random_id" "unique_id" {
-  byte_length = 4
+  byte_length = 3
 }
 
 locals {
-  database_name = "question-answering-${random_id.unique_id.hex}"
+  database_name = "questions-${random_id.unique_id.hex}"
 }
 
 #-- Cloud Storage buckets --#
@@ -66,6 +66,7 @@ resource "google_cloudfunctions2_function" "webhook" {
 
   build_config {
     runtime = "python312"
+    entry_point = "on_cloud_event"
     source {
       storage_source {
         bucket = google_storage_bucket.storage.name
@@ -90,7 +91,7 @@ resource "google_cloudfunctions2_function" "webhook" {
 
 resource "google_project_iam_member" "webhook" {
   project = module.project_services.project_id
-  member  = "serviceAccount:${google_service_account.webhook.email}"
+  member  = google_service_account.webhook.member
   for_each = toset([
     "roles/aiplatform.serviceAgent", # https://cloud.google.com/iam/docs/service-agents
     "roles/datastore.user",          # https://cloud.google.com/datastore/docs/access/iam
@@ -142,7 +143,7 @@ resource "google_eventarc_trigger" "trigger" {
 
 resource "google_project_iam_member" "trigger" {
   project = module.project_services.project_id
-  member  = "serviceAccount:${google_service_account.trigger.email}"
+  member  = google_service_account.trigger.member
   for_each = toset([
     "roles/eventarc.eventReceiver", # https://cloud.google.com/eventarc/docs/access-control
     "roles/run.invoker",            # https://cloud.google.com/run/docs/reference/iam/roles
