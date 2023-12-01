@@ -23,7 +23,7 @@ and fulfillment.
 
 ### Ingestion
 
-1. The developer uploads a PDF to a Cloud Storage bucket, using `gsutil`, the Console UI, or 
+1. The developer uploads a PDF to a Cloud Storage bucket, using `gsutil`, the Console UI, or
    the Cloud Storage client libraries.
 1. The uploaded PDF file is sent to a Cloud Function. This function handles PDF file processing.
 1. The Cloud Function uses Cloud Vision OCR to extract all text from the PDF file.
@@ -32,7 +32,7 @@ and fulfillment.
 
 ### Training
 
-1. Once the Firestore collection reaches a certain size (% 10), the Cloud 
+1. Once the Firestore collection reaches a certain size (% 10), the Cloud
    Function triggers a Vertex AI Pipeline.
 1. The Vertex AI Pipeline fine-tunes a LLM on the QAs stored in the Firestore collection.
 1. The Vertex AI Pipeline deploys the tuned LLM to a Vertex AI endpoint.
@@ -42,7 +42,7 @@ and fulfillment.
 1. A Cloud Run instance hosts a simple chatbot user interface, where the chatbot
    queries the tuned LLM.
 1. Users can ask the chatbot questions, and the chatbot respond with an
-   answer derived from the source Q&As. 
+   answer derived from the source Q&As.
 
 ## Prerequisites
 - [Google Cloud Project](https://cloud.google.com/resource-manager/docs/creating-managing-projects)
