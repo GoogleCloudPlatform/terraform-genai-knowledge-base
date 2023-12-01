@@ -23,6 +23,7 @@ module "project_services" {
 
   activate_apis = [
     "aiplatform.googleapis.com",
+    "artifactregistry.googleapis.com",
     "cloudbuild.googleapis.com",
     "cloudfunctions.googleapis.com",
     "documentai.googleapis.com",
@@ -31,14 +32,6 @@ module "project_services" {
     "run.googleapis.com",
     "storage.googleapis.com",
   ]
-}
-
-resource "random_id" "unique_id" {
-  byte_length = 3
-}
-
-locals {
-  database_name = "questions-${random_id.unique_id.hex}"
 }
 
 #-- Cloud Storage buckets --#
@@ -65,7 +58,7 @@ resource "google_cloudfunctions2_function" "webhook" {
   location = var.location
 
   build_config {
-    runtime = "python312"
+    runtime     = "python312"
     entry_point = "on_cloud_event"
     source {
       storage_source {
@@ -186,10 +179,17 @@ resource "google_document_ai_processor" "document_processor" {
 }
 
 #-- Firestore --#
+
+# TODO: remove random from name once firestore supports deletion_policy.
+# https://github.com/GoogleCloudPlatform/terraform-google-conversion/pull/1720
+resource "random_id" "unique_id" {
+  byte_length = 3
+}
+
 resource "google_firestore_database" "database" {
-  project         = module.project_services.project_id
-  name            = local.database_name
-  location_id     = var.firestore_location
-  type            = "FIRESTORE_NATIVE"
+  project     = module.project_services.project_id
+  name        = "questions-${random_id.unique_id.hex}"
+  location_id = var.firestore_location
+  type        = "FIRESTORE_NATIVE"
   # deletion_policy = "DELETE"
 }
