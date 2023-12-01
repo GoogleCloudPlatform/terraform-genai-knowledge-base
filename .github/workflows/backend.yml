@@ -41,12 +41,12 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]
+        # To parse datetime in ISO format ending with Z, we need at least Python 3.11.
+        # https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat
+        python-version: ["3.11", "3.12"]
 
     env:
-      PROJECT_ID: jss-16p1-test
-      REGION: us-central1
-      BUCKET: jss-16p1-test_tests
+      PROJECT_ID: jss-22p1-test
       ACTIONS_RUNNER_DEBUG: true
       ACTIONS_STEP_DEBUG: true
 
@@ -82,29 +82,20 @@ jobs:
         uses: actions/cache@v3
         with:
           path: webhook/env
-          key: ${{ runner.os }}-venv-${{ hashFiles('webhook/requirements.txt') }}
+          key: ${{ runner.os }}-env-${{ hashFiles('webhook/requirements.txt') }}
 
       - name: Install dependencies
         run: |
-          python -m venv venv
-          source venv/bin/activate
-          pip install -r requirements.txt
-          pip install -r requirements-test.txt
+          python -m venv env
+          source env/bin/activate
+          pip install -r requirements.txt -r requirements-test.txt
         working-directory: webhook
 
-      - name: Run Pytest (unit tests)
-        run: |
-          source venv/bin/activate
-          pytest unit_tests/*.py
-        working-directory: webhook
-        env:
-          PYTHONPATH: ${{ github.workspace }}/webhook/
-
-      - name: Run Pytest (integration tests)
+      - name: Run tests
         if: ${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name }}
         run: |
-          source venv/bin/activate
-          pytest integration_tests/*.py
+          source env/bin/activate
+          pytest
         working-directory: webhook
         env:
           PYTHONPATH: ${{ github.workspace }}/webhook/

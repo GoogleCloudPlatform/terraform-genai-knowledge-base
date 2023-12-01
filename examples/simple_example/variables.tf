@@ -15,5 +15,10 @@
  */
 
 variable "project_id" {
-  description = "GCP project for provisioning cloud resources."
+  description = "The Google Cloud project ID to deploy to"
+  type        = string
+  validation {
+    condition     = var.project_id != ""
+    error_message = "Error: project_id is required"
+  }
 }

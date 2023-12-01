@@ -23,38 +23,28 @@ variable "project_id" {
   }
 }
 
-variable "bucket_name" {
-  description = "The name of the bucket to create"
-  type        = string
-  default     = "genai-doc-summary-webhook"
-}
-
-variable "region" {
-  description = "Google Cloud region"
+variable "location" {
+  description = "Google Cloud location"
   type        = string
   default     = "us-central1"
 }
 
-variable "webhook_name" {
-  description = "Name of the webhook"
+variable "documentai_location" {
+  description = "Document AI location"
   type        = string
-  default     = "webhook"
+  default     = "us"
 }
 
+variable "firestore_location" {
+  description = "Firestore location"
+  type        = string
+  default     = "nam5" # US
+}
+
+# Used for testing.
 variable "webhook_path" {
-  description = "Path to the webhook directory"
+  description = "Path to the webhook source directory"
   type        = string
   default     = "webhook"
 }
 
-variable "gcf_timeout_seconds" {
-  description = "GCF execution timeout"
-  type        = number
-  default     = 900
-}
-
-variable "time_to_enable_apis" {
-  description = "Wait time to enable APIs in new projects"
-  type        = string
-  default     = "180s"
-}

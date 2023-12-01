@@ -23,7 +23,7 @@ and fulfillment.
 
 ### Ingestion
 
-1. The developer uploads a PDF to a Cloud Storage bucket, using `gsutil`, the Console UI, or 
+1. The developer uploads a PDF to a Cloud Storage bucket, using `gsutil`, the Console UI, or
    the Cloud Storage client libraries.
 1. The uploaded PDF file is sent to a Cloud Function. This function handles PDF file processing.
 1. The Cloud Function uses Cloud Vision OCR to extract all text from the PDF file.
@@ -32,7 +32,7 @@ and fulfillment.
 
 ### Training
 
-1. Once the Firestore collection reaches a certain size (% 10), the Cloud 
+1. Once the Firestore collection reaches a certain size (% 10), the Cloud
    Function triggers a Vertex AI Pipeline.
 1. The Vertex AI Pipeline fine-tunes a LLM on the QAs stored in the Firestore collection.
 1. The Vertex AI Pipeline deploys the tuned LLM to a Vertex AI endpoint.
@@ -42,7 +42,7 @@ and fulfillment.
 1. A Cloud Run instance hosts a simple chatbot user interface, where the chatbot
    queries the tuned LLM.
 1. Users can ask the chatbot questions, and the chatbot respond with an
-   answer derived from the source Q&As. 
+   answer derived from the source Q&As.
 
 ## Prerequisites
 - [Google Cloud Project](https://cloud.google.com/resource-manager/docs/creating-managing-projects)
@@ -63,19 +63,17 @@ Deployment: 10 mins
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| bucket\_name | The name of the bucket to create | `string` | `"genai-doc-summary-webhook"` | no |
-| gcf\_timeout\_seconds | GCF execution timeout | `number` | `900` | no |
+| documentai\_location | Document AI location | `string` | `"us"` | no |
+| firestore\_location | Firestore location | `string` | `"nam5"` | no |
+| location | Google Cloud location | `string` | `"us-central1"` | no |
 | project\_id | The Google Cloud project ID to deploy to | `string` | n/a | yes |
-| region | Google Cloud region | `string` | `"us-central1"` | no |
-| time\_to\_enable\_apis | Wait time to enable APIs in new projects | `string` | `"180s"` | no |
-| webhook\_name | Name of the webhook | `string` | `"webhook"` | no |
-| webhook\_path | Path to the webhook directory | `string` | `"webhook"` | no |
+| webhook\_path | Path to the webhook source directory | `string` | `"webhook"` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| genai\_doc\_summary\_colab\_url | The URL to launch the notebook tutorial for the Generative AI Document Summarization Solution |
+| genai\_doc\_summary\_colab\_url | The URL to launch the notebook tutorial for the Generateive AI Document Summarization Solution |
 | neos\_walkthrough\_url | The URL to launch the in-console tutorial for the Generative AI Document Summarization solution |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

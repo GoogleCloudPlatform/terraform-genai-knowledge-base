@@ -49,6 +49,6 @@ credentials.json
 
 # Custom:
 env/
-bin/
-.DS_Store
-.tmp
+__pycache__/
+.pytest_cache/
+.tmp/

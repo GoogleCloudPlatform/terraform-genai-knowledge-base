@@ -12,20 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import backoff
-import os
+from collections.abc import Iterator
 
-import document_extract
-
-_PROJECT_ID = os.environ["PROJECT_ID"]
-_BUCKET_NAME = os.environ["BUCKET"]
-_OUTPUT_BUCKET = f"{_PROJECT_ID}_output"
-_FILE_NAME = "9404001v1.pdf"
+from google.cloud import firestore
 
 
-@backoff.on_exception(backoff.expo, Exception, max_tries=3)
-def test_async_document_extract_system(capsys):
-    out = document_extract.async_document_extract(
-        _BUCKET_NAME, _FILE_NAME, _OUTPUT_BUCKET
-    )
-    assert "Abstract" in out
+def read(client: firestore.Client, collection: str) -> Iterator[tuple[str, dict]]:
+    for doc in client.collection(collection).stream():
+        yield (doc.id, doc.to_dict() or {})
+
+
+def write(client: firestore.Client, collection: str, entries: dict[str, dict]) -> None:
+    for key, value in entries.items():
+        doc = client.document(collection, key)
+        if doc.get().exists:
+            doc.update(value)
+        else:
+            doc.create(value)
