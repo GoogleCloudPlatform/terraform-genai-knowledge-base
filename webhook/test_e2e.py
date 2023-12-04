@@ -40,12 +40,7 @@ def run_cmd(*cmd: str) -> None:
 
 @pytest.fixture(scope="session")
 def project() -> str:
-    import google.auth
-
-    credentials, default_project = google.auth.default()
-    print(f"{credentials.client_id=}")
-    print(f"{default_project=}")
-
+    run_cmd("gcloud", "config", "list")
     project = os.environ["PROJECT_ID"]
     print(f"{project=}")
     os.environ["GOOGLE_CLOUD_PROJECT"] = project
