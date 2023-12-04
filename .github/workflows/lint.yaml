@@ -20,7 +20,7 @@ name: 'lint'
 on:
   pull_request:
     branches:
-      - main
+      - master
 
 concurrency:
   group: '${{ github.workflow }}-${{ github.head_ref || github.ref }}'
@@ -31,7 +31,7 @@ jobs:
     name: 'lint'
     runs-on: 'ubuntu-latest'
     steps:
-      - uses: 'actions/checkout@v3'
+      - uses: 'actions/checkout@v4'
       - id: variables
         run: |
           MAKEFILE=$(find . -name Makefile -print -quit)
@@ -43,6 +43,4 @@ jobs:
             REGISTRY=$(grep "REGISTRY_URL := " $MAKEFILE | cut -d\  -f3)
             echo dev-tools=${REGISTRY}/${IMAGE}:${VERSION} >> "$GITHUB_OUTPUT"
           fi
-      - run: docker run --rm -e EXCLUDE_LINT_DIRS -v ${{ github.workspace }}:/workspace ${{ steps.variables.outputs.dev-tools }} /usr/local/bin/test_lint.sh
-        env:
-          EXCLUDE_LINT_DIRS: '\./assets|\./docs|\./env'
+      - run: docker run --rm -v ${{ github.workspace }}:/workspace ${{ steps.variables.outputs.dev-tools }} /usr/local/bin/test_lint.sh
