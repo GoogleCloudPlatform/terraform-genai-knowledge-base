@@ -67,7 +67,7 @@ jobs:
       - id: auth
         name: Authenticate to Google Cloud
         if: ${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name }}
-        uses: google-github-actions/auth@v1.1.1
+        uses: google-github-actions/auth@v2.0.0
         with:
           workload_identity_provider: projects/897785740795/locations/global/workloadIdentityPools/github-actions-pool-2/providers/github-actions-provider
           service_account: github-actions-service-acct@jss-16p1-test.iam.gserviceaccount.com
