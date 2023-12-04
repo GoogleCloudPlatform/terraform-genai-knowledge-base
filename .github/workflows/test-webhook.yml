@@ -51,10 +51,9 @@ jobs:
       ACTIONS_STEP_DEBUG: true
 
     # # Need to add these 3 lines to add "id-token" with the intended permissions.
-    # permissions:
-    #   contents: read
-    #   id-token: write
-
+    permissions:
+      contents: read
+      # id-token: write
 
     steps:
       - uses: actions/checkout@v4
