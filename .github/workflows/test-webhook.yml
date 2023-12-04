@@ -50,31 +50,26 @@ jobs:
       ACTIONS_RUNNER_DEBUG: true
       ACTIONS_STEP_DEBUG: true
 
-    # Need to add these 3 lines to add "id-token" with the intended permissions.
-    permissions:
-      contents: read
-      id-token: write
+    # # Need to add these 3 lines to add "id-token" with the intended permissions.
+    # permissions:
+    #   contents: read
+    #   id-token: write
 
-    defaults:
-      run:
-        working-directory: webhook
 
     steps:
-      - id: checkout
-        name: Checkout repo
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - id: auth
-        name: Authenticate to Google Cloud
+      # https://github.com/marketplace/actions/authenticate-to-google-cloud
+      # https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-google-cloud-platform
+      - uses: google-github-actions/auth@v2
         if: ${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name }}
-        uses: google-github-actions/auth@v1.1.1
         with:
-          workload_identity_provider: projects/897785740795/locations/global/workloadIdentityPools/github-actions-pool-2/providers/github-actions-provider
-          service_account: github-actions-service-acct@jss-16p1-test.iam.gserviceaccount.com
-          create_credentials_file: true
+          # https://github.com/GoogleCloudPlatform/terraform-genai-extractive-qa/settings/secrets/actions
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.SA_EMAIL }}
+          # create_credentials_file: true
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+      - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -92,7 +87,6 @@ jobs:
         working-directory: webhook
 
       - name: Run tests
-        if: ${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name }}
         run: |
           source env/bin/activate
           pytest

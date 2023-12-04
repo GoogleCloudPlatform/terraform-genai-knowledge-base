@@ -19,6 +19,7 @@ import pytest
 import subprocess
 import uuid
 
+import google.auth
 from google.cloud import documentai
 from google.cloud import firestore
 from google.cloud import storage
@@ -40,6 +41,10 @@ def run_cmd(*cmd: str) -> None:
 
 @pytest.fixture(scope="session")
 def project() -> str:
+    credentials, default_project = google.auth.default()
+    print(f"{credentials.client_id=}")
+    print(f"{default_project=}")
+
     project = os.environ["PROJECT_ID"]
     print(f"{project=}")
     os.environ["GOOGLE_CLOUD_PROJECT"] = project
