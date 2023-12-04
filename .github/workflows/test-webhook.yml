@@ -52,7 +52,7 @@ jobs:
 
     # Needed to generate the identity token for google-github-actions/auth.
     permissions:
-      # contents: read
+      contents: read
       id-token: write
 
     steps:
