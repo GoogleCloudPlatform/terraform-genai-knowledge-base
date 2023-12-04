@@ -50,10 +50,10 @@ jobs:
       ACTIONS_RUNNER_DEBUG: true
       ACTIONS_STEP_DEBUG: true
 
-    # Need to add these 3 lines to add "id-token" with the intended permissions.
-    permissions:
-      contents: read
-      id-token: write
+    # # Need to add these 3 lines to add "id-token" with the intended permissions.
+    # permissions:
+    #   contents: read
+    #   id-token: write
 
     steps:
       - uses: actions/checkout@v4
@@ -62,10 +62,9 @@ jobs:
       # https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-google-cloud-platform
       - uses: google-github-actions/auth@v2
         with:
-          # https://github.com/GoogleCloudPlatform/terraform-genai-extractive-qa/settings/secrets/actions
-          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
-          service_account: ${{ secrets.SA_EMAIL }}
-          create_credentials_file: true
+          workload_identity_provider: projects/886556137211/locations/global/workloadIdentityPools/github-actions/providers/github
+          service_account: github-actions@jss-22p1-test.iam.gserviceaccount.com
+          # create_credentials_file: true
 
       - uses: actions/setup-python@v4
         with:
