@@ -51,9 +51,9 @@ jobs:
       ACTIONS_STEP_DEBUG: true
 
     # # Need to add these 3 lines to add "id-token" with the intended permissions.
-    permissions:
-      # contents: read
-      id-token: write
+    # permissions:
+    #   contents: read
+    #   id-token: write
 
     steps:
       - uses: actions/checkout@v4
@@ -66,7 +66,7 @@ jobs:
           # https://github.com/GoogleCloudPlatform/terraform-genai-extractive-qa/settings/secrets/actions
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           service_account: ${{ secrets.SA_EMAIL }}
-          # create_credentials_file: true
+          create_credentials_file: true
 
       - uses: actions/setup-python@v4
         with:
