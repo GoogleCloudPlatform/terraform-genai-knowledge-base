@@ -52,8 +52,8 @@ jobs:
 
     # # Need to add these 3 lines to add "id-token" with the intended permissions.
     permissions:
-      contents: read
-      # id-token: write
+      # contents: read
+      id-token: write
 
     steps:
       - uses: actions/checkout@v4
