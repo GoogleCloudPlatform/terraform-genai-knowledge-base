@@ -15,22 +15,28 @@
 # Labeler assigns GitHub labels to PRs based on changed files.
 
 webhook:
-- webhook/*
-- webhook/**/*
+- changed-files:
+  - any-glob-to-any-file:
+    - webhook/**
 terraform:
-- '*.tf'
+- changed-files:
+  - any-glob-to-any-file:
+    - '**/*.tf'
 testing:
-- examples/*
-- examples/**/*
-- test/*
-- test/**/*
+- changed-files:
+  - any-glob-to-any-file:
+    - examples/**
+    - test/**
 docs:
-- docs/*
-- docs/**/*
+- changed-files:
+  - any-glob-to-any-file:
+    - docs/**
 infra:
-- .flake8
-- .github/*
-- .github/**/*
-- Makefile
-- build/*
-- build/**/*
+- changed-files:
+  - any-glob-to-any-file:
+    - .flake8
+    - .github/*
+    - .github/**/*
+    - Makefile
+    - build/*
+    - build/**/*
