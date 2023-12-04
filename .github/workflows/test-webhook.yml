@@ -12,28 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: Backend tests
+name: Webhook tests
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'webhook/**'
-      - '.github/workflows/backend.yml'
+      - .github/workflows/test-webhook.yaml
+      - webhook/**
   pull_request:
     branches:
       - main
     paths:
-      - 'webhook/**'
-      - '.github/workflows/backend.yml'
+      - .github/workflows/test-webhook.yaml
+      - webhook/**
   pull_request_target:
     types: [labeled]
     paths:
-      - 'webhook/**'
-      - '.github/workflows/backend.yml'
+      - .github/workflows/test-webhook.yaml
+      - webhook/**
   schedule: # Run tests every day at UTC 9:00A
-    - cron: '0 9 * * *'
+    - cron: 0 9 * * *
 
 jobs:
   pytest:
@@ -43,7 +43,7 @@ jobs:
       matrix:
         # To parse datetime in ISO format ending with Z, we need at least Python 3.11.
         # https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat
-        python-version: ["3.11", "3.12"]
+        python-version: ['3.11', '3.12']
 
     env:
       PROJECT_ID: jss-22p1-test
@@ -52,25 +52,25 @@ jobs:
 
     # Need to add these 3 lines to add "id-token" with the intended permissions.
     permissions:
-      contents: 'read'
-      id-token: 'write'
+      contents: read
+      id-token: write
 
     defaults:
       run:
-        working-directory: 'webhook'
+        working-directory: webhook
 
     steps:
-      - id: 'checkout'
-        name: 'Checkout repo'
-        uses: 'actions/checkout@v3'
+      - id: checkout
+        name: Checkout repo
+        uses: actions/checkout@v3
 
-      - id: 'auth'
-        name: 'Authenticate to Google Cloud'
+      - id: auth
+        name: Authenticate to Google Cloud
         if: ${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name }}
-        uses: 'google-github-actions/auth@v1.1.1'
+        uses: google-github-actions/auth@v1.1.1
         with:
-          workload_identity_provider: 'projects/897785740795/locations/global/workloadIdentityPools/github-actions-pool-2/providers/github-actions-provider'
-          service_account: 'github-actions-service-acct@jss-16p1-test.iam.gserviceaccount.com'
+          workload_identity_provider: projects/897785740795/locations/global/workloadIdentityPools/github-actions-pool-2/providers/github-actions-provider
+          service_account: github-actions-service-acct@jss-16p1-test.iam.gserviceaccount.com
           create_credentials_file: true
 
       - name: Set up Python ${{ matrix.python-version }}
