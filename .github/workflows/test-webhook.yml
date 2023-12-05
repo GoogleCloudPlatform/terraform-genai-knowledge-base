@@ -36,7 +36,7 @@ on:
     - cron: 0 9 * * *
 
 jobs:
-  pytest:
+  test-webhook:
     runs-on: ubuntu-latest
 
     strategy:
@@ -50,31 +50,22 @@ jobs:
       ACTIONS_RUNNER_DEBUG: true
       ACTIONS_STEP_DEBUG: true
 
-    # Need to add these 3 lines to add "id-token" with the intended permissions.
+    # Needed to generate the identity token for google-github-actions/auth.
     permissions:
       contents: read
       id-token: write
 
-    defaults:
-      run:
-        working-directory: webhook
-
     steps:
-      - id: checkout
-        name: Checkout repo
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - id: auth
-        name: Authenticate to Google Cloud
-        if: ${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name }}
-        uses: google-github-actions/auth@v1.1.1
+      # https://github.com/marketplace/actions/authenticate-to-google-cloud
+      # https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-google-cloud-platform
+      - uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: projects/897785740795/locations/global/workloadIdentityPools/github-actions-pool-2/providers/github-actions-provider
-          service_account: github-actions-service-acct@jss-16p1-test.iam.gserviceaccount.com
-          create_credentials_file: true
+          workload_identity_provider: projects/886556137211/locations/global/workloadIdentityPools/github-actions/providers/github
+          service_account: github-actions@jss-22p1-test.iam.gserviceaccount.com
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+      - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -92,7 +83,6 @@ jobs:
         working-directory: webhook
 
       - name: Run tests
-        if: ${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name }}
         run: |
           source env/bin/activate
           pytest

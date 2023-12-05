@@ -47,8 +47,14 @@ credentials.json
 # tf lock file
 .terraform.lock.hcl
 
-# Custom:
+#--- Custom ---#
+# Python stuff
 env/
 __pycache__/
 .pytest_cache/
+
+# Webhook staging path
 .tmp/
+
+# Ignore generated credentials from google-github-actions/auth
+gha-creds-*.json
