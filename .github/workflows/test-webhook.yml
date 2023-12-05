@@ -36,7 +36,7 @@ on:
     - cron: 0 9 * * *
 
 jobs:
-  pytest:
+  test-webhook:
     runs-on: ubuntu-latest
 
     strategy:
@@ -64,8 +64,6 @@ jobs:
         with:
           workload_identity_provider: projects/886556137211/locations/global/workloadIdentityPools/github-actions/providers/github
           service_account: github-actions@jss-22p1-test.iam.gserviceaccount.com
-          token_format: id_token
-          create_credentials_file: true
 
       - uses: actions/setup-python@v4
         with:
