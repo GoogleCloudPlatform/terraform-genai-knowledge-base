@@ -61,7 +61,6 @@ jobs:
       # https://github.com/marketplace/actions/authenticate-to-google-cloud
       # https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-google-cloud-platform
       - uses: google-github-actions/auth@v2
-        if: ${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name }}
         with:
           workload_identity_provider: projects/886556137211/locations/global/workloadIdentityPools/github-actions/providers/github
           service_account: github-actions@jss-22p1-test.iam.gserviceaccount.com
