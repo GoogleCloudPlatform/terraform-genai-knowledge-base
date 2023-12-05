@@ -17,9 +17,9 @@ import datetime
 import os
 import pytest
 import subprocess
+import sys
 import uuid
 
-import google.auth
 from google.cloud import documentai
 from google.cloud import firestore
 from google.cloud import storage
@@ -28,8 +28,7 @@ import storage_utils
 import firestore_utils
 from process_document import DATASET_COLLECTION, OUTPUT_NAME, process_document
 
-UUID = uuid.uuid4().hex[:6]
-print(f"{UUID=}")
+UUID = f"py{sys.version_info.major}{sys.version_info.minor}-{uuid.uuid4().hex[:6]}"
 
 LOCATION = "us-central1"
 
@@ -41,11 +40,8 @@ def run_cmd(*cmd: str) -> None:
 
 @pytest.fixture(scope="session")
 def project() -> str:
-    credentials, default_project = google.auth.default()
-    print(f"{credentials.client_id=}")
-    print(f"{default_project=}")
-
     project = os.environ["PROJECT_ID"]
+    print(f"{UUID=}")
     print(f"{project=}")
     os.environ["GOOGLE_CLOUD_PROJECT"] = project
     run_cmd("gcloud", "config", "set", "project", project)
