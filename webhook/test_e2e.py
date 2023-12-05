@@ -17,6 +17,7 @@ import datetime
 import os
 import pytest
 import subprocess
+import sys
 import uuid
 
 import google.auth
@@ -28,7 +29,7 @@ import storage_utils
 import firestore_utils
 from process_document import DATASET_COLLECTION, OUTPUT_NAME, process_document
 
-UUID = uuid.uuid4().hex[:6]
+UUID = f"py{sys.version_info.major}.{sys.version_info.minor}-{uuid.uuid4().hex[:6]}"
 print(f"{UUID=}")
 
 LOCATION = "us-central1"
