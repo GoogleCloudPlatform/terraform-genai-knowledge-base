@@ -40,7 +40,6 @@ def run_cmd(*cmd: str) -> None:
 
 @pytest.fixture(scope="session")
 def project() -> str:
-    run_cmd("gcloud", "config", "list")
     project = os.environ["PROJECT_ID"]
     print(f"{project=}")
     os.environ["GOOGLE_CLOUD_PROJECT"] = project
