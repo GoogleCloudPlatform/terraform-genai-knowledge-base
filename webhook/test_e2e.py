@@ -28,9 +28,8 @@ import storage_utils
 import firestore_utils
 from process_document import DATASET_COLLECTION, OUTPUT_NAME, process_document
 
-UUID = f"py{sys.version_info.major}{sys.version_info.minor}-{uuid.uuid4().hex[:6]}"
-
 LOCATION = "us-central1"
+FIRESTORE_LOCATION = "nam5"  # US
 
 
 def run_cmd(*cmd: str) -> None:
@@ -41,7 +40,6 @@ def run_cmd(*cmd: str) -> None:
 @pytest.fixture(scope="session")
 def project() -> str:
     project = os.environ["PROJECT_ID"]
-    print(f"{UUID=}")
     print(f"{project=}")
     os.environ["GOOGLE_CLOUD_PROJECT"] = project
     run_cmd("gcloud", "config", "set", "project", project)
@@ -49,9 +47,16 @@ def project() -> str:
 
 
 @pytest.fixture(scope="session")
-def bucket_name(project: str) -> Iterator[str]:
+def unique_name(project: str) -> str:
+    unique_name = f"{project}-py{sys.version_info.major}{sys.version_info.minor}-{uuid.uuid4().hex[:6]}"
+    print(f"{unique_name=}")
+    return unique_name
+
+
+@pytest.fixture(scope="session")
+def bucket_name(unique_name: str) -> Iterator[str]:
     storage_client = storage.Client()
-    bucket_name = f"jss-22p1-test-{UUID}"
+    bucket_name = unique_name
     print(f"{bucket_name=}")
     bucket = storage_client.create_bucket(bucket_name, location=LOCATION)
     yield bucket_name
@@ -60,25 +65,24 @@ def bucket_name(project: str) -> Iterator[str]:
 
 
 @pytest.fixture(scope="session")
-def docai_processor_id(project: str) -> Iterator[str]:
+def docai_processor_id(project: str, unique_name: str) -> Iterator[str]:
     docai_client = documentai.DocumentProcessorServiceClient()
     docai_client.common_location_path(project, "us")
     processor = docai_client.create_processor(
         parent=docai_client.common_location_path(project, "us"),
         processor=documentai.Processor(
-            display_name=f"jss-22p1-test-{UUID}",
+            display_name=unique_name,
             type_="OCR_PROCESSOR",
         ),
     )
     yield processor.name
     print(f"deleting {processor.name=}")
-    operation = docai_client.delete_processor(name=processor.name)
-    operation.result()
+    docai_client.delete_processor(name=processor.name).result()
 
 
 @pytest.fixture(scope="session")
-def database() -> Iterator[str]:
-    firestore_database = f"jss-22p1-test-{UUID}"
+def firestore_database(unique_name: str) -> Iterator[str]:
+    firestore_database = unique_name
     print(f"{firestore_database=}")
     run_cmd(
         "gcloud",
@@ -87,7 +91,7 @@ def database() -> Iterator[str]:
         "databases",
         "create",
         f"--database={firestore_database}",
-        "--location=nam5",  # US
+        f"--location={FIRESTORE_LOCATION}",
     )
     yield firestore_database
     run_cmd(
@@ -102,19 +106,20 @@ def database() -> Iterator[str]:
 
 
 def test_end_to_end(
+    unique_name: str,
     bucket_name: str,
     docai_processor_id: str,
-    database: str,
+    firestore_database: str,
 ) -> None:
     process_document(
-        event_id=f"test-event-id-{UUID}",
+        event_id=unique_name,
         input_bucket="arxiv-dataset",
         input_name="arxiv/cmp-lg/pdf/9410/9410009v1.pdf",
         mime_type="application/pdf",
         docai_prcessor_id=docai_processor_id,
         time_uploaded=datetime.datetime.now(),
         output_bucket=bucket_name,
-        database=database,
+        database=firestore_database,
     )
 
     # Make sure we have a non-empty dataset.
@@ -124,7 +129,7 @@ def test_end_to_end(
         assert len(lines) > 0, "expected a non-empty dataset in the output bucket"
 
     # Make sure the Firestore database is populated.
-    db = firestore.Client(database=database)
+    db = firestore.Client(database=firestore_database)
     entries = list(firestore_utils.read(db, DATASET_COLLECTION))
     print(f"database {len(entries)=}")
     assert len(entries) == len(lines), "database entries do not match the dataset"

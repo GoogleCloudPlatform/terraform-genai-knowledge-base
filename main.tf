@@ -17,7 +17,7 @@
 module "project_services" {
   source                      = "terraform-google-modules/project-factory/google//modules/project_services"
   version                     = "~> 14.4"
-  disable_services_on_destroy = false
+  disable_services_on_destroy = var.disable_services_on_destroy
 
   project_id = var.project_id
 
@@ -179,17 +179,10 @@ resource "google_document_ai_processor" "document_processor" {
 }
 
 #-- Firestore --#
-
-# TODO: remove random from name once firestore supports deletion_policy.
-# https://github.com/GoogleCloudPlatform/terraform-google-conversion/pull/1720
-resource "random_id" "unique_id" {
-  byte_length = 3
-}
-
 resource "google_firestore_database" "database" {
-  project     = module.project_services.project_id
-  name        = "questions-${random_id.unique_id.hex}"
-  location_id = var.firestore_location
-  type        = "FIRESTORE_NATIVE"
-  # deletion_policy = "DELETE"
+  project         = module.project_services.project_id
+  name            = "questions-database"
+  location_id     = var.firestore_location
+  type            = "FIRESTORE_NATIVE"
+  deletion_policy = "DELETE"
 }
