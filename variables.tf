@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+# Required variables
 variable "project_id" {
   description = "The Google Cloud project ID to deploy to"
   type        = string
@@ -23,6 +24,7 @@ variable "project_id" {
   }
 }
 
+# Optional variables
 variable "location" {
   description = "Google Cloud location"
   type        = string
@@ -39,6 +41,12 @@ variable "firestore_location" {
   description = "Firestore location"
   type        = string
   default     = "nam5" # US
+}
+
+variable "disable_services_on_destroy" {
+  description = "Whether project services will be disabled when the resources are destroyed."
+  type        = bool
+  default     = false
 }
 
 # Used for testing.
