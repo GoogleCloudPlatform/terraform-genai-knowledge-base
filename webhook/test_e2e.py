@@ -12,6 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""End-to-end test of the process_document function.
+
+```sh
+export PROJECT_ID=my-project
+export UUID=$USER
+python -m pytest -v -s -W ignore::DeprecationWarning
+
+export SKIP_INIT=1
+export SKIP_APPLY=1
+export SKIP_DESTROY=1
+
+unset SKIP_INIT
+unset SKIP_APPLY
+unset SKIP_DESTROY
+```
+"""
+
 from collections.abc import Iterator
 import datetime
 import json
@@ -28,7 +45,7 @@ import firestore_utils
 from process_document import DATASET_COLLECTION, OUTPUT_NAME, process_document
 
 PROJECT_ID = os.environ["PROJECT_ID"]
-UUID = uuid.uuid4().hex[:6]
+UUID = os.environ.get("UUID", uuid.uuid4().hex[:6])
 
 
 def run_cmd(*cmd: str) -> None:
@@ -46,23 +63,27 @@ def resources() -> Iterator[dict]:
         "firestore_database_name": f"test-webhook-{UUID}",
     }
     print(f"resources={json.dumps(resources, indent=2)}")
-    run_cmd("terraform", "-chdir=..", "init")
-    run_cmd(
-        "terraform",
-        "-chdir=..",
-        "apply",
-        "-auto-approve",
-        f"-var=project_id={PROJECT_ID}",
-        *[f"-var={name}={value}" for name, value in resources.items()],
-        "-target=google_storage_bucket.main",
-        "-target=google_document_ai_processor.document_processor",
-        "-target=google_firestore_database.database",
-    )
+    if not os.environ.get("SKIP_INIT"):
+        run_cmd("terraform", "-chdir=..", "fmt")
+    if not os.environ.get("SKIP_APPLY"):
+        run_cmd(
+            "terraform",
+            "-chdir=..",
+            "apply",
+            "-auto-approve",
+            f"-var=project_id={PROJECT_ID}",
+            *[f"-var={name}={value}" for name, value in resources.items()],
+            "-target=google_storage_bucket.main",
+            "-target=google_document_ai_processor.document_processor",
+            "-target=google_firestore_database.database",
+        )
     yield resources
-    run_cmd("terraform", "-chdir=..", "destroy", "-auto-approve")
+    if not os.environ.get("SKIP_DESTROY"):
+        run_cmd("terraform", "-chdir=..", "destroy", "-auto-approve")
 
 
 def test_end_to_end(resources: dict) -> None:
+    print(f">> process_document")
     process_document(
         event_id=f"webhook-test-{UUID}",
         input_bucket="arxiv-dataset",
@@ -72,15 +93,18 @@ def test_end_to_end(resources: dict) -> None:
         docai_prcessor_id=resources["documentai_processor_name"],
         output_bucket=resources["bucket_main"],
         database=resources["firestore_database_name"],
+        force_reprocess=True,
     )
 
     # Make sure we have a non-empty dataset.
+    print(f">> Checking output bucket")
     with storage_utils.read(resources["bucket_main"], OUTPUT_NAME) as f:
         lines = [line.strip() for line in f]
         print(f"dataset {len(lines)=}")
         assert len(lines) > 0, "expected a non-empty dataset in the output bucket"
 
     # Make sure the Firestore database is populated.
+    print(f">> Checking Firestore database")
     db = firestore.Client(database=resources["firestore_database_name"])
     entries = list(firestore_utils.read(db, DATASET_COLLECTION))
     print(f"database {len(entries)=}")

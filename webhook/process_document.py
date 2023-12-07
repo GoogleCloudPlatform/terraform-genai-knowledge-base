@@ -39,19 +39,25 @@ def process_document(
     docai_prcessor_id: str,
     output_bucket: str,
     database: str,
+    force_reprocess: bool = False,
 ) -> None:
     db = firestore.Client(database=database)
     doc = db.document(EVENTS_COLLECTION, event_id)
-    if doc.get().exists:
-        # We've already processed this event, this is probably an event retry.
-        return
     event_entry = {
         "bucket": input_bucket,
         "input_name": input_name,
         "mime_type": mime_type,
         "time_uploaded": time_uploaded,
     }
-    doc.create(event_entry)
+    if doc.get().exists:
+        # We've already processed this event, this is probably an event retry.
+        if force_reprocess:
+            doc.update(event_entry)
+        else:
+            print(f"✅ {event_id}: Already processed")
+            return
+    else:
+        doc.create(event_entry)
 
     input_gcs_uri = f"gs://{input_bucket}/{input_name}"
     print(f"📖 {event_id}: Getting document text")
