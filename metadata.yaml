@@ -20,7 +20,7 @@ metadata:
     config.kubernetes.io/local-config: "true"
 spec:
   info:
-    title: Generative AI Enterprise Knowledge Base
+    title: Generative AI Extractive Question and Answers
     source:
       repo: https://github.com/balajismaniam/terraform-genai-extractive-qa.git
       sourceType: git
@@ -29,9 +29,13 @@ spec:
       flavor: Terraform
       version: '>= 0.13'
     description:
-      tagline: TAGLINE
+      tagline: Create a chatbot powered by an extractive QA LLM model.
       detailed: |-
-        DESCRIPTION.
+        This solution showcases how to extract question & answer pairs out of documents
+        using Generative AI. It provides end-to-end demonstration of QA extraction and
+        fine-tuning of a large language model (LLM) on Vertex AI. Along the way, the
+        solution utilizes Cloud Vision Optical Character Recognition (OCR), Firestore,
+        Vertex AI Pipelines, and Cloud Run.
       preDeploy: To deploy this blueprint you must have an active billing account and billing permissions.
     icon: assets/icon.png
     deploymentDuration:
@@ -70,39 +74,34 @@ spec:
       - bucket — for instance, through the Console UI or gcloud. This upload triggers Eventarc to begin the Document Processing phase.
       - 8. As a result of the direct upload to Cloud Storage, Eventarc triggers the Document Processing phase, handled by Cloud Functions.
     documentation:
-    - title: Generative AI Enterprise Knowledge Base
-      url: https://cloud.google.com/architecture/ai-ml/generative-ai-document-summarization
+    - title: Generative AI Extractive Q & A
     examples:
     - name: simple_example
       location: examples/simple_example
   interfaces:
     variables:
-    - name: bucket_name
-      description: The name of the bucket to create
+    - name: disable_services_on_destroy
+      description: Whether project services will be disabled when the resources are destroyed.
+      varType: bool
+      defaultValue: false
+    - name: documentai_location
+      description: Document AI location
       varType: string
-      defaultValue: genai-doc-summary-webhook-1234
-    - name: gcf_timeout_seconds
-      description: GCF execution timeout
-      varType: number
-      defaultValue: 900
+      defaultValue: us
+    - name: firestore_location
+      description: Firestore location
+      varType: string
+      defaultValue: nam5
+    - name: location
+      description: Google Cloud location
+      varType: string
+      defaultValue: us-central1
     - name: project_id
       description: The Google Cloud project ID to deploy to
       varType: string
       required: true
-    - name: region
-      description: Google Cloud region
-      varType: string
-      defaultValue: us-central1
-    - name: time_to_enable_apis
-      description: Wait time to enable APIs in new projects
-      varType: string
-      defaultValue: 180s
-    - name: webhook_name
-      description: Name of the webhook
-      varType: string
-      defaultValue: webhook
     - name: webhook_path
-      description: Path to the webhook directory
+      description: Path to the webhook source directory
       varType: string
       defaultValue: webhook
     outputs:
@@ -129,15 +128,10 @@ spec:
       - roles/storage.admin
     services:
     - aiplatform.googleapis.com
-    - artifactregistry.googleapis.com
-    - bigquery.googleapis.com
     - cloudbuild.googleapis.com
     - cloudfunctions.googleapis.com
-    - cloudresourcemanager.googleapis.com
+    - documentai.googleapis.com
     - eventarc.googleapis.com
-    - iam.googleapis.com
+    - firestore.googleapis.com
     - run.googleapis.com
-    - serviceusage.googleapis.com
-    - storage-api.googleapis.com
     - storage.googleapis.com
-    - vision.googleapis.com
