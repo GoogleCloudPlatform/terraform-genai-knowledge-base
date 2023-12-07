@@ -72,6 +72,7 @@ def resources() -> Iterator[dict]:
             "apply",
             "-auto-approve",
             f"-var=project_id={PROJECT_ID}",
+            "-var=enable_apis=false",
             *[f"-var={name}={value}" for name, value in resources.items()],
             "-target=google_storage_bucket.main",
             "-target=google_document_ai_processor.document_processor",
