@@ -24,7 +24,7 @@ import storage_utils
 import vertexai_utils
 
 # Optional variables.
-LOCATION = os.environ.get("LOCATION", "us-central1")
+VERTEXAI_LOCATION = os.environ.get("VERTEXAI_LOCATION", "us-central1")
 DATASET_COLLECTION = os.environ.get("QA_COLLECTION", "dataset")
 EVENTS_COLLECTION = os.environ.get("EVENTS_COLLECTION", "events")
 OUTPUT_NAME = os.environ.get("OUTPUT_NAME", "dataset.jsonl")
@@ -35,8 +35,8 @@ def process_document(
     input_bucket: str,
     input_name: str,
     mime_type: str,
-    docai_prcessor_id: str,
     time_uploaded: datetime,
+    docai_prcessor_id: str,
     output_bucket: str,
     database: str,
 ) -> None:
@@ -62,7 +62,7 @@ def process_document(
     )
 
     print(f"🔍 {event_id}: Generating Q&As with model")
-    questions_answers = vertexai_utils.generate_questions(text, LOCATION)
+    questions_answers = vertexai_utils.generate_questions(text, VERTEXAI_LOCATION)
     for q, a in questions_answers:
         print(f"  - Q: {q}")
         print(f"    A: {a}")
