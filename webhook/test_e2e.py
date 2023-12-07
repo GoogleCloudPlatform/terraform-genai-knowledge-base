@@ -64,7 +64,7 @@ def resources() -> Iterator[dict]:
     }
     print(f"resources={json.dumps(resources, indent=2)}")
     if not os.environ.get("SKIP_INIT"):
-        run_cmd("terraform", "-chdir=..", "fmt")
+        run_cmd("terraform", "-chdir=..", "init")
     if not os.environ.get("SKIP_APPLY"):
         run_cmd(
             "terraform",
