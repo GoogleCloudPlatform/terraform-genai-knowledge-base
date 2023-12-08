@@ -87,7 +87,7 @@ def process_document(
     print(f"📝 {event_id}: Writing tuning dataset: gs://{output_bucket}/{OUTPUT_NAME}")
     dataset_size = 0
     with storage_utils.write(output_bucket, OUTPUT_NAME) as f:
-        for question, entry in firestore_utils.read(db, DATASET_COLLECTION):
+        for _, entry in firestore_utils.read(db, DATASET_COLLECTION):
             line = {"input_text": entry["question"], "output_text": entry["answer"]}
             f.write(f"{json.dumps(line)}\n")
             dataset_size += 1
