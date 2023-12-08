@@ -74,6 +74,7 @@ jobs:
       - run: terraform init
       - run: terraform validate
       - run: terraform apply
+          -input=false
           -auto-approve
           -target=google_storage_bucket.main
           # -target=google_document_ai_processor.document_processor
@@ -99,4 +100,6 @@ jobs:
       #     source env/bin/activate
       #     pytest --verbose
 
-      - run: terraform destroy -auto-approve
+      - run: terraform destroy 
+          -input=false
+          -auto-approve
