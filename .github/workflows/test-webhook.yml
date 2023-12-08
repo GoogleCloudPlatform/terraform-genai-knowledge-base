@@ -19,22 +19,22 @@ on:
     branches:
       - main
     paths:
-      - .github/workflows/test-webhook.yaml
+      - .github/workflows/test-webhook.yml
       - webhook/**
   pull_request:
     branches:
       - main
     paths:
-      - .github/workflows/test-webhook.yaml
+      - .github/workflows/test-webhook.yml
       - webhook/**
   pull_request_target:
     types: [labeled]
     paths:
-      - .github/workflows/test-webhook.yaml
+      - .github/workflows/test-webhook.yml
       - webhook/**
   workflow_dispatch: # Manual runs
   schedule: # Run tests every day at UTC 9:00A
-    - cron: 0 9 * * *
+    - cron: '0 9 * * *'
 
 jobs:
   test-webhook:
@@ -71,19 +71,6 @@ jobs:
         with:
           workload_identity_provider: projects/886556137211/locations/global/workloadIdentityPools/github-actions/providers/github-actions
           service_account: github-actions@jss-22p1-test.iam.gserviceaccount.com
-          # create_credentials_file: true
-
-      # - run: terraform init
-      # - run: terraform validate
-      # - run: terraform apply
-      #     -input=false
-      #     -auto-approve
-      #     -var="project_id=${{ env.PROJECT_ID }}"
-      #     -target=google_storage_bucket.main
-      #     # -target=google_document_ai_processor.document_processor
-      #     # -target=google_firestore_database.database
-      #   env:
-      #     GOOGLE_CREDENTIALS: ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
 
       - name: Cache dependencies
         uses: actions/cache@v3
@@ -104,9 +91,3 @@ jobs:
         run: |
           source env/bin/activate
           pytest --verbose
-
-      # - run: terraform destroy 
-      #     -input=false
-      #     -auto-approve
-      #   env:
-      #     GOOGLE_CREDENTIALS: ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
