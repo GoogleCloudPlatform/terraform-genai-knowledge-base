@@ -17,11 +17,11 @@
 ```sh
 export PROJECT_ID=my-project
 export UUID=$USER
+export SKIP_DESTROY=1
 python -m pytest -v -s -W ignore::DeprecationWarning
 
 export SKIP_INIT=1
 export SKIP_APPLY=1
-export SKIP_DESTROY=1
 
 unset SKIP_INIT
 unset SKIP_APPLY
