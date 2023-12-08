@@ -34,19 +34,25 @@ module "project_services" {
   ]
 }
 
+locals {
+  bucket_docs = var.bucket_docs == "" ? "${var.project_id}-docs" : var.bucket_docs
+  bucket_main = var.bucket_main == "" ? "${var.project_id}-main" : var.bucket_main
+}
+
+
 #-- Cloud Storage buckets --#
 resource "google_storage_bucket" "docs" {
   project                     = module.project_services.project_id
-  name                        = "${var.project_id}-docs"
-  location                    = var.location
+  name                        = local.bucket_docs
+  location                    = var.storage_location
   force_destroy               = true
   uniform_bucket_level_access = true
 }
 
-resource "google_storage_bucket" "storage" {
+resource "google_storage_bucket" "main" {
   project                     = module.project_services.project_id
-  name                        = "${var.project_id}-storage"
-  location                    = var.location
+  name                        = local.bucket_main
+  location                    = var.storage_location
   force_destroy               = true
   uniform_bucket_level_access = true
 }
@@ -54,15 +60,15 @@ resource "google_storage_bucket" "storage" {
 #-- Cloud Function webhook --#
 resource "google_cloudfunctions2_function" "webhook" {
   project  = module.project_services.project_id
-  name     = "webhook"
-  location = var.location
+  name     = var.webhook_name
+  location = var.webhook_location
 
   build_config {
     runtime     = "python312"
     entry_point = "on_cloud_event"
     source {
       storage_source {
-        bucket = google_storage_bucket.storage.name
+        bucket = google_storage_bucket.main.name
         object = google_storage_bucket_object.webhook_staging.name
       }
     }
@@ -72,12 +78,12 @@ resource "google_cloudfunctions2_function" "webhook" {
     available_memory      = "1G"
     service_account_email = google_service_account.webhook.email
     environment_variables = {
-      PROJECT_ID      = module.project_services.project_id
-      LOCATION        = var.location
-      OUTPUT_BUCKET   = google_storage_bucket.storage.name
-      DOCAI_PROCESSOR = google_document_ai_processor.document_processor.id
-      DOCAI_LOCATION  = google_document_ai_processor.document_processor.location
-      DATABASE        = google_firestore_database.database.name
+      PROJECT_ID        = module.project_services.project_id
+      VERTEXAI_LOCATION = var.vertexai_location
+      OUTPUT_BUCKET     = google_storage_bucket.main.name
+      DOCAI_PROCESSOR   = google_document_ai_processor.ocr.id
+      DOCAI_LOCATION    = google_document_ai_processor.ocr.location
+      DATABASE          = google_firestore_database.database.name
     }
   }
 }
@@ -106,15 +112,15 @@ data "archive_file" "webhook_staging" {
 
 resource "google_storage_bucket_object" "webhook_staging" {
   name   = "staging/webhook.${data.archive_file.webhook_staging.output_base64sha256}.zip"
-  bucket = google_storage_bucket.storage.name
+  bucket = google_storage_bucket.main.name
   source = data.archive_file.webhook_staging.output_path
 }
 
 #-- Eventarc trigger --#
 resource "google_eventarc_trigger" "trigger" {
   project         = module.project_services.project_id
-  location        = var.location
-  name            = "eventarc-trigger"
+  location        = var.webhook_location
+  name            = var.trigger_name
   service_account = google_service_account.trigger.email
 
   matching_criteria {
@@ -129,7 +135,7 @@ resource "google_eventarc_trigger" "trigger" {
   destination {
     cloud_run_service {
       service = google_cloudfunctions2_function.webhook.name
-      region  = var.location
+      region  = var.webhook_location
     }
   }
 }
@@ -171,17 +177,17 @@ resource "google_project_service_identity" "eventarc_agent" {
 }
 
 #-- Document AI --#
-resource "google_document_ai_processor" "document_processor" {
+resource "google_document_ai_processor" "ocr" {
   project      = module.project_services.project_id
   location     = var.documentai_location
-  display_name = "document-processor"
+  display_name = var.documentai_processor_name
   type         = "OCR_PROCESSOR"
 }
 
 #-- Firestore --#
 resource "google_firestore_database" "database" {
   project         = module.project_services.project_id
-  name            = "questions-database"
+  name            = var.firestore_database_name
   location_id     = var.firestore_location
   type            = "FIRESTORE_NATIVE"
   deletion_policy = "DELETE"

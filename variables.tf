@@ -25,16 +25,64 @@ variable "project_id" {
 }
 
 # Optional variables
-variable "location" {
-  description = "Google Cloud location"
+variable "bucket_docs" {
+  description = "Google Cloud Storage bucket for documents"
+  type        = string
+  default     = ""
+}
+
+variable "bucket_main" {
+  description = "Google Cloud Storage bucket for staging and dataset files"
+  type        = string
+  default     = ""
+}
+
+variable "storage_location" {
+  description = "Cloud Storage buckets location"
   type        = string
   default     = "us-central1"
+}
+
+variable "webhook_name" {
+  description = "Name of the Cloud Function webhook"
+  type        = string
+  default     = "webhook"
+}
+
+variable "webhook_location" {
+  description = "Cloud Function location"
+  type        = string
+  default     = "us-central1"
+}
+
+variable "trigger_name" {
+  description = "Name of the Cloud Function trigger"
+  type        = string
+  default     = "docs-trigger"
+}
+
+variable "vertexai_location" {
+  description = "Vertex AI location"
+  type        = string
+  default     = "us-central1"
+}
+
+variable "documentai_processor_name" {
+  description = "Document AI processor name"
+  type        = string
+  default     = "docs-processor"
 }
 
 variable "documentai_location" {
   description = "Document AI location"
   type        = string
   default     = "us"
+}
+
+variable "firestore_database_name" {
+  description = "Firestore database name"
+  type        = string
+  default     = "docs-questions"
 }
 
 variable "firestore_location" {
