@@ -73,7 +73,8 @@ jobs:
 
       - run: terraform init
       - run: terraform validate
-      - run: terraform apply 
+      - run: terraform apply
+          -auto-approve
           -target=google_storage_bucket.main
           # -target=google_document_ai_processor.document_processor
           # -target=google_firestore_database.database
@@ -98,4 +99,4 @@ jobs:
       #     source env/bin/activate
       #     pytest --verbose
 
-      - run: terraform destroy
+      - run: terraform destroy -auto-approve
