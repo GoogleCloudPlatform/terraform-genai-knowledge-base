@@ -65,11 +65,13 @@ jobs:
 
       # https://github.com/marketplace/actions/authenticate-to-google-cloud
       # https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-google-cloud-platform
-      - name: Authenticate to Google Cloud
+      - id: auth
+        name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: projects/886556137211/locations/global/workloadIdentityPools/github-actions/providers/github
           service_account: github-actions@jss-22p1-test.iam.gserviceaccount.com
+          create_credentials_file: true
 
       - run: terraform init
       - run: terraform validate
