@@ -91,12 +91,6 @@ variable "firestore_location" {
   default     = "nam5" # US
 }
 
-variable "enable_apis" {
-  description = "Whether to enable APIs for the project."
-  type        = bool
-  default     = true
-}
-
 variable "disable_services_on_destroy" {
   description = "Whether project services will be disabled when the resources are destroyed."
   type        = bool
