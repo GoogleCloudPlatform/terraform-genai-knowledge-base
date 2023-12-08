@@ -76,6 +76,7 @@ jobs:
       - run: terraform apply
           -input=false
           -auto-approve
+          -var="project_id=$PROJECT_ID"
           -target=google_storage_bucket.main
           # -target=google_document_ai_processor.document_processor
           # -target=google_firestore_database.database
