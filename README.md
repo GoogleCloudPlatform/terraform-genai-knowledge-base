@@ -63,6 +63,7 @@ Deployment: 10 mins
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| disable\_services\_on\_destroy | Whether project services will be disabled when the resources are destroyed. | `bool` | `false` | no |
 | documentai\_location | Document AI location | `string` | `"us"` | no |
 | firestore\_location | Firestore location | `string` | `"nam5"` | no |
 | location | Google Cloud location | `string` | `"us-central1"` | no |
