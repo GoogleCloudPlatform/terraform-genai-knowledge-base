@@ -53,37 +53,37 @@ def run_cmd(*cmd: str) -> None:
     subprocess.run(cmd, check=True)
 
 
-@pytest.fixture(scope="session")
-def resources() -> Iterator[dict]:
-    print(f"{PROJECT_ID=}")
-    print(f"{UUID=}")
-    resources = {
-        "bucket_main": f"{PROJECT_ID}-{UUID}",
-        "documentai_processor_name": f"test-webhook-{UUID}",
-        "firestore_database_name": f"test-webhook-{UUID}",
-    }
-    print(f"resources={json.dumps(resources, indent=2)}")
-    if not os.environ.get("SKIP_INIT"):
-        run_cmd("terraform", "-chdir=..", "init")
-    if not os.environ.get("SKIP_APPLY"):
-        run_cmd(
-            "terraform",
-            "-chdir=..",
-            "apply",
-            "-auto-approve",
-            f"-var=project_id={PROJECT_ID}",
-            "-var=enable_apis=false",
-            *[f"-var={name}={value}" for name, value in resources.items()],
-            "-target=google_storage_bucket.main",
-            "-target=google_document_ai_processor.document_processor",
-            "-target=google_firestore_database.database",
-        )
-    yield resources
-    if not os.environ.get("SKIP_DESTROY"):
-        run_cmd("terraform", "-chdir=..", "destroy", "-auto-approve")
+# @pytest.fixture(scope="session")
+# def resources() -> Iterator[dict]:
+#     print(f"{PROJECT_ID=}")
+#     print(f"{UUID=}")
+#     resources = {
+#         "bucket_main": f"{PROJECT_ID}-{UUID}",
+#         "documentai_processor_name": f"test-webhook-{UUID}",
+#         "firestore_database_name": f"test-webhook-{UUID}",
+#     }
+#     print(f"resources={json.dumps(resources, indent=2)}")
+#     if not os.environ.get("SKIP_INIT"):
+#         run_cmd("terraform", "-chdir=..", "init")
+#     if not os.environ.get("SKIP_APPLY"):
+#         run_cmd(
+#             "terraform",
+#             "-chdir=..",
+#             "apply",
+#             "-auto-approve",
+#             f"-var=project_id={PROJECT_ID}",
+#             "-var=enable_apis=false",
+#             *[f"-var={name}={value}" for name, value in resources.items()],
+#             "-target=google_storage_bucket.main",
+#             "-target=google_document_ai_processor.document_processor",
+#             "-target=google_firestore_database.database",
+#         )
+#     yield resources
+#     if not os.environ.get("SKIP_DESTROY"):
+#         run_cmd("terraform", "-chdir=..", "destroy", "-auto-approve")
 
 
-def test_end_to_end(resources: dict) -> None:
+def test_end_to_end() -> None:
     print(f">> process_document")
     process_document(
         event_id=f"webhook-test-{UUID}",

@@ -71,22 +71,31 @@ jobs:
           workload_identity_provider: projects/886556137211/locations/global/workloadIdentityPools/github-actions/providers/github
           service_account: github-actions@jss-22p1-test.iam.gserviceaccount.com
 
-      - name: Cache dependencies
-        uses: actions/cache@v3
-        with:
-          path: webhook/env
-          key: ${{ runner.os }}-env-${{ hashFiles('webhook/requirements.txt', 'webhook/requirements-test.txt') }}
+      - run: terraform init
+      - run: terraform validate
+      - run: terraform apply 
+          -target=google_storage_bucket.main
+          # -target=google_document_ai_processor.document_processor
+          # -target=google_firestore_database.database
 
-      - name: Install dependencies
-        working-directory: webhook
-        run: |
-          python -m venv env
-          source env/bin/activate
-          pip install --upgrade pip
-          pip install -r requirements.txt -r requirements-test.txt
+      # - name: Cache dependencies
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: webhook/env
+      #     key: ${{ runner.os }}-env-${{ hashFiles('webhook/requirements.txt', 'webhook/requirements-test.txt') }}
 
-      - name: Run tests
-        working-directory: webhook
-        run: |
-          source env/bin/activate
-          pytest --verbose
+      # - name: Install dependencies
+      #   working-directory: webhook
+      #   run: |
+      #     python -m venv env
+      #     source env/bin/activate
+      #     pip install --upgrade pip
+      #     pip install -r requirements.txt -r requirements-test.txt
+
+      # - name: Run tests
+      #   working-directory: webhook
+      #   run: |
+      #     source env/bin/activate
+      #     pytest --verbose
+
+      - run: terraform destroy
