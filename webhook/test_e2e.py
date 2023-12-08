@@ -92,29 +92,28 @@ def resources() -> Iterator[dict]:
 
 def test_end_to_end(resources: dict) -> None:
     print(f">> process_document")
-    # process_document(
-    #     event_id=f"webhook-test-{UUID}",
-    #     input_bucket="arxiv-dataset",
-    #     input_name="arxiv/cmp-lg/pdf/9410/9410009v1.pdf",
-    #     mime_type="application/pdf",
-    #     time_uploaded=datetime.datetime.now(),
-    #     docai_prcessor_id=resources["documentai_processor_name"],
-    #     output_bucket=resources["bucket_main"],
-    #     database=resources["firestore_database_name"],
-    #     force_reprocess=True,
-    # )
+    process_document(
+        event_id=f"webhook-test-{UUID}",
+        input_bucket="arxiv-dataset",
+        input_name="arxiv/cmp-lg/pdf/9410/9410009v1.pdf",
+        mime_type="application/pdf",
+        time_uploaded=datetime.datetime.now(),
+        docai_prcessor_id=resources["documentai_processor_name"],
+        output_bucket=resources["bucket_main"],
+        database=resources["firestore_database_name"],
+        force_reprocess=True,
+    )
 
-    # # Make sure we have a non-empty dataset.
-    # print(f">> Checking output bucket")
-    # with storage_utils.read(resources["bucket_main"], OUTPUT_NAME) as f:
-    #     lines = [line.strip() for line in f]
-    #     print(f"dataset {len(lines)=}")
-    #     assert len(lines) > 0, "expected a non-empty dataset in the output bucket"
+    # Make sure we have a non-empty dataset.
+    print(f">> Checking output bucket")
+    with storage_utils.read(resources["bucket_main"], OUTPUT_NAME) as f:
+        lines = [line.strip() for line in f]
+        print(f"dataset {len(lines)=}")
+        assert len(lines) > 0, "expected a non-empty dataset in the output bucket"
 
-    # # Make sure the Firestore database is populated.
-    # print(f">> Checking Firestore database")
-    # db = firestore.Client(database=resources["firestore_database_name"])
-    # entries = list(firestore_utils.read(db, DATASET_COLLECTION))
-    # print(f"database {len(entries)=}")
-    # assert len(entries) == len(lines), "database entries do not match the dataset"
-    print("Terraform success")
+    # Make sure the Firestore database is populated.
+    print(f">> Checking Firestore database")
+    db = firestore.Client(database=resources["firestore_database_name"])
+    entries = list(firestore_utils.read(db, DATASET_COLLECTION))
+    print(f"database {len(entries)=}")
+    assert len(entries) == len(lines), "database entries do not match the dataset"
