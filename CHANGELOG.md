@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/GoogleCloudPlatform/terraform-genai-enterprise-knowledge-base/compare/v0.1.0...v0.1.1) (2023-12-08)
+
+
+### Bug Fixes
+
+* added envar for generating metadata ([#25](https://github.com/GoogleCloudPlatform/terraform-genai-enterprise-knowledge-base/issues/25)) ([c208ebf](https://github.com/GoogleCloudPlatform/terraform-genai-enterprise-knowledge-base/commit/c208ebf3fd8f96504c8f84f1415fef7a375aba8a))
+
 ## 0.1.0 (2023-12-01)
 
 

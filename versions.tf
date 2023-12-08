@@ -36,6 +36,6 @@ terraform {
   }
 
   provider_meta "google" {
-    module_name = "blueprints/terraform/genai-extractive-qa/v0.1.0"
+    module_name = "blueprints/terraform/genai-extractive-qa/v0.1.1"
   }
 }
