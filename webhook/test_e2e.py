@@ -37,6 +37,7 @@ import pytest
 import subprocess
 import sys
 import uuid
+from typing import Any
 
 from google.cloud import firestore
 
@@ -48,9 +49,9 @@ PROJECT_ID = os.environ["PROJECT_ID"]
 UUID = os.environ.get("UUID", uuid.uuid4().hex[:6])
 
 
-def run_cmd(*cmd: str) -> None:
+def run_cmd(*cmd: str, **kwargs: Any) -> subprocess.CompletedProcess:
     print(f">> {cmd}")
-    subprocess.run(cmd, check=True)
+    return subprocess.run(cmd, check=True, **kwargs)
 
 
 @pytest.fixture(scope="session")
@@ -75,7 +76,7 @@ def resources() -> Iterator[dict]:
             f"-var=project_id={PROJECT_ID}",
             *[f"-var={name}={value}" for name, value in resources.items()],
             "-target=google_storage_bucket.main",
-            "-target=google_document_ai_processor.document_processor",
+            "-target=google_document_ai_processor.ocr",
             "-target=google_firestore_database.database",
         )
     yield resources
@@ -90,7 +91,18 @@ def resources() -> Iterator[dict]:
         )
 
 
-def test_end_to_end(resources: dict) -> None:
+@pytest.fixture(scope="session")
+def outputs(resources: dict) -> dict[str, str]:
+    p = run_cmd("terraform", "-chdir=..", "output", "-json", stdout=subprocess.PIPE)
+    outputs = {
+        name: value["value"]
+        for name, value in json.loads(p.stdout.decode("utf-8")).items()
+    }
+    print(f"{outputs=}")
+    return outputs
+
+
+def test_end_to_end(resources: dict, outputs: dict[str, str]) -> None:
     print(f">> process_document")
     process_document(
         event_id=f"webhook-test-{UUID}",
@@ -98,7 +110,7 @@ def test_end_to_end(resources: dict) -> None:
         input_name="arxiv/cmp-lg/pdf/9410/9410009v1.pdf",
         mime_type="application/pdf",
         time_uploaded=datetime.datetime.now(),
-        docai_prcessor_id=resources["documentai_processor_name"],
+        docai_prcessor_id=outputs["documentai_processor_id"],
         output_bucket=resources["bucket_main"],
         database=resources["firestore_database_name"],
         force_reprocess=True,

@@ -81,8 +81,8 @@ resource "google_cloudfunctions2_function" "webhook" {
       PROJECT_ID        = module.project_services.project_id
       VERTEXAI_LOCATION = var.vertexai_location
       OUTPUT_BUCKET     = google_storage_bucket.main.name
-      DOCAI_PROCESSOR   = google_document_ai_processor.document_processor.id
-      DOCAI_LOCATION    = google_document_ai_processor.document_processor.location
+      DOCAI_PROCESSOR   = google_document_ai_processor.ocr.id
+      DOCAI_LOCATION    = google_document_ai_processor.ocr.location
       DATABASE          = google_firestore_database.database.name
     }
   }
@@ -177,7 +177,7 @@ resource "google_project_service_identity" "eventarc_agent" {
 }
 
 #-- Document AI --#
-resource "google_document_ai_processor" "document_processor" {
+resource "google_document_ai_processor" "ocr" {
   project      = module.project_services.project_id
   location     = var.documentai_location
   display_name = var.documentai_processor_name
