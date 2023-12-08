@@ -58,17 +58,32 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
-      # https://github.com/marketplace/actions/authenticate-to-google-cloud
-      # https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-google-cloud-platform
-      - uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: projects/886556137211/locations/global/workloadIdentityPools/github-actions/providers/github
-          service_account: github-actions@jss-22p1-test.iam.gserviceaccount.com
-
+      - uses: hashicorp/setup-terraform@v3
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+
+      # https://github.com/marketplace/actions/authenticate-to-google-cloud
+      # https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-google-cloud-platform
+      - id: auth
+        name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/886556137211/locations/global/workloadIdentityPools/github-actions/providers/github-actions
+          service_account: github-actions@jss-22p1-test.iam.gserviceaccount.com
+          # create_credentials_file: true
+
+      # - run: terraform init
+      # - run: terraform validate
+      # - run: terraform apply
+      #     -input=false
+      #     -auto-approve
+      #     -var="project_id=${{ env.PROJECT_ID }}"
+      #     -target=google_storage_bucket.main
+      #     # -target=google_document_ai_processor.document_processor
+      #     # -target=google_firestore_database.database
+      #   env:
+      #     GOOGLE_CREDENTIALS: ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
 
       - name: Cache dependencies
         uses: actions/cache@v3
@@ -88,6 +103,10 @@ jobs:
         working-directory: webhook
         run: |
           source env/bin/activate
-          pytest
-        env:
-          PYTHONPATH: ${{ github.workspace }}/webhook/
+          pytest --verbose
+
+      # - run: terraform destroy 
+      #     -input=false
+      #     -auto-approve
+      #   env:
+      #     GOOGLE_CREDENTIALS: ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
