@@ -14,19 +14,58 @@
 
 """End-to-end test of the process_document function.
 
+## Prerequisites
+
+Make sure you `cd` into this directory before running the tests.
+
 ```sh
+# Specify the project ID to use for the test.
 export PROJECT_ID=my-project
-export UUID=$USER
-export SKIP_DESTROY=1
-python -m pytest -v -s -W ignore::DeprecationWarning
 
-export SKIP_INIT=1
-export SKIP_APPLY=1
-
-unset SKIP_INIT
-unset SKIP_APPLY
-unset SKIP_DESTROY
+# Install the dependencies on a virtual environment.
+python -m venv env
+source env/bin/activate
+pip install -r requirements.txt -r requirements-test.txt
 ```
+
+Authenticate:
+
+```sh
+gcloud auth application-default login
+```
+
+## Running the tests end-to-end
+
+To run the tests creating and destroying all resources, run:
+
+```sh
+# Ignore deprecation warnings for cleaner outputs.
+python -m pytest -v -s -W ignore::DeprecationWarning
+```
+
+## Running the tests for debugging
+
+Choose the unique resource names to use for the test:
+
+```sh
+export TEST_BUCKET_MAIN=$USER-$PROJECT_ID
+export TEST_DOCUMENTAI_PROCESSOR_NAME=$USER-processor
+export TEST_FIRESTORE_DATABASE_NAME=$USER-database
+```
+
+Then, run the tests:
+
+```sh
+export TEST_SKIP_DESTROY=1
+python -m pytest -v -s -W ignore::DeprecationWarning
+```
+
+Once you're finished, delete the resources:
+
+```sh
+terraform -chdir=.. destroy -auto-approve
+```
+
 """
 
 from collections.abc import Iterator
@@ -35,7 +74,6 @@ import json
 import os
 import pytest
 import subprocess
-import sys
 import uuid
 from typing import Any
 
@@ -56,36 +94,38 @@ def run_cmd(*cmd: str, **kwargs: Any) -> subprocess.CompletedProcess:
 
 @pytest.fixture(scope="session")
 def resources() -> Iterator[dict]:
+    print("---")
     print(f"{PROJECT_ID=}")
     print(f"{UUID=}")
     resources = {
-        "bucket_main": f"{PROJECT_ID}-{UUID}",
-        "documentai_processor_name": f"test-webhook-{UUID}",
-        "firestore_database_name": f"test-webhook-{UUID}",
+        "bucket_main": os.environ.get("TEST_BUCKET_MAIN", f"{PROJECT_ID}-{UUID}"),
+        "documentai_processor_name": os.environ.get(
+            "TEST_DOCUMENTAI_PROCESSOR_NAME", f"test-webhook-{UUID}"
+        ),
+        "firestore_database_name": os.environ.get(
+            "TEST_FIRESTORE_DATABASE_NAME", f"test-webhook-{UUID}"
+        ),
     }
     print(f"resources={json.dumps(resources, indent=2)}")
-    if not os.environ.get("SKIP_INIT"):
-        run_cmd("terraform", "-chdir=..", "init", "-input=false")
-    if not os.environ.get("SKIP_APPLY"):
-        run_cmd(
-            "terraform",
-            "-chdir=..",
-            "apply",
-            "-input=false",
-            "-auto-approve",
-            f"-var=project_id={PROJECT_ID}",
-            *[f"-var={name}={value}" for name, value in resources.items()],
-            "-target=google_storage_bucket.main",
-            "-target=google_document_ai_processor.ocr",
-            "-target=google_firestore_database.database",
-        )
+    run_cmd("terraform", "-chdir=..", "init", "-input=false")
+    run_cmd(
+        "terraform",
+        "-chdir=..",
+        "apply",
+        "-input=false",
+        "-auto-approve",
+        f"-var=project_id={PROJECT_ID}",
+        *[f"-var={name}={value}" for name, value in resources.items()],
+        "-target=google_storage_bucket.main",
+        "-target=google_document_ai_processor.ocr",
+        "-target=google_firestore_database.database",
+    )
     yield resources
-    if not os.environ.get("SKIP_DESTROY"):
+    if not os.environ.get("TEST_SKIP_DESTROY"):
         run_cmd(
             "terraform",
             "-chdir=..",
             "destroy",
-            "-input=false",
             "-auto-approve",
             f"-var=project_id={PROJECT_ID}",
         )
