@@ -24,7 +24,7 @@ spec:
     source:
       repo: https://github.com/balajismaniam/terraform-genai-extractive-qa.git
       sourceType: git
-    version: 0.1.0
+    version: 0.1.1
     actuationTool:
       flavor: Terraform
       version: '>= 0.13'
