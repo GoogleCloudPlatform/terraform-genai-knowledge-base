@@ -16,7 +16,19 @@
 
 ## Prerequisites
 
+Authenticate:
+
+```sh
+gcloud auth application-default login
+```
+
 Make sure you `cd` into this directory before running the tests.
+
+```sh
+cd webhook/
+```
+
+Install the dependencies:
 
 ```sh
 # Specify the project ID to use for the test.
@@ -28,12 +40,6 @@ source env/bin/activate
 pip install -r requirements.txt -r requirements-test.txt
 ```
 
-Authenticate:
-
-```sh
-gcloud auth application-default login
-```
-
 ## Running the tests end-to-end
 
 To run the tests creating and destroying all resources, run:
@@ -43,27 +49,34 @@ To run the tests creating and destroying all resources, run:
 python -m pytest -v -s -W ignore::DeprecationWarning
 ```
 
-## Running the tests for debugging
+## Running the tests with persistent resources
 
-Choose the unique resource names to use for the test:
+⚠️ WARNING: reusing resources from a previous run may lead to unexpected behavior.
+    For example, files created from a previous run may cause tests to succeed 
+    even if they should fail.
+
+To avoid creating and destroying resources when debugging, you can use
+persistent resources.
 
 ```sh
-export TEST_BUCKET_MAIN=$USER-$PROJECT_ID
-export TEST_DOCUMENTAI_PROCESSOR_NAME=$USER-processor
-export TEST_FIRESTORE_DATABASE_NAME=$USER-database
+export TEST_UUID=$USER
+export TEST_SKIP_DESTROY=1
 ```
 
 Then, run the tests:
 
 ```sh
-export TEST_SKIP_DESTROY=1
 python -m pytest -v -s -W ignore::DeprecationWarning
+
+# If you already have created the resources, you can skip all Terraform steps.
+export TEST_SKIP_INIT=1
+export TEST_SKIP_APPLY=1
 ```
 
-Once you're finished, delete the resources:
+Once you're finished, delete the resources manually:
 
 ```sh
-terraform -chdir=.. destroy -auto-approve
+terraform -chdir=.. destroy -auto-approve -var=project_id=$PROJECT_ID
 ```
 
 """
@@ -84,7 +97,7 @@ import firestore_utils
 from process_document import DATASET_COLLECTION, OUTPUT_NAME, process_document
 
 PROJECT_ID = os.environ["PROJECT_ID"]
-UUID = os.environ.get("UUID", uuid.uuid4().hex[:6])
+UUID = os.environ.get("TEST_UUID", uuid.uuid4().hex[:6])
 
 
 def run_cmd(*cmd: str, **kwargs: Any) -> subprocess.CompletedProcess:
@@ -107,25 +120,28 @@ def resources() -> Iterator[dict]:
         ),
     }
     print(f"resources={json.dumps(resources, indent=2)}")
-    run_cmd("terraform", "-chdir=..", "init", "-input=false")
-    run_cmd(
-        "terraform",
-        "-chdir=..",
-        "apply",
-        "-input=false",
-        "-auto-approve",
-        f"-var=project_id={PROJECT_ID}",
-        *[f"-var={name}={value}" for name, value in resources.items()],
-        "-target=google_storage_bucket.main",
-        "-target=google_document_ai_processor.ocr",
-        "-target=google_firestore_database.database",
-    )
+    if not os.environ.get("TEST_SKIP_INIT"):
+        run_cmd("terraform", "-chdir=..", "init", "-input=false")
+    if not os.environ.get("TEST_SKIP_APPLY"):
+        run_cmd(
+            "terraform",
+            "-chdir=..",
+            "apply",
+            "-input=false",
+            "-auto-approve",
+            f"-var=project_id={PROJECT_ID}",
+            *[f"-var={name}={value}" for name, value in resources.items()],
+            "-target=google_storage_bucket.main",
+            "-target=google_document_ai_processor.ocr",
+            "-target=google_firestore_database.database",
+        )
     yield resources
     if not os.environ.get("TEST_SKIP_DESTROY"):
         run_cmd(
             "terraform",
             "-chdir=..",
             "destroy",
+            "-input=false",
             "-auto-approve",
             f"-var=project_id={PROJECT_ID}",
         )
