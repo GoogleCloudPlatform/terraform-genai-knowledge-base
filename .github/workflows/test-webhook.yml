@@ -52,9 +52,10 @@ jobs:
       ACTIONS_STEP_DEBUG: true
 
     # Needed to generate the identity token for google-github-actions/auth.
+    # https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-google-cloud-platform
     permissions:
-      contents: read
-      id-token: write
+      id-token: write  # This is required for requesting the JWT
+      contents: read   # This is required for actions/checkout
 
     steps:
       - uses: actions/checkout@v4
