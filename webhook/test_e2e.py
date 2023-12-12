@@ -115,7 +115,7 @@ def resources() -> Iterator[dict]:
         "documentai_processor_name": os.environ.get(
             "TEST_DOCUMENTAI_PROCESSOR_NAME", f"test-webhook-{UUID}"
         ),
-        "firestore_database_name": os.environ.get(
+        "firestore_name": os.environ.get(
             "TEST_FIRESTORE_DATABASE_NAME", f"test-webhook-{UUID}"
         ),
     }
@@ -168,7 +168,7 @@ def test_end_to_end(resources: dict, outputs: dict[str, str]) -> None:
         time_uploaded=datetime.datetime.now(),
         docai_prcessor_id=outputs["documentai_processor_id"],
         output_bucket=resources["bucket_main"],
-        database=resources["firestore_database_name"],
+        database=resources["firestore_name"],
         force_reprocess=True,
     )
 
@@ -181,7 +181,7 @@ def test_end_to_end(resources: dict, outputs: dict[str, str]) -> None:
 
     # Make sure the Firestore database is populated.
     print(f">> Checking Firestore database")
-    db = firestore.Client(database=resources["firestore_database_name"])
+    db = firestore.Client(database=resources["firestore_name"])
     entries = list(firestore_utils.read(db, DATASET_COLLECTION))
     print(f"database {len(entries)=}")
     assert len(entries) == len(lines), "database entries do not match the dataset"
