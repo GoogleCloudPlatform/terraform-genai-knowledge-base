@@ -15,123 +15,130 @@
 apiVersion: blueprints.cloud.google.com/v1alpha1
 kind: BlueprintMetadata
 metadata:
-  name: terraform-genai-extractive-qa
+  name: terraform-genai-enterprise-knowledge-base
   annotations:
     config.kubernetes.io/local-config: "true"
 spec:
   info:
-    title: Generative AI Extractive Question and Answers
+    title: Generative AI Enterprise Knowledge base
     source:
-      repo: https://github.com/balajismaniam/terraform-genai-extractive-qa.git
+      repo: https://github.com/GoogleCloudPlatform/terraform-genai-enterprise-knowledge-base.git
       sourceType: git
     version: 0.1.1
     actuationTool:
       flavor: Terraform
-      version: '>= 0.13'
+      version: ">= 0.13"
     description:
-      tagline: Create a chatbot powered by an extractive QA LLM model.
+      tagline: Fine tune an LLM model to answer questions from your documents.
       detailed: |-
         This solution showcases how to extract question & answer pairs out of documents
-        using Generative AI. It provides end-to-end demonstration of QA extraction and
+        using Generative AI. It provides an end-to-end demonstration of QA extraction and
         fine-tuning of a large language model (LLM) on Vertex AI. Along the way, the
-        solution utilizes Cloud Vision Optical Character Recognition (OCR), Firestore,
-        Vertex AI Pipelines, and Cloud Run.
+        solution utilizes Document AI Character Recognition (OCR), Firestore,
+        Vertex AI Studio, and Cloud Functions.
       preDeploy: To deploy this blueprint you must have an active billing account and billing permissions.
     icon: assets/icon.png
     deploymentDuration:
-      configurationSecs: 60
-      deploymentSecs: 600
+      configurationSecs: "120"
+      deploymentSecs: "480"
     costEstimate:
       description: Cost Details
       url: https://cloud.google.com/products/calculator/#id=78888c9b-02ac-4130-9327-fecd7f4cfb11
-    cloudProducts:
-    - productId: VERTEX_SECTION
-      pageUrl: ""
-      label: Vertex AI
-    - productId: VISION_SECTION
-      pageUrl: ""
-      label: Vertex AI Vision
-    - productId: search_FIRESTORE_SECTION
-      pageUrl: ""
-      label: Cloud Firestore
-    - productId: FUNCTIONS_SECTION
-      pageUrl: ""
-      label: Cloud Functions
-    - productId: STORAGE_SECTION
-      pageUrl: ""
-      label: Cloud Storage
   content:
-    architecture:
-      diagramUrl: https://www.gstatic.com/pantheon/images/solutions/gen_ai_document_summarization_architecture_v1.svg
-      description:
-      - 1. The developer follows a tutorial on a Jupyter Notebook, where they upload a PDF — either through Vertex AI Workbench or Colaboratory.
-      - 2. The uploaded PDF file is sent to a function running on Cloud Functions. This function handles PDF file processing.
-      - 3. The Cloud Function uses Cloud Vision to extract all text from the PDF file.
-      - 4. The Cloud Function stores the extracted text inside a Cloud Storage bucket.
-      - 5. The Cloud Function uses Vertex AI’s LLM API to summarize the extracted text.
-      - 6. The Cloud Function stores the text summaries of PDFs in BigQuery tables.
-      - 7. As an alternative to uploading PDF files through Jupyter Notebook, the developer can upload a PDF file directly to a Cloud Storage
-      - bucket — for instance, through the Console UI or gcloud. This upload triggers Eventarc to begin the Document Processing phase.
-      - 8. As a result of the direct upload to Cloud Storage, Eventarc triggers the Document Processing phase, handled by Cloud Functions.
     documentation:
-    - title: Generative AI Extractive Q & A
+      - title: Enterprise Knowledge Base using Generative AI
     examples:
-    - name: simple_example
-      location: examples/simple_example
+      - name: simple_example
+        location: examples/simple_example
   interfaces:
     variables:
-    - name: disable_services_on_destroy
-      description: Whether project services will be disabled when the resources are destroyed.
-      varType: bool
-      defaultValue: false
-    - name: documentai_location
-      description: Document AI location
-      varType: string
-      defaultValue: us
-    - name: firestore_location
-      description: Firestore location
-      varType: string
-      defaultValue: nam5
-    - name: location
-      description: Google Cloud location
-      varType: string
-      defaultValue: us-central1
-    - name: project_id
-      description: The Google Cloud project ID to deploy to
-      varType: string
-      required: true
-    - name: webhook_path
-      description: Path to the webhook source directory
-      varType: string
-      defaultValue: webhook
+      - name: bucket_docs
+        description: Google Cloud Storage bucket for documents
+        varType: string
+        defaultValue: ""
+      - name: bucket_main
+        description: Google Cloud Storage bucket for staging and dataset files
+        varType: string
+        defaultValue: ""
+      - name: disable_services_on_destroy
+        description: Whether project services will be disabled when the resources are destroyed.
+        varType: bool
+        defaultValue: false
+      - name: documentai_location
+        description: Document AI location
+        varType: string
+        defaultValue: us
+      - name: documentai_processor_name
+        description: Document AI processor name
+        varType: string
+        defaultValue: docs-processor
+      - name: firestore_location
+        description: Firestore location
+        varType: string
+        defaultValue: nam5
+      - name: firestore_name
+        description: Firestore database name
+        varType: string
+        defaultValue: ""
+      - name: project_id
+        description: The Google Cloud project ID to deploy to
+        varType: string
+        defaultValue: null
+        required: true
+      - name: storage_location
+        description: Cloud Storage buckets location
+        varType: string
+        defaultValue: us-central1
+      - name: trigger_name
+        description: Name of the Cloud Function trigger
+        varType: string
+        defaultValue: docs-trigger
+      - name: vertexai_location
+        description: Vertex AI location
+        varType: string
+        defaultValue: us-central1
+      - name: webhook_location
+        description: Cloud Function location
+        varType: string
+        defaultValue: us-central1
+      - name: webhook_name
+        description: Name of the Cloud Function webhook
+        varType: string
+        defaultValue: webhook
+      - name: webhook_path
+        description: Path to the webhook source directory
+        varType: string
+        defaultValue: webhook
     outputs:
-    - name: genai_doc_summary_colab_url
-      description: The URL to launch the notebook tutorial for the Generateive AI Document Summarization Solution
-    - name: neos_walkthrough_url
-      description: The URL to launch the in-console tutorial for the Generative AI Document Summarization solution
+      - name: documentai_processor_id
+        description: The full Document AI processor path ID
+      - name: genai_doc_summary_colab_url
+        description: The URL to launch the notebook tutorial for the Generateive AI Document Summarization Solution
+      - name: neos_walkthrough_url
+        description: The URL to launch the in-console tutorial for the Generative AI Document Summarization solution
   requirements:
     roles:
-    - level: Project
-      roles:
-      - roles/aiplatform.admin
-      - roles/artifactregistry.reader
-      - roles/bigquery.admin
-      - roles/cloudfunctions.admin
-      - roles/eventarc.admin
-      - roles/iam.serviceAccountAdmin
-      - roles/iam.serviceAccountUser
-      - roles/logging.admin
-      - roles/pubsub.admin
-      - roles/resourcemanager.projectIamAdmin
-      - roles/run.admin
-      - roles/serviceusage.serviceUsageAdmin
-      - roles/storage.admin
+      - level: Project
+        roles:
+          - roles/aiplatform.admin
+          - roles/artifactregistry.reader
+          - roles/bigquery.admin
+          - roles/cloudfunctions.admin
+          - roles/eventarc.admin
+          - roles/iam.serviceAccountAdmin
+          - roles/iam.serviceAccountUser
+          - roles/logging.admin
+          - roles/pubsub.admin
+          - roles/resourcemanager.projectIamAdmin
+          - roles/run.admin
+          - roles/serviceusage.serviceUsageAdmin
+          - roles/storage.admin
     services:
-    - aiplatform.googleapis.com
-    - cloudbuild.googleapis.com
-    - cloudfunctions.googleapis.com
-    - documentai.googleapis.com
-    - eventarc.googleapis.com
-    - firestore.googleapis.com
-    - run.googleapis.com
-    - storage.googleapis.com
+      - aiplatform.googleapis.com
+      - cloudbuild.googleapis.com
+      - cloudfunctions.googleapis.com
+      - documentai.googleapis.com
+      - eventarc.googleapis.com
+      - firestore.googleapis.com
+      - run.googleapis.com
+      - storage.googleapis.com

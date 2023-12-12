@@ -57,36 +57,57 @@ The general strategy for these tests is to verify the behaviour of the
 submodules, and example modules are all functionally correct.
 
 #### Test Environment
-The easiest way to test the module is in an isolated test project. The setup for such a project is defined in [test/setup](./test/setup/) directory.
+The easiest way to test the module is in an isolated test project.
+The setup for such a project is defined in [test/setup](./test/setup/) directory.
 
-To use this setup, you need a service account with these permissions (on a Folder or Organization):
-- Project Creator
-- Project Billing Manager
+You must have an existing "Management project" to manage the test projects.
+This project is used to create a "Test project" where the tests are run.
 
-The project that the service account belongs to must have the following APIs enabled (the setup won't
-create any resources on the service account's project):
-- Cloud Resource Manager
-- Cloud Billing
-- Service Usage
-- Identity and Access Management (IAM)
+In the "Management project":
 
-Export the Service Account credentials to your environment like so:
+1. Enable the Resource Manager, Identity and Access Management (IAM), and Billing APIs:
 
-```
-export SERVICE_ACCOUNT_JSON=$(< credentials.json)
-```
+   [Click here to enable the APIs](https://console.cloud.google.com/flows/enableapi?apiid=cloudresourcemanager.googleapis.com,iam.googleapis.com,cloudbilling.googleapis.com)
 
-You will also need to set a few environment variables:
-```
-export TF_VAR_org_id="your_org_id"
-export TF_VAR_folder_id="your_folder_id"
-export TF_VAR_billing_account="your_billing_account_id"
-```
+1. [Create a service account](https://cloud.google.com/iam/docs/service-accounts-create), this will be used to create the test project.
 
-With these settings in place, you can prepare a test project using Docker:
-```
-make docker_test_prepare
-```
+1. [Grant the following roles](https://cloud.google.com/iam/docs/manage-access-service-accounts) to the service account:
+   - `roles/billing.projectManager`
+   <!-- - `roles/resourcemanager.organizationViewer` -->
+   <!-- - `roles/resourcemanager.projectCreator` -->
+
+1. [Create a service account key](https://cloud.google.com/iam/docs/keys-create-delete) and save it to `credentials.json` in the root directory of this repository.
+   Any file called `credentials.json` is in the [`.gitignore`](.gitignore) so you won't accidentally commit it.
+
+In your development environment:
+
+1. Export the service account credentials to the `SERVICE_ACCOUNT_JSON` environment variable like so:
+
+   ```sh
+   export SERVICE_ACCOUNT_JSON=$(< credentials.json)
+   ```
+
+1. Export the following environment variables to configure the test project:
+
+   ```sh
+   export TF_VAR_org_id="your_org_id"
+   export TF_VAR_folder_id="your_folder_id"
+   export TF_VAR_billing_account="your_billing_account_id"
+   ```
+
+   > 💡 To find your current settings:
+   >
+   > ```sh
+   > gcloud organizations list
+   > gcloud resource-manager folders list --organization=$TF_VAR_org_id --format='value(name)'
+   > gcloud beta billing projects describe $PROJECT_ID --format='value(billingAccountName)'
+   > ```
+
+1. Create and prepare a new test project using Docker:
+
+   ```sh
+   make docker_test_prepare
+   ```
 
 #### Noninteractive Execution
 

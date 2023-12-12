@@ -27,11 +27,6 @@ on:
     paths:
       - .github/workflows/test-webhook.yml
       - webhook/**
-  pull_request_target:
-    types: [labeled]
-    paths:
-      - .github/workflows/test-webhook.yml
-      - webhook/**
   workflow_dispatch: # Manual runs
   schedule: # Run tests every day at UTC 9:00A
     - cron: '0 9 * * *'

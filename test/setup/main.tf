@@ -18,20 +18,20 @@ module "project" {
   source  = "terraform-google-modules/project-factory/google"
   version = "~> 14.0"
 
-  name              = "ci-genai-extractive-qa"
+  name              = "ci-genai-knowledge-base"
   random_project_id = "true"
   org_id            = var.org_id
   folder_id         = var.folder_id
   billing_account   = var.billing_account
 
   activate_apis = [
-    "aiplatform.googleapis.com",
-    "cloudbuild.googleapis.com",
-    "cloudfunctions.googleapis.com",
-    "documentai.googleapis.com",
-    "eventarc.googleapis.com",
-    "firestore.googleapis.com",
-    "run.googleapis.com",
-    "storage.googleapis.com",
+    # "aiplatform.googleapis.com",
+    # "cloudbuild.googleapis.com",
+    # "cloudfunctions.googleapis.com",
+    # "documentai.googleapis.com",
+    # "eventarc.googleapis.com",
+    # "firestore.googleapis.com",
+    # "run.googleapis.com",
+    # "storage.googleapis.com",
   ]
 }

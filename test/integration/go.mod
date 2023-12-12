@@ -1,4 +1,4 @@
-module github.com/terraform-google-modules/genai-extractive-qa/test/integration
+module github.com/terraform-google-modules/genai-enterprise-knowledge-base/test/integration
 
 go 1.20
 

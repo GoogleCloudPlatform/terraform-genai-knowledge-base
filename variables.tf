@@ -79,10 +79,10 @@ variable "documentai_location" {
   default     = "us"
 }
 
-variable "firestore_database_name" {
+variable "firestore_name" {
   description = "Firestore database name"
   type        = string
-  default     = "docs-questions"
+  default     = ""
 }
 
 variable "firestore_location" {

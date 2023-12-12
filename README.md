@@ -1,59 +1,56 @@
-# Generative AI Extractive Question and Answers
+# Generative AI Enterprise Knowledge base
 
 ## Description
 ### Tagline
-Create a chatbot powered by an extractive QA LLM model.
+Fine tune an LLM model to answer questions from your documents.
 
 ### Detailed
 This solution showcases how to extract question & answer pairs out of documents
-using Generative AI. It provides end-to-end demonstration of QA extraction and
+using Generative AI. It provides an end-to-end demonstration of QA extraction and
 fine-tuning of a large language model (LLM) on Vertex AI. Along the way, the
-solution utilizes Cloud Vision Optical Character Recognition (OCR), Firestore,
-Vertex AI Pipelines, and Cloud Run.
+solution utilizes Document AI Character Recognition (OCR), Firestore,
+Vertex AI Studio, and Cloud Functions.
+
+The resources that this module creates are:
+
+- Create a GCS bucket with the provided name
 
 ### PreDeploy
 To deploy this blueprint you must have an active billing account and billing permissions.
 
 ## Architecture
-![Extractive QA using Generative AI]()
+![Enterprise Knowledge Base using Generative AI]()
 <!-- TODO: Update the image with the correct diagram -->
 
 The solution has three separate, but related workflows: ingestion, training,
 and fulfillment.
 
 ### Ingestion
+1. The developer uploads a document like a PDF to a Cloud Storage bucket, using `gsutil`, 
+   the Console UI, or the Cloud Storage client libraries.
+1. Uploading a document file triggers a Cloud Function that processes the document.
+   1. Uses Document AI OCR to extract all text from the document file.
+   1. Uses Vertex AI LLM API to extract question and answer pairs from the document text.
+   1. Stores the extracted question and answer pairs in a Firestore collection.
+   1. Generates a fine tuning dataset from the Firestore collection.
 
-1. The developer uploads a PDF to a Cloud Storage bucket, using `gsutil`, the Console UI, or
-   the Cloud Storage client libraries.
-1. The uploaded PDF file is sent to a Cloud Function. This function handles PDF file processing.
-1. The Cloud Function uses Cloud Vision OCR to extract all text from the PDF file.
-1. The Cloud Function uses Vertex AI’s LLM API to extract question and answer pairs from the extracted text.
-1. The Cloud Function stores the extracted question and answer pair in a Firestore collection.
-
-### Training
-
-1. Once the Firestore collection reaches a certain size (% 10), the Cloud
-   Function triggers a Vertex AI Pipeline.
-1. The Vertex AI Pipeline fine-tunes a LLM on the QAs stored in the Firestore collection.
-1. The Vertex AI Pipeline deploys the tuned LLM to a Vertex AI endpoint.
+### Fine tuning
+1. When satisified with the fine tuning dataset, the developer launches a fine tuning job on Vertex AI.
+1. The fine tuning job deploys a tuned model to an endpoint when the job is complete.
 
 ### Fulfillment
-
-1. A Cloud Run instance hosts a simple chatbot user interface, where the chatbot
-   queries the tuned LLM.
-1. Users can ask the chatbot questions, and the chatbot respond with an
-   answer derived from the source Q&As.
+1. Ask queries to the tuned model using Vertex AI Studio, and compare it with the foundation model.
 
 ## Prerequisites
 - [Google Cloud Project](https://cloud.google.com/resource-manager/docs/creating-managing-projects)
 
 ## Documentation
-- [Generative AI Extractive Q & A]()
+- [Enterprise Knowledge Base using Generative AI]()
 {TODO: Update link}
 
 ## Deployment Duration
-Configuration: 1 mins
-Deployment: 10 mins
+Configuration: 2 mins
+Deployment: 8 mins
 
 ## Cost
 [Cost Details](https://cloud.google.com/products/calculator/#id=78888c9b-02ac-4130-9327-fecd7f4cfb11)
@@ -63,17 +60,26 @@ Deployment: 10 mins
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| bucket\_docs | Google Cloud Storage bucket for documents | `string` | `""` | no |
+| bucket\_main | Google Cloud Storage bucket for staging and dataset files | `string` | `""` | no |
 | disable\_services\_on\_destroy | Whether project services will be disabled when the resources are destroyed. | `bool` | `false` | no |
 | documentai\_location | Document AI location | `string` | `"us"` | no |
+| documentai\_processor\_name | Document AI processor name | `string` | `"docs-processor"` | no |
 | firestore\_location | Firestore location | `string` | `"nam5"` | no |
-| location | Google Cloud location | `string` | `"us-central1"` | no |
+| firestore\_name | Firestore database name | `string` | `""` | no |
 | project\_id | The Google Cloud project ID to deploy to | `string` | n/a | yes |
+| storage\_location | Cloud Storage buckets location | `string` | `"us-central1"` | no |
+| trigger\_name | Name of the Cloud Function trigger | `string` | `"docs-trigger"` | no |
+| vertexai\_location | Vertex AI location | `string` | `"us-central1"` | no |
+| webhook\_location | Cloud Function location | `string` | `"us-central1"` | no |
+| webhook\_name | Name of the Cloud Function webhook | `string` | `"webhook"` | no |
 | webhook\_path | Path to the webhook source directory | `string` | `"webhook"` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
+| documentai\_processor\_id | The full Document AI processor path ID |
 | genai\_doc\_summary\_colab\_url | The URL to launch the notebook tutorial for the Generateive AI Document Summarization Solution |
 | neos\_walkthrough\_url | The URL to launch the in-console tutorial for the Generative AI Document Summarization solution |
 
@@ -88,7 +94,7 @@ These sections describe requirements for using this module.
 The following dependencies must be available:
 
 - [Terraform][terraform] v0.13
-- [Terraform Provider for GCP][terraform-provider-gcp] plugin v3.0
+- [Terraform Provider for GCP][terraform-provider-gcp] plugin v5.8
 
 ### Service Account
 
@@ -96,13 +102,6 @@ A service account with the following roles must be used to provision
 the resources of this module:
 
 - Storage Admin: `roles/storage.admin`
-
-### APIs
-
-A project with the following APIs enabled must be used to host the
-resources of this module:
-
-- Google Cloud Storage JSON API: `storage-api.googleapis.com`
 
 ## Contributing
 

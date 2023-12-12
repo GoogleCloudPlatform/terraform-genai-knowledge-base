@@ -37,8 +37,12 @@ module "project_services" {
 locals {
   bucket_docs = var.bucket_docs == "" ? "${var.project_id}-docs" : var.bucket_docs
   bucket_main = var.bucket_main == "" ? "${var.project_id}-main" : var.bucket_main
+  firestore_name = var.firestore_name == "" ? "docs-questions-${random_id.unique_id.hex}" : var.firestore_name
 }
 
+resource "random_id" "unique_id" {
+  byte_length = 3
+}
 
 #-- Cloud Storage buckets --#
 resource "google_storage_bucket" "docs" {
@@ -187,7 +191,7 @@ resource "google_document_ai_processor" "ocr" {
 #-- Firestore --#
 resource "google_firestore_database" "database" {
   project         = module.project_services.project_id
-  name            = var.firestore_database_name
+  name            = local.firestore_name
   location_id     = var.firestore_location
   type            = "FIRESTORE_NATIVE"
   deletion_policy = "DELETE"
