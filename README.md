@@ -26,7 +26,7 @@ The solution has three separate, but related workflows: ingestion, training,
 and fulfillment.
 
 ### Ingestion
-1. The developer uploads a document like a PDF to a Cloud Storage bucket, using `gsutil`, 
+1. The developer uploads a document like a PDF to a Cloud Storage bucket, using `gsutil`,
    the Console UI, or the Cloud Storage client libraries.
 1. Uploading a document file triggers a Cloud Function that processes the document.
    - Uses Document AI OCR to extract all text from the document file.
