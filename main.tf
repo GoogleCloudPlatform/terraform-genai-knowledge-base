@@ -35,8 +35,8 @@ module "project_services" {
 }
 
 locals {
-  bucket_docs = var.bucket_docs == "" ? "${var.project_id}-docs" : var.bucket_docs
-  bucket_main = var.bucket_main == "" ? "${var.project_id}-main" : var.bucket_main
+  bucket_docs    = var.bucket_docs == "" ? "${var.project_id}-docs" : var.bucket_docs
+  bucket_main    = var.bucket_main == "" ? "${var.project_id}-main" : var.bucket_main
   firestore_name = var.firestore_name == "" ? "docs-questions-${random_id.unique_id.hex}" : var.firestore_name
 }
 

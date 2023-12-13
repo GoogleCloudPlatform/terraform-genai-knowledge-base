@@ -1,4 +1,4 @@
-module github.com/terraform-google-modules/genai-enterprise-knowledge-base/test/integration
+module github.com/terraform-google-modules/genai-knowledge-base/test/integration
 
 go 1.20
 

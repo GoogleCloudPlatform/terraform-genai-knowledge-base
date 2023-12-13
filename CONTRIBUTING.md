@@ -129,6 +129,72 @@ noninteractively, using the prepared test project.
 1. Run `kitchen_do destroy <EXAMPLE_NAME>` to destroy the example module
    state.
 
+### Running the webhook tests locally
+
+#### Prerequisites
+
+Authenticate:
+
+```sh
+gcloud auth application-default login
+```
+
+Make sure you `cd` into this directory before running the tests.
+
+```sh
+cd webhook/
+```
+
+Install the dependencies:
+
+```sh
+# Specify the project ID to use for the test.
+export PROJECT_ID=my-project
+
+# Install the dependencies on a virtual environment.
+python -m venv env
+source env/bin/activate
+pip install -r requirements.txt -r requirements-test.txt
+```
+
+#### Running the tests end-to-end
+
+To run the tests creating and destroying all resources, run:
+
+```sh
+# Ignore deprecation warnings for cleaner outputs.
+python -m pytest -v -s -W ignore::DeprecationWarning
+```
+
+#### Running the tests with persistent resources
+
+> ⚠️ WARNING: reusing resources from a previous run may lead to unexpected behavior.
+> For example, files created from a previous run may cause tests to succeed even if they should fail.
+
+To avoid creating and destroying resources when debugging, you can use
+persistent resources.
+
+```sh
+export TEST_UUID=$USER
+export TEST_SKIP_DESTROY=1
+```
+
+Then, run the tests:
+
+```sh
+python -m pytest -v -s -W ignore::DeprecationWarning
+
+# If you already have created the resources, you can skip all Terraform steps.
+export TEST_SKIP_INIT=1
+export TEST_SKIP_APPLY=1
+```
+
+Once you're finished, delete the resources manually:
+
+```sh
+terraform -chdir=.. destroy -auto-approve -var=project_id=$PROJECT_ID
+```
+
 ### Linting and Formatting
 
 Many of the files in the repository can be linted or formatted to
