@@ -12,75 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""End-to-end test of the process_document function.
-
-## Prerequisites
-
-Authenticate:
-
-```sh
-gcloud auth application-default login
-```
-
-Make sure you `cd` into this directory before running the tests.
-
-```sh
-cd webhook/
-```
-
-Install the dependencies:
-
-```sh
-# Specify the project ID to use for the test.
-export PROJECT_ID=my-project
-
-# Install the dependencies on a virtual environment.
-python -m venv env
-source env/bin/activate
-pip install -r requirements.txt -r requirements-test.txt
-```
-
-## Running the tests end-to-end
-
-To run the tests creating and destroying all resources, run:
-
-```sh
-# Ignore deprecation warnings for cleaner outputs.
-python -m pytest -v -s -W ignore::DeprecationWarning
-```
-
-## Running the tests with persistent resources
-
-⚠️ WARNING: reusing resources from a previous run may lead to unexpected behavior.
-    For example, files created from a previous run may cause tests to succeed 
-    even if they should fail.
-
-To avoid creating and destroying resources when debugging, you can use
-persistent resources.
-
-```sh
-export TEST_UUID=$USER
-export TEST_SKIP_DESTROY=1
-```
-
-Then, run the tests:
-
-```sh
-python -m pytest -v -s -W ignore::DeprecationWarning
-
-# If you already have created the resources, you can skip all Terraform steps.
-export TEST_SKIP_INIT=1
-export TEST_SKIP_APPLY=1
-```
-
-Once you're finished, delete the resources manually:
-
-```sh
-terraform -chdir=.. destroy -auto-approve -var=project_id=$PROJECT_ID
-```
-
-"""
-
 from collections.abc import Iterator
 import datetime
 import json
@@ -159,7 +90,7 @@ def outputs(resources: dict) -> dict[str, str]:
 
 
 def test_end_to_end(resources: dict, outputs: dict[str, str]) -> None:
-    print(f">> process_document")
+    print(">> process_document")
     process_document(
         event_id=f"webhook-test-{UUID}",
         input_bucket="arxiv-dataset",
@@ -173,14 +104,14 @@ def test_end_to_end(resources: dict, outputs: dict[str, str]) -> None:
     )
 
     # Make sure we have a non-empty dataset.
-    print(f">> Checking output bucket")
+    print(">> Checking output bucket")
     with storage_utils.read(resources["bucket_main"], OUTPUT_NAME) as f:
         lines = [line.strip() for line in f]
         print(f"dataset {len(lines)=}")
         assert len(lines) > 0, "expected a non-empty dataset in the output bucket"
 
     # Make sure the Firestore database is populated.
-    print(f">> Checking Firestore database")
+    print(">> Checking Firestore database")
     db = firestore.Client(database=resources["firestore_name"])
     entries = list(firestore_utils.read(db, DATASET_COLLECTION))
     print(f"database {len(entries)=}")

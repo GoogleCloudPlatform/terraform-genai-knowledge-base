@@ -29,10 +29,10 @@ and fulfillment.
 1. The developer uploads a document like a PDF to a Cloud Storage bucket, using `gsutil`, 
    the Console UI, or the Cloud Storage client libraries.
 1. Uploading a document file triggers a Cloud Function that processes the document.
-   1. Uses Document AI OCR to extract all text from the document file.
-   1. Uses Vertex AI LLM API to extract question and answer pairs from the document text.
-   1. Stores the extracted question and answer pairs in a Firestore collection.
-   1. Generates a fine tuning dataset from the Firestore collection.
+   - Uses Document AI OCR to extract all text from the document file.
+   - Uses Vertex AI LLM API to extract question and answer pairs from the document text.
+   - Stores the extracted question and answer pairs in a Firestore collection.
+   - Generates a fine tuning dataset from the Firestore collection.
 
 ### Fine tuning
 1. When satisified with the fine tuning dataset, the developer launches a fine tuning job on Vertex AI.

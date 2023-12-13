@@ -39,8 +39,8 @@ spec:
       preDeploy: To deploy this blueprint you must have an active billing account and billing permissions.
     icon: assets/icon.png
     deploymentDuration:
-      configurationSecs: "120"
-      deploymentSecs: "480"
+      configurationSecs: 120
+      deploymentSecs: 480
     costEstimate:
       description: Cost Details
       url: https://cloud.google.com/products/calculator/#id=78888c9b-02ac-4130-9327-fecd7f4cfb11
@@ -116,29 +116,4 @@ spec:
         description: The URL to launch the notebook tutorial for the Generateive AI Document Summarization Solution
       - name: neos_walkthrough_url
         description: The URL to launch the in-console tutorial for the Generative AI Document Summarization solution
-  requirements:
-    roles:
-      - level: Project
-        roles:
-          - roles/aiplatform.admin
-          - roles/artifactregistry.reader
-          - roles/bigquery.admin
-          - roles/cloudfunctions.admin
-          - roles/eventarc.admin
-          - roles/iam.serviceAccountAdmin
-          - roles/iam.serviceAccountUser
-          - roles/logging.admin
-          - roles/pubsub.admin
-          - roles/resourcemanager.projectIamAdmin
-          - roles/run.admin
-          - roles/serviceusage.serviceUsageAdmin
-          - roles/storage.admin
-    services:
-      - aiplatform.googleapis.com
-      - cloudbuild.googleapis.com
-      - cloudfunctions.googleapis.com
-      - documentai.googleapis.com
-      - eventarc.googleapis.com
-      - firestore.googleapis.com
-      - run.googleapis.com
-      - storage.googleapis.com
+  requirements: {}
