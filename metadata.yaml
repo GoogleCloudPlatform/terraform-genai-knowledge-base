@@ -20,7 +20,7 @@ metadata:
     config.kubernetes.io/local-config: "true"
 spec:
   info:
-    title: Generative AI Enterprise Knowledge base
+    title: Generative AI Knowledge Base
     source:
       repo: https://github.com/GoogleCloudPlatform/terraform-genai-enterprise-knowledge-base.git
       sourceType: git
@@ -46,7 +46,7 @@ spec:
       url: https://cloud.google.com/products/calculator/#id=78888c9b-02ac-4130-9327-fecd7f4cfb11
   content:
     documentation:
-      - title: Enterprise Knowledge Base using Generative AI
+      - title: Knowledge Base using Generative AI
     examples:
       - name: simple_example
         location: examples/simple_example

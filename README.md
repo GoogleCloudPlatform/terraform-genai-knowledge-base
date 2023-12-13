@@ -1,4 +1,4 @@
-# Generative AI Enterprise Knowledge base
+# Generative AI Knowledge Base
 
 ## Description
 ### Tagline
@@ -19,7 +19,7 @@ The resources that this module creates are:
 To deploy this blueprint you must have an active billing account and billing permissions.
 
 ## Architecture
-![Enterprise Knowledge Base using Generative AI]()
+![Knowledge Base using Generative AI]()
 <!-- TODO: Update the image with the correct diagram -->
 
 The solution has three separate, but related workflows: ingestion, training,
@@ -45,7 +45,7 @@ and fulfillment.
 - [Google Cloud Project](https://cloud.google.com/resource-manager/docs/creating-managing-projects)
 
 ## Documentation
-- [Enterprise Knowledge Base using Generative AI]()
+- [Knowledge Base using Generative AI]()
 {TODO: Update link}
 
 ## Deployment Duration
