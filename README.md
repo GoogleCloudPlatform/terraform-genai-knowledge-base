@@ -103,6 +103,20 @@ the resources of this module:
 
 - Storage Admin: `roles/storage.admin`
 
+The [Project Factory module][project-factory-module] and the
+[IAM module][iam-module] may be used in combination to provision a
+service account with the necessary roles applied.
+
+### APIs
+
+A project with the following APIs enabled must be used to host the
+resources of this module:
+
+- Google Cloud Storage JSON API: `storage-api.googleapis.com`
+
+The [Project Factory module][project-factory-module] can be used to
+provision a project with the necessary APIs enabled.
+
 ## Contributing
 
 Refer to the [contribution guidelines](./docs/CONTRIBUTING.md) for

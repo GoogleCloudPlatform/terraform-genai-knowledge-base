@@ -43,8 +43,25 @@ spec:
       deploymentSecs: 480
     costEstimate:
       description: Cost Details
-      url: https://cloud.google.com/products/calculator/#id=78888c9b-02ac-4130-9327-fecd7f4cfb11
+      url: https://cloud.google.com/products/calculator-legacy#id=94ab5d75-4134-410f-b2d0-350762ae2588
+    cloudProducts:
+      - productId: VERTEX_SECTION
+        label: Vertex AI
+      - productId: DOCUMENT_AI_SECTION
+        label: Document AI OCR
+      - productId: FIRESTORE_SECTION
+        label: Firestore
+      - productId: FUNCTIONS_SECTION
+        label: Cloud Functions
+      - productId: STORAGE_SECTION
+        label: Cloud Storage
   content:
+    architecture:
+      diagramUrl: architecture-diagram.url
+      description:
+        - Architecture diagram 1
+        - Architecture diagram 2
+        - Architecture diagram 3
     documentation:
       - title: Knowledge Base using Generative AI
     examples:
@@ -116,4 +133,21 @@ spec:
         description: The URL to launch the notebook tutorial for the Generateive AI Document Summarization Solution
       - name: neos_walkthrough_url
         description: The URL to launch the in-console tutorial for the Generative AI Document Summarization solution
-  requirements: {}
+  requirements:
+    roles:
+    - level: Project
+      roles:
+      - roles/aiplatform.user
+      - roles/documentai.editor
+      - roles/firebase.admin
+    services:
+    - aiplatform.googleapis.com
+    - artifactregistry.googleapis.com
+    - cloudbuild.googleapis.com
+    - cloudfunctions.googleapis.com
+    - documentai.googleapis.com
+    - eventarc.googleapis.com
+    - firestore.googleapis.com
+    - run.googleapis.com
+    - storage.googleapis.com
+

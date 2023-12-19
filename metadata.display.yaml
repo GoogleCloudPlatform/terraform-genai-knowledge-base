@@ -27,6 +27,9 @@ spec:
   ui:
     input:
       variables:
+        project_id:
+          name: project_id
+          title: Project Id
         bucket_docs:
           name: bucket_docs
           title: Bucket Docs
@@ -41,16 +44,13 @@ spec:
           title: Documentai Location
         documentai_processor_name:
           name: documentai_processor_name
-          title: Documentai Processor Name
+          title: Document AI Processor Name
         firestore_location:
           name: firestore_location
           title: Firestore Location
         firestore_name:
           name: firestore_name
           title: Firestore Name
-        project_id:
-          name: project_id
-          title: Project Id
         storage_location:
           name: storage_location
           title: Storage Location
