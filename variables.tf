@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-# Required variables
+# Jump Start Solution variables.
 variable "project_id" {
   description = "The Google Cloud project ID to deploy to"
   type        = string
@@ -22,6 +22,18 @@ variable "project_id" {
     condition     = var.project_id != ""
     error_message = "Error: project_id is required"
   }
+}
+
+variable "region" {
+  description = "The Google Cloud region to deploy to"
+  type        = string
+  default     = "us-central1"
+}
+
+variable "delete_contents_on_destroy" {
+  description = "Whether to delete the contents of the bucket on destroy"
+  type        = bool
+  default     = true
 }
 
 # Optional variables

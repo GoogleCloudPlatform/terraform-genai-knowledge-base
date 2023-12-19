@@ -140,6 +140,7 @@ spec:
       - roles/aiplatform.user
       - roles/documentai.editor
       - roles/firebase.admin
+      - roles/iam.serviceAccountUser
     services:
     - aiplatform.googleapis.com
     - artifactregistry.googleapis.com
