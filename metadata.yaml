@@ -45,9 +45,9 @@ spec:
       description: Cost Details
       url: https://cloud.google.com/products/calculator-legacy#id=94ab5d75-4134-410f-b2d0-350762ae2588
     cloudProducts:
-      - productId: VERTEX_SECTION
+      - productId: ai-platform
         label: Vertex AI
-      - productId: DOCUMENT_AI_SECTION
+      - productId: document-ai
         label: Document AI OCR
       - productId: FIRESTORE_SECTION
         label: Firestore
