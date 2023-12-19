@@ -34,29 +34,23 @@ module "project_services" {
   ]
 }
 
-locals {
-  bucket_docs    = var.bucket_docs == "" ? "${var.project_id}-docs" : var.bucket_docs
-  bucket_main    = var.bucket_main == "" ? "${var.project_id}-main" : var.bucket_main
-  firestore_name = var.firestore_name == "" ? "docs-questions-${random_id.unique_id.hex}" : var.firestore_name
-}
-
 resource "random_id" "unique_id" {
   byte_length = 3
 }
 
 #-- Cloud Storage buckets --#
-resource "google_storage_bucket" "docs" {
+resource "google_storage_bucket" "main" {
   project                     = module.project_services.project_id
-  name                        = local.bucket_docs
-  location                    = var.storage_location
+  name                        = "${var.project_id}-${random_id.unique_id.hex}"
+  location                    = var.region
   force_destroy               = true
   uniform_bucket_level_access = true
 }
 
-resource "google_storage_bucket" "main" {
+resource "google_storage_bucket" "docs" {
   project                     = module.project_services.project_id
-  name                        = local.bucket_main
-  location                    = var.storage_location
+  name                        = "${var.project_id}-docs-${random_id.unique_id.hex}"
+  location                    = var.region
   force_destroy               = true
   uniform_bucket_level_access = true
 }
@@ -64,8 +58,8 @@ resource "google_storage_bucket" "main" {
 #-- Cloud Function webhook --#
 resource "google_cloudfunctions2_function" "webhook" {
   project  = module.project_services.project_id
-  name     = var.webhook_name
-  location = var.webhook_location
+  name     = "webhook-${random_id.unique_id.hex}"
+  location = var.region
 
   build_config {
     runtime     = "python312"
@@ -83,7 +77,7 @@ resource "google_cloudfunctions2_function" "webhook" {
     service_account_email = google_service_account.webhook.email
     environment_variables = {
       PROJECT_ID        = module.project_services.project_id
-      VERTEXAI_LOCATION = var.vertexai_location
+      VERTEXAI_LOCATION = var.region
       OUTPUT_BUCKET     = google_storage_bucket.main.name
       DOCAI_PROCESSOR   = google_document_ai_processor.ocr.id
       DOCAI_LOCATION    = google_document_ai_processor.ocr.location
@@ -104,7 +98,7 @@ resource "google_project_iam_member" "webhook" {
 }
 resource "google_service_account" "webhook" {
   project      = module.project_services.project_id
-  account_id   = "webhook-service-account"
+  account_id   = "webhook-service-account-${random_id.unique_id.hex}"
   display_name = "Cloud Functions webhook service account"
 }
 
@@ -123,8 +117,8 @@ resource "google_storage_bucket_object" "webhook_staging" {
 #-- Eventarc trigger --#
 resource "google_eventarc_trigger" "trigger" {
   project         = module.project_services.project_id
-  location        = var.webhook_location
-  name            = var.trigger_name
+  location        = var.region
+  name            = "trigger-${random_id.unique_id.hex}"
   service_account = google_service_account.trigger.email
 
   matching_criteria {
@@ -155,7 +149,7 @@ resource "google_project_iam_member" "trigger" {
 }
 resource "google_service_account" "trigger" {
   project      = module.project_services.project_id
-  account_id   = "trigger-service-account"
+  account_id   = "trigger-service-account-${random_id.unique_id.hex}"
   display_name = "Eventarc trigger service account"
 }
 
@@ -184,14 +178,14 @@ resource "google_project_service_identity" "eventarc_agent" {
 resource "google_document_ai_processor" "ocr" {
   project      = module.project_services.project_id
   location     = var.documentai_location
-  display_name = var.documentai_processor_name
+  display_name = "ocr-processor-${random_id.unique_id.hex}"
   type         = "OCR_PROCESSOR"
 }
 
 #-- Firestore --#
 resource "google_firestore_database" "database" {
   project         = module.project_services.project_id
-  name            = local.firestore_name
+  name            = "database-${random_id.unique_id.hex}"
   location_id     = var.firestore_location
   type            = "FIRESTORE_NATIVE"
   deletion_policy = "DELETE"

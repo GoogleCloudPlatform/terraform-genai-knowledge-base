@@ -151,4 +151,3 @@ spec:
     - firestore.googleapis.com
     - run.googleapis.com
     - storage.googleapis.com
-

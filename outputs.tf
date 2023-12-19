@@ -14,17 +14,22 @@
  * limitations under the License.
  */
 
-output "documentai_processor_id" {
-  value       = google_document_ai_processor.ocr.id
-  description = "The full Document AI processor path ID"
-}
-
 output "neos_walkthrough_url" {
   value       = "https://console.cloud.google.com/products/solutions/deployments?walkthrough_id=panels--sic--document-summarization-gcf_tour"
   description = "The URL to launch the in-console tutorial for the Generative AI Document Summarization solution"
 }
 
-output "genai_doc_summary_colab_url" {
-  value       = "https://colab.research.google.com/github/GoogleCloudPlatform/terraform-google-gen-ai-document-summarization/blob/main/notebook/gen_ai_jss.ipynb"
-  description = "The URL to launch the notebook tutorial for the Generateive AI Document Summarization Solution"
+output "bucket_main_name" {
+  value       = google_storage_bucket.main.name
+  description = "The name of the main bucket created"
+}
+
+output "bucket_docs_name" {
+  value       = google_storage_bucket.docs.name
+  description = "The name of the docs bucket created"
+}
+
+output "documentai_processor_id" {
+  value       = google_document_ai_processor.ocr.id
+  description = "The full Document AI processor path ID"
 }
