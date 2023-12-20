@@ -75,7 +75,7 @@ Deployment: 8 mins
 | bucket\_main\_name | The name of the main bucket created |
 | documentai\_processor\_id | The full Document AI processor path ID |
 | firestore\_database\_name | The name of the Firestore database created |
-| neos\_walkthrough\_url | The URL to launch the in-console tutorial for the Generative AI Document Summarization solution |
+| neos\_walkthrough\_url | The URL to launch the in-console tutorial for the Generative AI Knowledge Base solution |
 | unique\_id | The unique ID for this deployment |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

@@ -73,6 +73,7 @@ spec:
         description: Whether project services will be disabled when the resources are destroyed.
         varType: bool
         defaultValue: false
+        invisible: true
       - name: documentai_location
         description: Document AI location, see https://cloud.google.com/document-ai/docs/regions
         varType: string
@@ -94,6 +95,7 @@ spec:
         description: Path to the webhook source directory
         varType: string
         defaultValue: webhook
+        invisible: true
     outputs:
       - name: bucket_docs_name
         description: The name of the docs bucket created
@@ -104,7 +106,7 @@ spec:
       - name: firestore_database_name
         description: The name of the Firestore database created
       - name: neos_walkthrough_url
-        description: The URL to launch the in-console tutorial for the Generative AI Document Summarization solution
+        description: The URL to launch the in-console tutorial for the Generative AI Knowledge Base solution
       - name: unique_id
         description: The unique ID for this deployment
   requirements:
