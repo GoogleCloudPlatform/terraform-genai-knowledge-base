@@ -60,28 +60,23 @@ Deployment: 8 mins
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| bucket\_docs | Google Cloud Storage bucket for documents | `string` | `""` | no |
-| bucket\_main | Google Cloud Storage bucket for staging and dataset files | `string` | `""` | no |
 | disable\_services\_on\_destroy | Whether project services will be disabled when the resources are destroyed. | `bool` | `false` | no |
-| documentai\_location | Document AI location | `string` | `"us"` | no |
-| documentai\_processor\_name | Document AI processor name | `string` | `"docs-processor"` | no |
-| firestore\_location | Firestore location | `string` | `"nam5"` | no |
-| firestore\_name | Firestore database name | `string` | `""` | no |
+| documentai\_location | Document AI location, see https://cloud.google.com/document-ai/docs/regions | `string` | `"us"` | no |
+| firestore\_location | Firestore location, see https://firebase.google.com/docs/firestore/locations | `string` | `"nam5"` | no |
 | project\_id | The Google Cloud project ID to deploy to | `string` | n/a | yes |
-| storage\_location | Cloud Storage buckets location | `string` | `"us-central1"` | no |
-| trigger\_name | Name of the Cloud Function trigger | `string` | `"docs-trigger"` | no |
-| vertexai\_location | Vertex AI location | `string` | `"us-central1"` | no |
-| webhook\_location | Cloud Function location | `string` | `"us-central1"` | no |
-| webhook\_name | Name of the Cloud Function webhook | `string` | `"webhook"` | no |
+| region | The Google Cloud region to deploy to | `string` | `"us-central1"` | no |
 | webhook\_path | Path to the webhook source directory | `string` | `"webhook"` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
+| bucket\_docs\_name | The name of the docs bucket created |
+| bucket\_main\_name | The name of the main bucket created |
 | documentai\_processor\_id | The full Document AI processor path ID |
-| genai\_doc\_summary\_colab\_url | The URL to launch the notebook tutorial for the Generateive AI Document Summarization Solution |
+| firestore\_database\_name | The name of the Firestore database created |
 | neos\_walkthrough\_url | The URL to launch the in-console tutorial for the Generative AI Document Summarization solution |
+| unique\_id | The unique ID for this deployment |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
