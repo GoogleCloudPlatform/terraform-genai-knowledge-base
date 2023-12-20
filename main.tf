@@ -133,7 +133,7 @@ resource "google_eventarc_trigger" "trigger" {
   destination {
     cloud_run_service {
       service = google_cloudfunctions2_function.webhook.name
-      region  = var.webhook_location
+      region  = var.region
     }
   }
 }
