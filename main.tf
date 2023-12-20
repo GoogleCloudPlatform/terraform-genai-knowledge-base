@@ -185,7 +185,7 @@ resource "google_document_ai_processor" "ocr" {
 #-- Firestore --#
 resource "google_firestore_database" "main" {
   project         = module.project_services.project_id
-  name            = "database-${random_id.unique_id.hex}"
+  name            = "questions-${random_id.unique_id.hex}"
   location_id     = var.firestore_location
   type            = "FIRESTORE_NATIVE"
   deletion_policy = "DELETE"

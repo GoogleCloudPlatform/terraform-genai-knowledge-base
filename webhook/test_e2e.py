@@ -50,7 +50,7 @@ def outputs() -> Iterator[dict[str, str]]:
             f"-var=project_id={PROJECT_ID}",
             "-target=google_storage_bucket.main",
             "-target=google_document_ai_processor.ocr",
-            "-target=google_firestore_database.database",
+            "-target=google_firestore_database.main",
         )
     p = run_cmd("terraform", "-chdir=..", "output", "-json", stdout=subprocess.PIPE)
     outputs = {
