@@ -15,14 +15,14 @@
 apiVersion: blueprints.cloud.google.com/v1alpha1
 kind: BlueprintMetadata
 metadata:
-  name: terraform-genai-enterprise-knowledge-base
+  name: terraform-genai-knowledge-base
   annotations:
     config.kubernetes.io/local-config: "true"
 spec:
   info:
     title: Generative AI Knowledge Base
     source:
-      repo: https://github.com/GoogleCloudPlatform/terraform-genai-enterprise-knowledge-base.git
+      repo: https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base.git
       sourceType: git
     version: 0.1.1
     actuationTool:
@@ -59,9 +59,12 @@ spec:
     architecture:
       diagramUrl: architecture-diagram.url
       description:
-        - Architecture diagram 1
-        - Architecture diagram 2
-        - Architecture diagram 3
+        - Uploading a new document triggers the webhook Cloud Function
+        - Document AI extracts the text from the document file
+        - A Vertex AI Large Language Model generates questions and answers from the document text
+        - The questions and answers pairs are saved into Firestore
+        - A fine tuning dataset is generated from the Firestore database
+        - After human validation, a fine tuned Large Language Model is deployed
     documentation:
       - title: Knowledge Base using Generative AI
     examples:

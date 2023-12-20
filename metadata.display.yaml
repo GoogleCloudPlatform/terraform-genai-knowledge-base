@@ -15,60 +15,40 @@
 apiVersion: blueprints.cloud.google.com/v1alpha1
 kind: BlueprintMetadata
 metadata:
-  name: terraform-genai-enterprise-knowledge-base-display
+  name: terraform-genai-knowledge-base-display
   annotations:
     config.kubernetes.io/local-config: "true"
 spec:
   info:
     title: Generative AI Knowledge Base
     source:
-      repo: https://github.com/GoogleCloudPlatform/terraform-genai-enterprise-knowledge-base.git
+      repo: https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base.git
       sourceType: git
   ui:
     input:
       variables:
-        bucket_docs:
-          name: bucket_docs
-          title: Bucket Docs
-        bucket_main:
-          name: bucket_main
-          title: Bucket Main
         disable_services_on_destroy:
           name: disable_services_on_destroy
           title: Disable Services On Destroy
+          invisible: true
         documentai_location:
           name: documentai_location
           title: Documentai Location
-        documentai_processor_name:
-          name: documentai_processor_name
-          title: Document AI Processor Name
         firestore_location:
           name: firestore_location
           title: Firestore Location
-        firestore_name:
-          name: firestore_name
-          title: Firestore Name
         project_id:
           name: project_id
           title: Project Id
         region:
           name: region
           title: Region
-        storage_location:
-          name: storage_location
-          title: Storage Location
-        trigger_name:
-          name: trigger_name
-          title: Trigger Name
-        vertexai_location:
-          name: vertexai_location
-          title: Vertexai Location
-        webhook_location:
-          name: webhook_location
-          title: Webhook Location
-        webhook_name:
-          name: webhook_name
-          title: Webhook Name
         webhook_path:
           name: webhook_path
           title: Webhook Path
+          invisible: true
+    runtime:
+      outputs:
+        neos_walkthrough_url:
+          openInNewTab: true
+          showInNotification: true
