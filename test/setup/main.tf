@@ -23,4 +23,16 @@ module "project" {
   org_id            = var.org_id
   folder_id         = var.folder_id
   billing_account   = var.billing_account
+
+  activate_apis = [
+    "aiplatform.googleapis.com",
+    "artifactregistry.googleapis.com",
+    "cloudbuild.googleapis.com",
+    "cloudfunctions.googleapis.com",
+    "documentai.googleapis.com",
+    "eventarc.googleapis.com",
+    "firestore.googleapis.com",
+    "run.googleapis.com",
+    "storage.googleapis.com",
+  ]
 }
