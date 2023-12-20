@@ -27,9 +27,6 @@ spec:
   ui:
     input:
       variables:
-        project_id:
-          name: project_id
-          title: Project Id
         bucket_docs:
           name: bucket_docs
           title: Bucket Docs
@@ -51,6 +48,12 @@ spec:
         firestore_name:
           name: firestore_name
           title: Firestore Name
+        project_id:
+          name: project_id
+          title: Project Id
+        region:
+          name: region
+          title: Region
         storage_location:
           name: storage_location
           title: Storage Location

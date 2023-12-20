@@ -39,8 +39,8 @@ spec:
       preDeploy: To deploy this blueprint you must have an active billing account and billing permissions.
     icon: assets/icon.png
     deploymentDuration:
-      configurationSecs: 120
-      deploymentSecs: 480
+      configurationSecs: "120"
+      deploymentSecs: "480"
     costEstimate:
       description: Cost Details
       url: https://cloud.google.com/products/calculator-legacy#id=94ab5d75-4134-410f-b2d0-350762ae2588
@@ -69,70 +69,46 @@ spec:
         location: examples/simple_example
   interfaces:
     variables:
-      - name: bucket_docs
-        description: Google Cloud Storage bucket for documents
-        varType: string
-        defaultValue: ""
-      - name: bucket_main
-        description: Google Cloud Storage bucket for staging and dataset files
-        varType: string
-        defaultValue: ""
       - name: disable_services_on_destroy
         description: Whether project services will be disabled when the resources are destroyed.
         varType: bool
         defaultValue: false
+        invisible: true
       - name: documentai_location
-        description: Document AI location
+        description: Document AI location, see https://cloud.google.com/document-ai/docs/regions
         varType: string
         defaultValue: us
-      - name: documentai_processor_name
-        description: Document AI processor name
-        varType: string
-        defaultValue: docs-processor
       - name: firestore_location
-        description: Firestore location
+        description: Firestore location, see https://firebase.google.com/docs/firestore/locations
         varType: string
         defaultValue: nam5
-      - name: firestore_name
-        description: Firestore database name
-        varType: string
-        defaultValue: ""
       - name: project_id
         description: The Google Cloud project ID to deploy to
         varType: string
         defaultValue: null
         required: true
-      - name: storage_location
-        description: Cloud Storage buckets location
+      - name: region
+        description: The Google Cloud region to deploy to
         varType: string
         defaultValue: us-central1
-      - name: trigger_name
-        description: Name of the Cloud Function trigger
-        varType: string
-        defaultValue: docs-trigger
-      - name: vertexai_location
-        description: Vertex AI location
-        varType: string
-        defaultValue: us-central1
-      - name: webhook_location
-        description: Cloud Function location
-        varType: string
-        defaultValue: us-central1
-      - name: webhook_name
-        description: Name of the Cloud Function webhook
-        varType: string
-        defaultValue: webhook
       - name: webhook_path
         description: Path to the webhook source directory
         varType: string
         defaultValue: webhook
+        invisible: true
     outputs:
+      - name: bucket_docs_name
+        description: The name of the docs bucket created
+      - name: bucket_main_name
+        description: The name of the main bucket created
       - name: documentai_processor_id
         description: The full Document AI processor path ID
-      - name: genai_doc_summary_colab_url
-        description: The URL to launch the notebook tutorial for the Generateive AI Document Summarization Solution
+      - name: firestore_database_name
+        description: The name of the Firestore database created
       - name: neos_walkthrough_url
-        description: The URL to launch the in-console tutorial for the Generative AI Document Summarization solution
+        description: The URL to launch the in-console tutorial for the Generative AI Knowledge Base solution
+      - name: unique_id
+        description: The unique ID for this deployment
   requirements:
     roles:
     - level: Project
@@ -140,6 +116,7 @@ spec:
       - roles/aiplatform.user
       - roles/documentai.editor
       - roles/firebase.admin
+      - roles/iam.serviceAccountUser
     services:
     - aiplatform.googleapis.com
     - artifactregistry.googleapis.com
@@ -150,4 +127,3 @@ spec:
     - firestore.googleapis.com
     - run.googleapis.com
     - storage.googleapis.com
-
