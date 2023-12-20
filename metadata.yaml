@@ -39,8 +39,8 @@ spec:
       preDeploy: To deploy this blueprint you must have an active billing account and billing permissions.
     icon: assets/icon.png
     deploymentDuration:
-      configurationSecs: 120
-      deploymentSecs: 480
+      configurationSecs: "120"
+      deploymentSecs: "480"
     costEstimate:
       description: Cost Details
       url: https://cloud.google.com/products/calculator-legacy#id=94ab5d75-4134-410f-b2d0-350762ae2588
@@ -73,7 +73,6 @@ spec:
         description: Whether project services will be disabled when the resources are destroyed.
         varType: bool
         defaultValue: false
-        invisible: true
       - name: documentai_location
         description: Document AI location, see https://cloud.google.com/document-ai/docs/regions
         varType: string
@@ -95,7 +94,6 @@ spec:
         description: Path to the webhook source directory
         varType: string
         defaultValue: webhook
-        invisible: true
     outputs:
       - name: bucket_docs_name
         description: The name of the docs bucket created
@@ -111,19 +109,19 @@ spec:
         description: The unique ID for this deployment
   requirements:
     roles:
-    - level: Project
-      roles:
-      - roles/aiplatform.user
-      - roles/documentai.editor
-      - roles/firebase.admin
-      - roles/iam.serviceAccountUser
+      - level: Project
+        roles:
+          - roles/aiplatform.user
+          - roles/documentai.editor
+          - roles/firebase.admin
+          - roles/iam.serviceAccountUser
     services:
-    - aiplatform.googleapis.com
-    - artifactregistry.googleapis.com
-    - cloudbuild.googleapis.com
-    - cloudfunctions.googleapis.com
-    - documentai.googleapis.com
-    - eventarc.googleapis.com
-    - firestore.googleapis.com
-    - run.googleapis.com
-    - storage.googleapis.com
+      - aiplatform.googleapis.com
+      - artifactregistry.googleapis.com
+      - cloudbuild.googleapis.com
+      - cloudfunctions.googleapis.com
+      - documentai.googleapis.com
+      - eventarc.googleapis.com
+      - firestore.googleapis.com
+      - run.googleapis.com
+      - storage.googleapis.com
