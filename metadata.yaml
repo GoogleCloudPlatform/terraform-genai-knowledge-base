@@ -39,8 +39,8 @@ spec:
       preDeploy: To deploy this blueprint you must have an active billing account and billing permissions.
     icon: assets/icon.png
     deploymentDuration:
-      configurationSecs: "120"
-      deploymentSecs: "480"
+      configurationSecs: 120
+      deploymentSecs: 480
     costEstimate:
       description: Cost Details
       url: https://cloud.google.com/products/calculator-legacy#id=94ab5d75-4134-410f-b2d0-350762ae2588
