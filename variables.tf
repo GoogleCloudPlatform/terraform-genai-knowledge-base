@@ -30,12 +30,6 @@ variable "region" {
   default     = "us-central1"
 }
 
-variable "delete_contents_on_destroy" {
-  description = "Whether to delete the contents of the bucket on destroy"
-  type        = bool
-  default     = true
-}
-
 # Optional variables
 variable "documentai_location" {
   description = "Document AI location, see https://cloud.google.com/document-ai/docs/regions"
