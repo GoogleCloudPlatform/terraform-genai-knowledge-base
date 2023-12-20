@@ -81,7 +81,7 @@ resource "google_cloudfunctions2_function" "webhook" {
       OUTPUT_BUCKET     = google_storage_bucket.main.name
       DOCAI_PROCESSOR   = google_document_ai_processor.ocr.id
       DOCAI_LOCATION    = google_document_ai_processor.ocr.location
-      DATABASE          = google_firestore_database.database.name
+      DATABASE          = google_firestore_database.main.name
     }
   }
 }
@@ -183,7 +183,7 @@ resource "google_document_ai_processor" "ocr" {
 }
 
 #-- Firestore --#
-resource "google_firestore_database" "database" {
+resource "google_firestore_database" "main" {
   project         = module.project_services.project_id
   name            = "database-${random_id.unique_id.hex}"
   location_id     = var.firestore_location

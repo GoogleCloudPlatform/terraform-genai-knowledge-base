@@ -19,6 +19,11 @@ output "neos_walkthrough_url" {
   description = "The URL to launch the in-console tutorial for the Generative AI Document Summarization solution"
 }
 
+output "unique_id" {
+  value       = random_id.unique_id.hex
+  description = "The unique ID for this deployment"
+}
+
 output "bucket_main_name" {
   value       = google_storage_bucket.main.name
   description = "The name of the main bucket created"
@@ -32,4 +37,9 @@ output "bucket_docs_name" {
 output "documentai_processor_id" {
   value       = google_document_ai_processor.ocr.id
   description = "The full Document AI processor path ID"
+}
+
+output "firestore_database_name" {
+  value       = google_firestore_database.main.name
+  description = "The name of the Firestore database created"
 }
