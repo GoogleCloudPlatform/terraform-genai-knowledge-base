@@ -48,6 +48,7 @@ def outputs() -> Iterator[dict[str, str]]:
             "-input=false",
             "-auto-approve",
             f"-var=project_id={PROJECT_ID}",
+            "-var=unique_names=true",
             "-target=google_storage_bucket.main",
             "-target=google_document_ai_processor.ocr",
             "-target=google_firestore_database.main",
