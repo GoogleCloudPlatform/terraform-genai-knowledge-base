@@ -65,6 +65,7 @@ Deployment: 8 mins
 | firestore\_location | Firestore location, see https://firebase.google.com/docs/firestore/locations | `string` | `"nam5"` | no |
 | project\_id | The Google Cloud project ID to deploy to | `string` | n/a | yes |
 | region | The Google Cloud region to deploy to | `string` | `"us-central1"` | no |
+| unique\_names | Whether to use unique names for resources | `bool` | `false` | no |
 | webhook\_path | Path to the webhook source directory | `string` | `"webhook"` | no |
 
 ## Outputs
