@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-# Required variables
+# Jump Start Solution variables.
 variable "project_id" {
   description = "The Google Cloud project ID to deploy to"
   type        = string
@@ -24,69 +24,21 @@ variable "project_id" {
   }
 }
 
+variable "region" {
+  description = "The Google Cloud region to deploy to"
+  type        = string
+  default     = "us-central1"
+}
+
 # Optional variables
-variable "bucket_docs" {
-  description = "Google Cloud Storage bucket for documents"
-  type        = string
-  default     = ""
-}
-
-variable "bucket_main" {
-  description = "Google Cloud Storage bucket for staging and dataset files"
-  type        = string
-  default     = ""
-}
-
-variable "storage_location" {
-  description = "Cloud Storage buckets location"
-  type        = string
-  default     = "us-central1"
-}
-
-variable "webhook_name" {
-  description = "Name of the Cloud Function webhook"
-  type        = string
-  default     = "webhook"
-}
-
-variable "webhook_location" {
-  description = "Cloud Function location"
-  type        = string
-  default     = "us-central1"
-}
-
-variable "trigger_name" {
-  description = "Name of the Cloud Function trigger"
-  type        = string
-  default     = "docs-trigger"
-}
-
-variable "vertexai_location" {
-  description = "Vertex AI location"
-  type        = string
-  default     = "us-central1"
-}
-
-variable "documentai_processor_name" {
-  description = "Document AI processor name"
-  type        = string
-  default     = "docs-processor"
-}
-
 variable "documentai_location" {
-  description = "Document AI location"
+  description = "Document AI location, see https://cloud.google.com/document-ai/docs/regions"
   type        = string
   default     = "us"
 }
 
-variable "firestore_name" {
-  description = "Firestore database name"
-  type        = string
-  default     = ""
-}
-
 variable "firestore_location" {
-  description = "Firestore location"
+  description = "Firestore location, see https://firebase.google.com/docs/firestore/locations"
   type        = string
   default     = "nam5" # US
 }
@@ -104,3 +56,8 @@ variable "webhook_path" {
   default     = "webhook"
 }
 
+variable "unique_names" {
+  description = "Whether to use unique names for resources"
+  type        = bool
+  default     = false
+}

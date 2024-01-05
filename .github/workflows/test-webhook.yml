@@ -21,12 +21,14 @@ on:
     paths:
       - .github/workflows/test-webhook.yml
       - webhook/**
+      - '*.tf'
   pull_request:
     branches:
       - main
     paths:
       - .github/workflows/test-webhook.yml
       - webhook/**
+      - '*.tf'
   workflow_dispatch: # Manual runs
   schedule: # Run tests every day at UTC 9:00A
     - cron: '0 9 * * *'

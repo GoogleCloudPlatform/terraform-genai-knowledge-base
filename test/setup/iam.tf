@@ -14,23 +14,14 @@
  * limitations under the License.
  */
 
-# locals {
-#   int_required_roles = [
-#     "roles/aiplatform.admin",
-#     "roles/artifactregistry.reader",
-#     "roles/bigquery.admin",
-#     "roles/cloudfunctions.admin",
-#     "roles/eventarc.admin",
-#     "roles/iam.serviceAccountAdmin",
-#     "roles/iam.serviceAccountUser",
-#     "roles/logging.admin",
-#     "roles/pubsub.admin",
-#     "roles/resourcemanager.projectIamAdmin",
-#     "roles/run.admin",
-#     "roles/serviceusage.serviceUsageAdmin",
-#     "roles/storage.admin",
-#   ]
-# }
+locals {
+  int_required_roles = [
+    "roles/aiplatform.user",
+    "roles/documentai.editor",
+    "roles/firebase.admin",
+    "roles/iam.serviceAccountUser",
+  ]
+}
 
 resource "google_service_account" "int_test" {
   project      = module.project.project_id
@@ -39,8 +30,7 @@ resource "google_service_account" "int_test" {
 }
 
 resource "google_project_iam_member" "int_test" {
-  # for_each = toset(local.int_required_roles)
-  for_each = toset([])
+  for_each = toset(local.int_required_roles)
 
   project = module.project.project_id
   role    = each.value

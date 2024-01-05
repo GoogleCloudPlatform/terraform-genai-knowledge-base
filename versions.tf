@@ -36,6 +36,6 @@ terraform {
   }
 
   provider_meta "google" {
-    module_name = "blueprints/terraform/genai-enterprise-knowledge-base/v0.1.1"
+    module_name = "blueprints/terraform/genai-knowledge-base/v0.1.1"
   }
 }

@@ -15,14 +15,14 @@
 apiVersion: blueprints.cloud.google.com/v1alpha1
 kind: BlueprintMetadata
 metadata:
-  name: terraform-genai-enterprise-knowledge-base
+  name: terraform-genai-knowledge-base
   annotations:
     config.kubernetes.io/local-config: "true"
 spec:
   info:
     title: Generative AI Knowledge Base
     source:
-      repo: https://github.com/GoogleCloudPlatform/terraform-genai-enterprise-knowledge-base.git
+      repo: https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base.git
       sourceType: git
     version: 0.1.1
     actuationTool:
@@ -43,8 +43,28 @@ spec:
       deploymentSecs: 480
     costEstimate:
       description: Cost Details
-      url: https://cloud.google.com/products/calculator/#id=78888c9b-02ac-4130-9327-fecd7f4cfb11
+      url: https://cloud.google.com/products/calculator-legacy#id=94ab5d75-4134-410f-b2d0-350762ae2588
+    cloudProducts:
+      - productId: ai-platform
+        label: Vertex AI
+      - productId: document-ai
+        label: Document AI OCR
+      - productId: FIRESTORE_SECTION
+        label: Firestore
+      - productId: FUNCTIONS_SECTION
+        label: Cloud Functions
+      - productId: STORAGE_SECTION
+        label: Cloud Storage
   content:
+    architecture:
+      diagramUrl: architecture-diagram.url
+      description:
+        - Uploading a new document triggers the webhook Cloud Function
+        - Document AI extracts the text from the document file
+        - A Vertex AI Large Language Model generates questions and answers from the document text
+        - The questions and answers pairs are saved into Firestore
+        - A fine tuning dataset is generated from the Firestore database
+        - After human validation, a fine tuned Large Language Model is deployed
     documentation:
       - title: Knowledge Base using Generative AI
     examples:
@@ -52,68 +72,63 @@ spec:
         location: examples/simple_example
   interfaces:
     variables:
-      - name: bucket_docs
-        description: Google Cloud Storage bucket for documents
-        varType: string
-        defaultValue: ""
-      - name: bucket_main
-        description: Google Cloud Storage bucket for staging and dataset files
-        varType: string
-        defaultValue: ""
       - name: disable_services_on_destroy
         description: Whether project services will be disabled when the resources are destroyed.
         varType: bool
         defaultValue: false
       - name: documentai_location
-        description: Document AI location
+        description: Document AI location, see https://cloud.google.com/document-ai/docs/regions
         varType: string
         defaultValue: us
-      - name: documentai_processor_name
-        description: Document AI processor name
-        varType: string
-        defaultValue: docs-processor
       - name: firestore_location
-        description: Firestore location
+        description: Firestore location, see https://firebase.google.com/docs/firestore/locations
         varType: string
         defaultValue: nam5
-      - name: firestore_name
-        description: Firestore database name
-        varType: string
-        defaultValue: ""
       - name: project_id
         description: The Google Cloud project ID to deploy to
         varType: string
         defaultValue: null
         required: true
-      - name: storage_location
-        description: Cloud Storage buckets location
+      - name: region
+        description: The Google Cloud region to deploy to
         varType: string
         defaultValue: us-central1
-      - name: trigger_name
-        description: Name of the Cloud Function trigger
-        varType: string
-        defaultValue: docs-trigger
-      - name: vertexai_location
-        description: Vertex AI location
-        varType: string
-        defaultValue: us-central1
-      - name: webhook_location
-        description: Cloud Function location
-        varType: string
-        defaultValue: us-central1
-      - name: webhook_name
-        description: Name of the Cloud Function webhook
-        varType: string
-        defaultValue: webhook
+      - name: unique_names
+        description: Whether to use unique names for resources
+        varType: bool
+        defaultValue: false
       - name: webhook_path
         description: Path to the webhook source directory
         varType: string
         defaultValue: webhook
     outputs:
+      - name: bucket_docs_name
+        description: The name of the docs bucket created
+      - name: bucket_main_name
+        description: The name of the main bucket created
       - name: documentai_processor_id
         description: The full Document AI processor path ID
-      - name: genai_doc_summary_colab_url
-        description: The URL to launch the notebook tutorial for the Generateive AI Document Summarization Solution
+      - name: firestore_database_name
+        description: The name of the Firestore database created
       - name: neos_walkthrough_url
-        description: The URL to launch the in-console tutorial for the Generative AI Document Summarization solution
-  requirements: {}
+        description: The URL to launch the in-console tutorial for the Generative AI Knowledge Base solution
+      - name: unique_id
+        description: The unique ID for this deployment
+  requirements:
+    roles:
+      - level: Project
+        roles:
+          - roles/aiplatform.user
+          - roles/documentai.editor
+          - roles/firebase.admin
+          - roles/iam.serviceAccountUser
+    services:
+      - aiplatform.googleapis.com
+      - artifactregistry.googleapis.com
+      - cloudbuild.googleapis.com
+      - cloudfunctions.googleapis.com
+      - documentai.googleapis.com
+      - eventarc.googleapis.com
+      - firestore.googleapis.com
+      - run.googleapis.com
+      - storage.googleapis.com
