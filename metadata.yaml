@@ -64,7 +64,7 @@ spec:
         - A Vertex AI Large Language Model generates questions and answers from the document text
         - The questions and answers pairs are saved into Firestore
         - A fine tuning dataset is generated from the Firestore database
-        - After human validation, a fine tuned Large Language Model is deployed
+        - After human validation, a fine tuned Large Language Model is deployed and saved in the Model Registry
     documentation:
       - title: Knowledge Base using Generative AI
     examples:
