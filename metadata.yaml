@@ -59,12 +59,12 @@ spec:
     architecture:
       diagramUrl: architecture-diagram.url
       description:
-        1. Uploading a new document triggers the webhook Cloud Function
-        2. Document AI extracts the text from the document file
-        3. A Vertex AI Large Language Model generates questions and answers from the document text
-        4. The questions and answers pairs are saved into Firestore
-        5. A fine tuning dataset is generated from the Firestore database
-        6. After human validation, a fine tuned Large Language Model is deployed and saved in the Model Registry
+        - Uploading a new document triggers the webhook Cloud Function
+        - Document AI extracts the text from the document file
+        - A Vertex AI Large Language Model generates questions and answers from the document text
+        - The questions and answers pairs are saved into Firestore
+        - A fine tuning dataset is generated from the Firestore database
+        - After human validation, a fine tuned Large Language Model is deployed and saved in the Model Registry
     documentation:
       - title: Knowledge Base using Generative AI
     examples:
