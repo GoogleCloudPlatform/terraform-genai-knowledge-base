@@ -43,6 +43,10 @@ spec:
         region:
           name: region
           title: Region
+        unique_names:
+          name: unique_names
+          title: Unique Names
+          invisible: true
         webhook_path:
           name: webhook_path
           title: Webhook Path

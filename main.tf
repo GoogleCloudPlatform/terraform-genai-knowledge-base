@@ -38,10 +38,21 @@ resource "random_id" "unique_id" {
   byte_length = 3
 }
 
+locals {
+  bucket_main_name   = var.unique_names ? "${var.project_id}-main-${random_id.unique_id.hex}" : "${var.project_id}-main"
+  bucket_docs_name   = var.unique_names ? "${var.project_id}-docs-${random_id.unique_id.hex}" : "${var.project_id}-docs"
+  webhook_name       = var.unique_names ? "webhook-${random_id.unique_id.hex}" : "webhook"
+  webhook_sa_name    = var.unique_names ? "webhook-service-account-${random_id.unique_id.hex}" : "webhook-service-account"
+  trigger_name       = var.unique_names ? "trigger-${random_id.unique_id.hex}" : "trigger"
+  trigger_sa_name    = var.unique_names ? "trigger-service-account-${random_id.unique_id.hex}" : "trigger-service-account"
+  ocr_processor_name = var.unique_names ? "ocr-processor-${random_id.unique_id.hex}" : "ocr-processor"
+  firestore_name     = var.unique_names ? "tuning-dataset-${random_id.unique_id.hex}" : "tuning-dataset"
+}
+
 #-- Cloud Storage buckets --#
 resource "google_storage_bucket" "main" {
   project                     = module.project_services.project_id
-  name                        = "${var.project_id}-${random_id.unique_id.hex}"
+  name                        = local.bucket_main_name
   location                    = var.region
   force_destroy               = true
   uniform_bucket_level_access = true
@@ -49,7 +60,7 @@ resource "google_storage_bucket" "main" {
 
 resource "google_storage_bucket" "docs" {
   project                     = module.project_services.project_id
-  name                        = "${var.project_id}-docs-${random_id.unique_id.hex}"
+  name                        = local.bucket_docs_name
   location                    = var.region
   force_destroy               = true
   uniform_bucket_level_access = true
@@ -58,7 +69,7 @@ resource "google_storage_bucket" "docs" {
 #-- Cloud Function webhook --#
 resource "google_cloudfunctions2_function" "webhook" {
   project  = module.project_services.project_id
-  name     = "webhook-${random_id.unique_id.hex}"
+  name     = local.webhook_name
   location = var.region
 
   build_config {
@@ -98,7 +109,7 @@ resource "google_project_iam_member" "webhook" {
 }
 resource "google_service_account" "webhook" {
   project      = module.project_services.project_id
-  account_id   = "webhook-service-account-${random_id.unique_id.hex}"
+  account_id   = local.webhook_sa_name
   display_name = "Cloud Functions webhook service account"
 }
 
@@ -118,7 +129,7 @@ resource "google_storage_bucket_object" "webhook_staging" {
 resource "google_eventarc_trigger" "trigger" {
   project         = module.project_services.project_id
   location        = var.region
-  name            = "trigger-${random_id.unique_id.hex}"
+  name            = local.trigger_name
   service_account = google_service_account.trigger.email
 
   matching_criteria {
@@ -149,7 +160,7 @@ resource "google_project_iam_member" "trigger" {
 }
 resource "google_service_account" "trigger" {
   project      = module.project_services.project_id
-  account_id   = "trigger-service-account-${random_id.unique_id.hex}"
+  account_id   = local.trigger_sa_name
   display_name = "Eventarc trigger service account"
 }
 
@@ -178,14 +189,14 @@ resource "google_project_service_identity" "eventarc_agent" {
 resource "google_document_ai_processor" "ocr" {
   project      = module.project_services.project_id
   location     = var.documentai_location
-  display_name = "ocr-processor-${random_id.unique_id.hex}"
+  display_name = local.ocr_processor_name
   type         = "OCR_PROCESSOR"
 }
 
 #-- Firestore --#
 resource "google_firestore_database" "main" {
   project         = module.project_services.project_id
-  name            = "questions-${random_id.unique_id.hex}"
+  name            = local.firestore_name
   location_id     = var.firestore_location
   type            = "FIRESTORE_NATIVE"
   deletion_policy = "DELETE"

@@ -56,3 +56,8 @@ variable "webhook_path" {
   default     = "webhook"
 }
 
+variable "unique_names" {
+  description = "Whether to use unique names for resources"
+  type        = bool
+  default     = false
+}

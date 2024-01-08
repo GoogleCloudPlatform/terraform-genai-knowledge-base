@@ -93,6 +93,10 @@ spec:
         description: The Google Cloud region to deploy to
         varType: string
         defaultValue: us-central1
+      - name: unique_names
+        description: Whether to use unique names for resources
+        varType: bool
+        defaultValue: false
       - name: webhook_path
         description: Path to the webhook source directory
         varType: string
