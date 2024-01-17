@@ -74,6 +74,8 @@ Deployment: 8 mins
 |------|-------------|
 | bucket\_docs\_name | The name of the docs bucket created |
 | bucket\_main\_name | The name of the main bucket created |
+| docs\_index\_endpoint\_id | The ID of the docs index endpoint |
+| docs\_index\_id | The ID of the docs index |
 | documentai\_processor\_id | The full Document AI processor path ID |
 | firestore\_database\_name | The name of the Firestore database created |
 | neos\_walkthrough\_url | The URL to launch the in-console tutorial for the Generative AI Knowledge Base solution |

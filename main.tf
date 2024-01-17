@@ -86,7 +86,7 @@ resource "google_cloudfunctions2_function" "webhook" {
 
   service_config {
     available_memory      = "1G"
-    timeout_seconds       = 300  # 5 minutes
+    timeout_seconds       = 300 # 5 minutes
     service_account_email = google_service_account.webhook.email
     environment_variables = {
       PROJECT_ID          = module.project_services.project_id

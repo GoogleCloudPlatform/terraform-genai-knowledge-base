@@ -1,4 +1,4 @@
-# Copyright 2023 Google LLC
+# Copyright 2024 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -106,6 +106,10 @@ spec:
         description: The name of the docs bucket created
       - name: bucket_main_name
         description: The name of the main bucket created
+      - name: docs_index_endpoint_id
+        description: The ID of the docs index endpoint
+      - name: docs_index_id
+        description: The ID of the docs index
       - name: documentai_processor_id
         description: The full Document AI processor path ID
       - name: firestore_database_name
