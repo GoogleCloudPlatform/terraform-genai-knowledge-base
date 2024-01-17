@@ -79,7 +79,7 @@ def test_end_to_end(outputs: dict[str, str]) -> None:
         input_name="arxiv/cmp-lg/pdf/9410/9410009v1.pdf",
         mime_type="application/pdf",
         time_uploaded=datetime.datetime.now(),
-        docai_prcessor_id=outputs["documentai_processor_id"],
+        docai_processor_id=outputs["documentai_processor_id"],
         output_bucket=outputs["bucket_main_name"],
         database=outputs["firestore_database_name"],
         force_reprocess=True,

@@ -41,7 +41,9 @@ jobs:
       matrix:
         # To parse datetime in ISO format ending with Z, we need at least Python 3.11.
         # https://docs.python.org/3/library/datetime.html#datetime.datetime.fromisoformat
-        python-version: ['3.11', '3.12']
+        # For `itertools.batched` we need at least Python 3.12.
+        # https://docs.python.org/3/library/itertools.html#itertools.batched
+        python-version: ['3.12']
 
     env:
       PROJECT_ID: jss-22p1-test

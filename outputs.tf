@@ -43,3 +43,13 @@ output "firestore_database_name" {
   value       = google_firestore_database.main.name
   description = "The name of the Firestore database created"
 }
+
+output "docs_index_id" {
+  value       = google_vertex_ai_index.docs.id
+  description = "The ID of the docs index"
+}
+
+output "docs_index_endpoint_id" {
+  value       = google_vertex_ai_index_endpoint.docs.id
+  description = "The ID of the docs index endpoint"
+}
