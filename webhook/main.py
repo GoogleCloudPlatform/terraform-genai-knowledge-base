@@ -30,9 +30,11 @@ from google.cloud import firestore
 from google.cloud import storage
 from google.cloud.aiplatform_v1.types import IndexDatapoint
 from retry import retry
+from timeout import timeout, TimeoutException
 from vertexai.language_models import TextEmbeddingModel
 from vertexai.preview.generative_models import GenerativeModel
 
+DEPLOYED_INDEX_ID = "deployed_index"
 DOCAI_LOCATION = os.environ.get("DOCAI_LOCATION", "us")
 
 QUESTION_RE = re.compile(r"^Q:\s*", re.MULTILINE)
@@ -64,16 +66,29 @@ ANSWER:
 vertexai.init(location=os.environ.get("VERTEXAI_LOCATION", "us-central1"))
 aiplatform.init(location=os.environ.get("VERTEXAI_LOCATION", "us-central1"))
 
-# Deploy the Vertex AI Vector Search index if it isn't already deployed.
-if all(var in os.environ for var in ["INDEX_ID", "INDEX_ENDPOINT_ID"]):
-    deployed_index_id = "docs_index"
-    index = aiplatform.MatchingEngineIndex(os.environ["INDEX_ID"])
-    endpoint = aiplatform.MatchingEngineIndexEndpoint(os.environ["INDEX_ENDPOINT_ID"])
-    if not any(index.id == deployed_index_id for index in endpoint.deployed_indexes):
-        print("⏱️ Deploying Vector Search index, this can take up to 30 minutes")
-        endpoint.deploy_index(index, deployed_index_id)
+
+@timeout(duration=5)
+def deploy_index(index_id: str, index_endpoint_id: str) -> None:
+    index = aiplatform.MatchingEngineIndex(index_id)
+    endpoint = aiplatform.MatchingEngineIndexEndpoint(index_endpoint_id)
+    if not any(index.id == DEPLOYED_INDEX_ID for index in endpoint.deployed_indexes):
+        print("⏱️ Deploying Vector Search index, this may take up to 30 minutes...")
+        endpoint.deploy_index(
+            index,
+            DEPLOYED_INDEX_ID,
+            min_replica_count=1,
+            max_replica_count=1,
+        )
         index.remove_datapoints(["null"]).wait()
-        print("🟢 Index deploy, ready to process document")
+
+
+# Deploy the Vertex AI Vector Search index if it isn't already deployed.
+try:
+    # Deploying the index can take up to 30 minutes, so don't wait for it.
+    deploy_index(os.environ["INDEX_ID"], os.environ["INDEX_ENDPOINT_ID"])
+except TimeoutException:
+    # The index is already being deployed by the service, so it's safe to ignore this.
+    pass
 
 
 @functions_framework.cloud_event
@@ -269,6 +284,7 @@ def index_pages(index_id: str, filename: str, pages: list[str]) -> None:
     ]
 
     index = aiplatform.MatchingEngineIndex(index_id)
+    index.remove_datapoints(["null"])
     index.upsert_datapoints(points).wait()
 
 
