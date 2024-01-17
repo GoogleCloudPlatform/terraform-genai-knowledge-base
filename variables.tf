@@ -20,7 +20,7 @@ variable "project_id" {
   type        = string
   validation {
     condition     = var.project_id != ""
-    error_message = "Error: project_id is required"
+    error_message = "Error: project_id is required."
   }
 }
 
