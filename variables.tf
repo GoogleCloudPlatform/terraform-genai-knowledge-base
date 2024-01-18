@@ -61,3 +61,18 @@ variable "unique_names" {
   type        = bool
   default     = false
 }
+
+# Used by Blueprints.
+variable "labels" {
+  description = "A map of key/value label pairs to assign to the resources."
+  type        = map(string)
+  default = {
+    app = "genai-knowledge-base"
+  }
+}
+
+variable "delete_contents_on_destroy" {
+  description = "Whether to delete resource contents on destroy."
+  type        = bool
+  default     = true
+}

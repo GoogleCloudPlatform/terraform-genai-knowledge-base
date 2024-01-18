@@ -47,6 +47,8 @@ spec:
               value: europe-west3
             - label: Montréal
               value: northamerica-northeast1
+          minItems: 1
+          maxItems: 1
         firestore_location:
           name: firestore_location
           title: Firestore Location
