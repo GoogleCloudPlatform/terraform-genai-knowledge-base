@@ -30,63 +30,9 @@ spec:
         documentai_location:
           name: documentai_location
           title: Documentai Location
-          enumValueLabels:
-            - label: United States
-              value: us
-            - label: Europe
-              value: eu
-            - label: Mumbai
-              value: asia-south1
-            - label: Singapore
-              value: asia-southeast1
-            - label: Sydney
-              value: australia-southeast1
-            - label: London
-              value: europe-west2
-            - label: Frankfurt
-              value: europe-west3
-            - label: Montréal
-              value: northamerica-northeast1
-          minItems: 1
-          maxItems: 1
         firestore_location:
           name: firestore_location
           title: Firestore Location
-          enumValueLabels:
-            - label: United States
-              value: nam5
-            - label: Europe
-              value: eur3
-            - label: São Paulo
-              value: southamerica-east1
-            - label: Doha
-              value: me-central1
-            - label: Dammam
-              value: me-central2
-            - label: Tel Aviv
-              value: me-west1
-            - label: Mumbai
-              value: asia-south1
-            - label: Delhi
-              value: asia-south2
-            - label: Singapore
-              value: asia-southeast1
-            - label: Jakarta
-              value: asia-southeast2
-            - label: Hong Kong
-              value: asia-east2
-            - label: Taiwan
-              value: asia-east1
-            - label: Tokyo
-              value: asia-northeast1
-            - label: Osaka
-              value: asia-northeast2
-            - label: Seoul
-              value: asia-northeast3
-            - label: Sydney
-              value: australia-southeast1
-            - label: Melbourne
-              value: australia-southeast2
         project_id:
           name: project_id
           title: Project Id
