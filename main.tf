@@ -47,7 +47,7 @@ locals {
   trigger_sa_name    = var.unique_names ? "trigger-service-account-${random_id.unique_id.hex}" : "trigger-service-account"
   ocr_processor_name = var.unique_names ? "ocr-processor-${random_id.unique_id.hex}" : "ocr-processor"
   docs_index_name    = var.unique_names ? "docs-index-${random_id.unique_id.hex}" : "docs-index"
-  firestore_name     = var.unique_names ? "tuning-dataset-${random_id.unique_id.hex}" : "tuning-dataset"
+  firestore_name     = var.unique_names ? "knowledge-base-${random_id.unique_id.hex}" : "knowledge-base"
 }
 
 #-- Cloud Storage buckets --#
@@ -205,7 +205,7 @@ resource "google_vertex_ai_index" "docs" {
   display_name        = local.docs_index_name
   index_update_method = "STREAM_UPDATE"
   metadata {
-    contents_delta_uri = "gs://${google_storage_bucket.main.name}/docs-text"
+    contents_delta_uri = "gs://${google_storage_bucket.main.name}/vector-search-index"
     config {
       dimensions                  = 768
       approximate_neighbors_count = 150
@@ -219,24 +219,24 @@ resource "google_vertex_ai_index" "docs" {
       }
     }
   }
+  depends_on = [google_storage_bucket_object.index_initial]
 }
 
 resource "google_vertex_ai_index_endpoint" "docs" {
   project      = module.project_services.project_id
   region       = var.region
   display_name = "docs-index-endpoint"
-  # private_service_connect_config {
-  #   enable_private_service_connect = true
-  #   project_allowlist = [
-  #     module.project_services.project_id
-  #   ]
-  # }
-  public_endpoint_enabled = true
+  private_service_connect_config {
+    enable_private_service_connect = true
+    project_allowlist = [
+      module.project_services.project_id
+    ]
+  }
 }
 
-resource "google_storage_bucket_object" "docs_initial_index" {
+resource "google_storage_bucket_object" "index_initial" {
   bucket = google_storage_bucket.main.name
-  name   = "docs-text/initial.json"
+  name   = "vector-search-index/initial.json"
   source = abspath("initial-index.json")
 }
 
