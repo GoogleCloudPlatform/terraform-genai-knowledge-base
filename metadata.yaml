@@ -29,7 +29,7 @@ spec:
       deploymentSecs: 480
     costEstimate:
       description: Cost Details
-      url: https://cloud.google.com/products/calculator-legacy#id=94ab5d75-4134-410f-b2d0-350762ae2588
+      url: https://cloud.google.com/products/calculator/#id=40926ee8-c473-4659-be7b-5436b09eefcc
     cloudProducts:
       - productId: ai-platform
         label: Vertex AI
