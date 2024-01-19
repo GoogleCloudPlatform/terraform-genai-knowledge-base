@@ -91,4 +91,5 @@ jobs:
         working-directory: webhook
         run: |
           source env/bin/activate
-          pytest --verbose
+          pytest --verbose -s -W ignore::DeprecationWarning
+

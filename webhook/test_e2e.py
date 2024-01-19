@@ -12,19 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections.abc import Iterator
 import datetime
 import json
 import os
-import pytest
 import subprocess
+from collections.abc import Iterator
 from typing import Any
+from uuid import uuid4
 
+import pytest
+from google.cloud import storage 
 from google.cloud import firestore
 
-import storage_utils
-import firestore_utils
-from process_document import DATASET_COLLECTION, OUTPUT_NAME, process_document
+from main import process_document
 
 PROJECT_ID = os.environ["PROJECT_ID"]
 
@@ -38,9 +38,8 @@ def run_cmd(*cmd: str, **kwargs: Any) -> subprocess.CompletedProcess:
 def outputs() -> Iterator[dict[str, str]]:
     print("---")
     print(f"{PROJECT_ID=}")
-    if not os.environ.get("TEST_SKIP_INIT"):
+    if not os.environ.get("TEST_SKIP_TERRAFORM"):
         run_cmd("terraform", "-chdir=..", "init", "-input=false")
-    if not os.environ.get("TEST_SKIP_APPLY"):
         run_cmd(
             "terraform",
             "-chdir=..",
@@ -60,7 +59,7 @@ def outputs() -> Iterator[dict[str, str]]:
     }
     print(f"{outputs=}")
     yield outputs
-    if not os.environ.get("TEST_SKIP_DESTROY"):
+    if not os.environ.get("TEST_SKIP_TERRAFORM"):
         run_cmd(
             "terraform",
             "-chdir=..",
@@ -74,20 +73,22 @@ def outputs() -> Iterator[dict[str, str]]:
 def test_end_to_end(outputs: dict[str, str]) -> None:
     print(">> process_document")
     process_document(
-        event_id=f"webhook-test-{outputs['unique_id']}",
+        event_id=f"webhook-test-{outputs['unique_id']}-{uuid4().hex[:4]}",
         input_bucket="arxiv-dataset",
-        input_name="arxiv/cmp-lg/pdf/9410/9410009v1.pdf",
+        filename="arxiv/cmp-lg/pdf/9410/9410009v1.pdf",
         mime_type="application/pdf",
         time_uploaded=datetime.datetime.now(),
         docai_processor_id=outputs["documentai_processor_id"],
         output_bucket=outputs["bucket_main_name"],
         database=outputs["firestore_database_name"],
-        force_reprocess=True,
+        index_id="7217902410209951744"
     )
 
     # Make sure we have a non-empty dataset.
     print(">> Checking output bucket")
-    with storage_utils.read(outputs["bucket_main_name"], OUTPUT_NAME) as f:
+    storage_client = storage.Client()
+    output_bucket = outputs["bucket_main_name"]
+    with storage_client.get_bucket(output_bucket).blob("dataset.jsonl").open("r") as f:
         lines = [line.strip() for line in f]
         print(f"dataset {len(lines)=}")
         assert len(lines) > 0, "expected a non-empty dataset in the output bucket"
@@ -95,6 +96,6 @@ def test_end_to_end(outputs: dict[str, str]) -> None:
     # Make sure the Firestore database is populated.
     print(">> Checking Firestore database")
     db = firestore.Client(database=outputs["firestore_database_name"])
-    entries = list(firestore_utils.read(db, DATASET_COLLECTION))
+    entries = list(db.collection("dataset").stream())
     print(f"database {len(entries)=}")
     assert len(entries) == len(lines), "database entries do not match the dataset"

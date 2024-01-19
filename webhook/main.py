@@ -85,11 +85,11 @@ def deploy_index(index_id: str, index_endpoint_id: str) -> None:
 # Deploy the Vertex AI Vector Search index if it isn't already deployed.
 try:
     # Deploying the index can take up to 30 minutes, so don't wait for it.
-    deploy_index(os.environ["INDEX_ID"], os.environ["INDEX_ENDPOINT_ID"])
+    if os.environ.get("INDEX_ID") and os.environ.get("INDEX_ENDPOINT_ID"):
+        deploy_index(os.environ["INDEX_ID"], os.environ["INDEX_ENDPOINT_ID"])
 except TimeoutException:
     # The index is already being deployed by the service, so it's safe to ignore this.
     pass
-
 
 @functions_framework.cloud_event
 def on_cloud_event(event: CloudEvent) -> None:
@@ -176,10 +176,11 @@ def process_document(
             {"filename": filename, "page_number": i, "text": page}
             for i, page in enumerate(pages)
         ]
+        results = pool.map(process_page, event_pages)
         entries = list(
-            itertools.chain.from_iterable(pool.map(process_page, event_pages))
+            itertools.chain.from_iterable(results)
         )
-
+    
     print(f"🗃️ {event_id}: Saving Q&As to Firestore ({len(entries)} entries)")
     for entry in entries:
         doc = db.document("dataset", entry["question"].replace("/", " "))
