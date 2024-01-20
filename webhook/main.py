@@ -91,6 +91,7 @@ except TimeoutException:
     # The index is already being deployed by the service, so it's safe to ignore this.
     pass
 
+
 @functions_framework.cloud_event
 def on_cloud_event(event: CloudEvent) -> None:
     """Process a new document from an Eventarc event.
@@ -177,10 +178,8 @@ def process_document(
             for i, page in enumerate(pages)
         ]
         results = pool.map(process_page, event_pages)
-        entries = list(
-            itertools.chain.from_iterable(results)
-        )
-    
+        entries = list(itertools.chain.from_iterable(results))
+
     print(f"🗃️ {event_id}: Saving Q&As to Firestore ({len(entries)} entries)")
     for entry in entries:
         doc = db.document("dataset", entry["question"].replace("/", " "))
@@ -253,12 +252,19 @@ def get_document_text(
             ),
         ),
     )
+    page_segments = [
+        [
+            (segment.start_index, segment.end_index)
+            for segment in page.layout.text_anchor.text_segments
+        ]
+        for page in response.document.pages
+    ]
     return [
         "\n".join(
-            response.document.text[segment.start_index : segment.end_index]
-            for segment in page.layout.text_anchor.text_segments
+            response.document.text[start_index:end_index]
+            for start_index, end_index in segments
         )
-        for page in response.document.pages
+        for segments in page_segments
     ]
 
 

@@ -21,7 +21,7 @@ from typing import Any
 from uuid import uuid4
 
 import pytest
-from google.cloud import storage 
+from google.cloud import storage
 from google.cloud import firestore
 
 from main import process_document
@@ -81,7 +81,7 @@ def test_end_to_end(outputs: dict[str, str]) -> None:
         docai_processor_id=outputs["documentai_processor_id"],
         output_bucket=outputs["bucket_main_name"],
         database=outputs["firestore_database_name"],
-        index_id="7217902410209951744"
+        index_id="7217902410209951744",
     )
 
     # Make sure we have a non-empty dataset.
