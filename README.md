@@ -60,11 +60,9 @@ Deployment: 8 mins
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| delete\_contents\_on\_destroy | Whether to delete resource contents on destroy. | `bool` | `true` | no |
 | disable\_services\_on\_destroy | Whether project services will be disabled when the resources are destroyed. | `bool` | `false` | no |
 | documentai\_location | Document AI location, see https://cloud.google.com/document-ai/docs/regions | `string` | `"us"` | no |
 | firestore\_location | Firestore location, see https://firebase.google.com/docs/firestore/locations | `string` | `"nam5"` | no |
-| labels | A map of key/value label pairs to assign to the resources. | `map(string)` | <pre>{<br>  "app": "genai-knowledge-base"<br>}</pre> | no |
 | project\_id | The Google Cloud project ID to deploy to | `string` | n/a | yes |
 | region | The Google Cloud region to deploy to | `string` | `"us-central1"` | no |
 | unique\_names | Whether to use unique names for resources | `bool` | `false` | no |

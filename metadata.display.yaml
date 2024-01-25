@@ -27,6 +27,10 @@ spec:
   ui:
     input:
       variables:
+        disable_services_on_destroy:
+          name: disable_services_on_destroy
+          title: Disable Services On Destroy
+          invisible: true
         documentai_location:
           name: documentai_location
           title: Documentai Location
@@ -39,10 +43,6 @@ spec:
         region:
           name: region
           title: Region
-        disable_services_on_destroy:
-          name: disable_services_on_destroy
-          title: Disable Services On Destroy
-          invisible: true
         unique_names:
           name: unique_names
           title: Unique Names

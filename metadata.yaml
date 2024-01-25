@@ -43,7 +43,7 @@ spec:
       deploymentSecs: 480
     costEstimate:
       description: Cost Details
-      url: https://cloud.google.com/products/calculator/#id=40926ee8-c473-4659-be7b-5436b09eefcc
+      url: https://cloud.google.com/products/calculator-legacy#id=94ab5d75-4134-410f-b2d0-350762ae2588
     cloudProducts:
       - productId: ai-platform
         label: Vertex AI
@@ -72,10 +72,6 @@ spec:
         location: examples/simple_example
   interfaces:
     variables:
-      - name: delete_contents_on_destroy
-        description: Whether to delete resource contents on destroy.
-        varType: bool
-        defaultValue: true
       - name: disable_services_on_destroy
         description: Whether project services will be disabled when the resources are destroyed.
         varType: bool
@@ -88,15 +84,9 @@ spec:
         description: Firestore location, see https://firebase.google.com/docs/firestore/locations
         varType: string
         defaultValue: nam5
-      - name: labels
-        description: A map of key/value label pairs to assign to the resources.
-        varType: map(string)
-        defaultValue:
-          app: genai-knowledge-base
       - name: project_id
         description: The Google Cloud project ID to deploy to
         varType: string
-        defaultValue: null
         required: true
       - name: region
         description: The Google Cloud region to deploy to
