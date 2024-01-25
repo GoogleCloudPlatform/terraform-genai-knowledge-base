@@ -46,7 +46,8 @@ locals {
   trigger_name       = var.unique_names ? "trigger-${random_id.unique_id.hex}" : "trigger"
   trigger_sa_name    = var.unique_names ? "trigger-service-account-${random_id.unique_id.hex}" : "trigger-service-account"
   ocr_processor_name = var.unique_names ? "ocr-processor-${random_id.unique_id.hex}" : "ocr-processor"
-  firestore_name     = var.unique_names ? "tuning-dataset-${random_id.unique_id.hex}" : "tuning-dataset"
+  docs_index_name    = var.unique_names ? "docs-index-${random_id.unique_id.hex}" : "docs-index"
+  firestore_name     = var.unique_names ? "knowledge-base-${random_id.unique_id.hex}" : "knowledge-base"
 }
 
 #-- Cloud Storage buckets --#
@@ -85,14 +86,18 @@ resource "google_cloudfunctions2_function" "webhook" {
 
   service_config {
     available_memory      = "1G"
+    timeout_seconds       = 300 # 5 minutes
     service_account_email = google_service_account.webhook.email
     environment_variables = {
-      PROJECT_ID        = module.project_services.project_id
-      VERTEXAI_LOCATION = var.region
-      OUTPUT_BUCKET     = google_storage_bucket.main.name
-      DOCAI_PROCESSOR   = google_document_ai_processor.ocr.id
-      DOCAI_LOCATION    = google_document_ai_processor.ocr.location
-      DATABASE          = google_firestore_database.main.name
+      PROJECT_ID          = module.project_services.project_id
+      VERTEXAI_LOCATION   = var.region
+      OUTPUT_BUCKET       = google_storage_bucket.main.name
+      DOCAI_PROCESSOR     = google_document_ai_processor.ocr.id
+      DOCAI_LOCATION      = google_document_ai_processor.ocr.location
+      DATABASE            = google_firestore_database.main.name
+      INDEX_ID            = google_vertex_ai_index.docs.id
+      INDEX_ENDPOINT_ID   = google_vertex_ai_index_endpoint.docs.id
+      INDEX_CONTENTS_PATH = google_vertex_ai_index.docs.metadata[0].contents_delta_uri
     }
   }
 }
@@ -120,7 +125,7 @@ data "archive_file" "webhook_staging" {
 }
 
 resource "google_storage_bucket_object" "webhook_staging" {
-  name   = "staging/webhook.${data.archive_file.webhook_staging.output_base64sha256}.zip"
+  name   = "webhook-staging/${data.archive_file.webhook_staging.output_base64sha256}.zip"
   bucket = google_storage_bucket.main.name
   source = data.archive_file.webhook_staging.output_path
 }
@@ -191,6 +196,48 @@ resource "google_document_ai_processor" "ocr" {
   location     = var.documentai_location
   display_name = local.ocr_processor_name
   type         = "OCR_PROCESSOR"
+}
+
+#-- Vertex AI Vector Search --#
+resource "google_vertex_ai_index" "docs" {
+  project             = module.project_services.project_id
+  region              = var.region
+  display_name        = local.docs_index_name
+  index_update_method = "STREAM_UPDATE"
+  metadata {
+    contents_delta_uri = "gs://${google_storage_bucket.main.name}/vector-search-index"
+    config {
+      dimensions                  = 768
+      approximate_neighbors_count = 150
+      shard_size                  = "SHARD_SIZE_SMALL"
+      distance_measure_type       = "SQUARED_L2_DISTANCE"
+      algorithm_config {
+        tree_ah_config {
+          leaf_node_embedding_count    = 1000
+          leaf_nodes_to_search_percent = 10
+        }
+      }
+    }
+  }
+  depends_on = [google_storage_bucket_object.index_initial]
+}
+
+resource "google_vertex_ai_index_endpoint" "docs" {
+  project      = module.project_services.project_id
+  region       = var.region
+  display_name = "docs-index-endpoint"
+  private_service_connect_config {
+    enable_private_service_connect = true
+    project_allowlist = [
+      module.project_services.project_id
+    ]
+  }
+}
+
+resource "google_storage_bucket_object" "index_initial" {
+  bucket = google_storage_bucket.main.name
+  name   = "vector-search-index/initial.json"
+  source = abspath("initial-index.json")
 }
 
 #-- Firestore --#
