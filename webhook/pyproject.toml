@@ -1,0 +1,9 @@
+[tool.mypy]
+
+[tool.ruff]
+line-length = 100
+select = ["F", "E", "W", "D", "N", "C", "B", "Q", "A"]
+ignore = ["D100", "D211", "D213"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"

@@ -12,21 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: webhook tests
+name: webhook
 
 on:
   push:
     branches:
       - main
     paths:
-      - .github/workflows/test-webhook.yml
+      - .github/workflows/webhook-checks.yml
       - webhook/**
       - '*.tf'
   pull_request:
     branches:
       - main
     paths:
-      - .github/workflows/test-webhook.yml
+      - .github/workflows/webhook-checks.yml
       - webhook/**
       - '*.tf'
   workflow_dispatch: # Manual runs
@@ -34,7 +34,38 @@ on:
     - cron: '0 9 * * *'
 
 jobs:
-  test-webhook:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: webhook/env
+          key: ${{ runner.os }}-env-${{ hashFiles('webhook/requirements.txt', 'webhook/requirements-test.txt') }}
+
+      - name: Install dependencies
+        working-directory: webhook
+        run: |
+          python -m venv env
+          source env/bin/activate
+          pip install --upgrade pip
+          pip install ruff
+          pip check
+
+      - name: Run linter
+        working-directory: webhook
+        run: |
+          source env/bin/activate
+          flake8 *.py
+
+
+  test:
     runs-on: ubuntu-latest
 
     strategy:
@@ -85,7 +116,14 @@ jobs:
           source env/bin/activate
           pip install --upgrade pip
           pip install -r requirements.txt -r requirements-test.txt
+          mypy --non-interactive --install-types
           pip check
+
+      - name: Type check
+        working-directory: webhook
+        run: |
+          source env/bin/activate
+          mypy *.py
 
       - name: Run tests
         working-directory: webhook

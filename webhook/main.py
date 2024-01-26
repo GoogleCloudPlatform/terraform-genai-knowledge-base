@@ -21,18 +21,18 @@ import re
 from datetime import datetime
 
 import functions_framework
-import vertexai
+import vertexai  # type: ignore
 from cloudevents.http import CloudEvent
 from google.api_core.client_options import ClientOptions
 from google.cloud import aiplatform
 from google.cloud import documentai
-from google.cloud import firestore
-from google.cloud import storage
+from google.cloud import firestore  # type: ignore
+from google.cloud import storage  # type: ignore
 from google.cloud.aiplatform_v1.types import IndexDatapoint
 from retry import retry
-from timeout import timeout, TimeoutException
-from vertexai.language_models import TextEmbeddingModel
-from vertexai.preview.generative_models import GenerativeModel
+from timeout import timeout, TimeoutException  # type: ignore
+from vertexai.language_models import TextEmbeddingModel  # type: ignore
+from vertexai.preview.generative_models import GenerativeModel  # type: ignore
 
 DEPLOYED_INDEX_ID = "deployed_index"
 DOCAI_LOCATION = os.environ.get("DOCAI_LOCATION", "us")
@@ -69,6 +69,12 @@ aiplatform.init(location=os.environ.get("VERTEXAI_LOCATION", "us-central1"))
 
 @timeout(duration=5)
 def deploy_index(index_id: str, index_endpoint_id: str) -> None:
+    """Deploy a Vector Search index to an endpoint.
+
+    Args:
+        index_id: ID of the Vector Search index.
+        index_endpoint_id: ID of the Vector Search index endpoint.
+    """
     index = aiplatform.MatchingEngineIndex(index_id)
     endpoint = aiplatform.MatchingEngineIndexEndpoint(index_endpoint_id)
     if not any(index.id == DEPLOYED_INDEX_ID for index in endpoint.deployed_indexes):
@@ -137,9 +143,8 @@ def process_document(
         docai_processor_id: ID of the Document AI processor.
         database: Name of the Firestore database.
         output_bucket: Name of the output bucket.
-        index_contents_path: Path to the index contents file.
+        index_id: ID of the Vector Search index.
     """
-
     db = firestore.Client(database=database)
     doc = db.document("documents", filename.replace("/", "-"))
     event_entry = {
@@ -174,8 +179,7 @@ def process_document(
     print(f"🔍 {event_id}: Generating Q&As with model ({len(pages)} pages)")
     with multiprocessing.Pool(len(pages)) as pool:
         event_pages = [
-            {"filename": filename, "page_number": i, "text": page}
-            for i, page in enumerate(pages)
+            {"filename": filename, "page_number": i, "text": page} for i, page in enumerate(pages)
         ]
         results = pool.map(process_page, event_pages)
         entries = list(itertools.chain.from_iterable(results))
@@ -239,9 +243,7 @@ def get_document_text(
     """
     # You must set the `api_endpoint` if you use a location other than "us".
     client = documentai.DocumentProcessorServiceClient(
-        client_options=ClientOptions(
-            api_endpoint=f"{DOCAI_LOCATION}-documentai.googleapis.com"
-        )
+        client_options=ClientOptions(api_endpoint=f"{DOCAI_LOCATION}-documentai.googleapis.com")
     )
     response = client.process_document(
         request=documentai.ProcessRequest(
@@ -261,8 +263,7 @@ def get_document_text(
     ]
     return [
         "\n".join(
-            response.document.text[start_index:end_index]
-            for start_index, end_index in segments
+            response.document.text[start_index:end_index] for start_index, end_index in segments
         )
         for segments in page_segments
     ]
@@ -297,7 +298,7 @@ def index_pages(index_id: str, filename: str, pages: list[str]) -> None:
 
 @retry(tries=3)
 def generate_questions(text: str) -> list[dict[str, str]]:
-    """Extract questions & answers using a large language model (LLM)
+    """Extract questions & answers using a large language model (LLM).
 
     For more information, see:
         https://cloud.google.com/vertex-ai/docs/generative-ai/learn/models
