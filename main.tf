@@ -89,13 +89,13 @@ resource "google_cloudfunctions2_function" "webhook" {
     timeout_seconds       = 300 # 5 minutes
     service_account_email = google_service_account.webhook.email
     environment_variables = {
-      PROJECT_ID          = module.project_services.project_id
-      VERTEXAI_LOCATION   = var.region
-      OUTPUT_BUCKET       = google_storage_bucket.main.name
-      DOCAI_PROCESSOR     = google_document_ai_processor.ocr.id
-      DOCAI_LOCATION      = google_document_ai_processor.ocr.location
-      DATABASE            = google_firestore_database.main.name
-      INDEX_ID            = google_vertex_ai_index.docs.id
+      PROJECT_ID        = module.project_services.project_id
+      VERTEXAI_LOCATION = var.region
+      OUTPUT_BUCKET     = google_storage_bucket.main.name
+      DOCAI_PROCESSOR   = google_document_ai_processor.ocr.id
+      DOCAI_LOCATION    = google_document_ai_processor.ocr.location
+      DATABASE          = google_firestore_database.main.name
+      INDEX_ID          = google_vertex_ai_index.docs.id
     }
   }
 }
