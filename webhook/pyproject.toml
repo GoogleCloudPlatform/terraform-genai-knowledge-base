@@ -1,4 +1,5 @@
 [tool.mypy]
+exclude = "env/"
 
 [tool.ruff]
 line-length = 100
