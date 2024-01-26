@@ -62,7 +62,7 @@ jobs:
         working-directory: webhook
         run: |
           source env/bin/activate
-          flake8 *.py
+          ruff check .
 
 
   test:
