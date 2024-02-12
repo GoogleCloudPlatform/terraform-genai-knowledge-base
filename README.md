@@ -9,7 +9,7 @@ This solution showcases how to extract question & answer pairs out of documents
 using Generative AI. It provides an end-to-end demonstration of QA extraction and
 fine-tuning of a large language model (LLM) on Vertex AI. Along the way, the
 solution utilizes Document AI Character Recognition (OCR), Firestore,
-Vertex AI Studio, and Cloud Functions.
+Vector Search, Vertex AI Studio, and Cloud Functions.
 
 The resources that this module creates are:
 
@@ -30,6 +30,7 @@ and fulfillment.
    the Console UI, or the Cloud Storage client libraries.
 1. Uploading a document file triggers a Cloud Function that processes the document.
    - Uses Document AI OCR to extract all text from the document file.
+   - Indexes the document text in Vector Search.
    - Uses Vertex AI LLM API to extract question and answer pairs from the document text.
    - Stores the extracted question and answer pairs in a Firestore collection.
    - Generates a fine tuning dataset from the Firestore collection.
@@ -39,7 +40,7 @@ and fulfillment.
 1. The fine tuning job deploys a tuned model to an endpoint when the job is complete.
 
 ### Fulfillment
-1. Ask queries to the tuned model using Vertex AI Studio, and compare it with the foundation model.
+1. Ask queries to the tuned model in a Colab notebook, and compare it with the foundation model.
 
 ## Prerequisites
 - [Google Cloud Project](https://cloud.google.com/resource-manager/docs/creating-managing-projects)
@@ -50,7 +51,7 @@ and fulfillment.
 
 ## Deployment Duration
 Configuration: 2 mins
-Deployment: 8 mins
+Deployment: 28 mins
 
 ## Cost
 [Cost Details](https://cloud.google.com/products/calculator-legacy#id=94ab5d75-4134-410f-b2d0-350762ae2588)
