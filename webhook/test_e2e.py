@@ -21,8 +21,8 @@ from typing import Any
 from uuid import uuid4
 
 import pytest
-from google.cloud import storage
-from google.cloud import firestore
+from google.cloud import storage  # type: ignore
+from google.cloud import firestore  # type: ignore
 
 from main import process_document
 
@@ -30,12 +30,26 @@ PROJECT_ID = os.environ["PROJECT_ID"]
 
 
 def run_cmd(*cmd: str, **kwargs: Any) -> subprocess.CompletedProcess:
+    """Run a command in a subprocess.
+
+    Args:
+        *cmd: The command to run.
+        **kwargs: Additional keyword arguments to pass to subprocess.run().
+
+    Returns:
+        The completed subprocess.
+    """
     print(f">> {cmd}")
     return subprocess.run(cmd, check=True, **kwargs)
 
 
 @pytest.fixture(scope="session")
-def outputs() -> Iterator[dict[str, str]]:
+def terraform_outputs() -> Iterator[dict[str, str]]:
+    """Yield the Terraform outputs.
+
+    Yields:
+        The Terraform outputs as a dictionary.
+    """
     print("---")
     print(f"{PROJECT_ID=}")
     if not os.environ.get("TEST_SKIP_TERRAFORM"):
@@ -70,24 +84,29 @@ def outputs() -> Iterator[dict[str, str]]:
         )
 
 
-def test_end_to_end(outputs: dict[str, str]) -> None:
+def test_end_to_end(terraform_outputs: dict[str, str]) -> None:
+    """End-to-end test.
+
+    Args:
+        terraform_outputs: The Terraform outputs.
+    """
     print(">> process_document")
     process_document(
-        event_id=f"webhook-test-{outputs['unique_id']}-{uuid4().hex[:4]}",
+        event_id=f"webhook-test-{terraform_outputs['unique_id']}-{uuid4().hex[:4]}",
         input_bucket="arxiv-dataset",
         filename="arxiv/cmp-lg/pdf/9410/9410009v1.pdf",
         mime_type="application/pdf",
         time_uploaded=datetime.datetime.now(),
-        docai_processor_id=outputs["documentai_processor_id"],
-        output_bucket=outputs["bucket_main_name"],
-        database=outputs["firestore_database_name"],
+        docai_processor_id=terraform_outputs["documentai_processor_id"],
+        output_bucket=terraform_outputs["bucket_main_name"],
+        database=terraform_outputs["firestore_database_name"],
         index_id="7217902410209951744",
     )
 
     # Make sure we have a non-empty dataset.
     print(">> Checking output bucket")
     storage_client = storage.Client()
-    output_bucket = outputs["bucket_main_name"]
+    output_bucket = terraform_outputs["bucket_main_name"]
     with storage_client.get_bucket(output_bucket).blob("dataset.jsonl").open("r") as f:
         lines = [line.strip() for line in f]
         print(f"dataset {len(lines)=}")
@@ -95,7 +114,7 @@ def test_end_to_end(outputs: dict[str, str]) -> None:
 
     # Make sure the Firestore database is populated.
     print(">> Checking Firestore database")
-    db = firestore.Client(database=outputs["firestore_database_name"])
+    db = firestore.Client(database=terraform_outputs["firestore_database_name"])
     entries = list(db.collection("dataset").stream())
     print(f"database {len(entries)=}")
     assert len(entries) == len(lines), "database entries do not match the dataset"
