@@ -61,6 +61,7 @@ spec:
       description:
         - Uploading a new document triggers the webhook Cloud Function
         - Document AI extracts the text from the document file
+        - Indexes the document text in Vector Search
         - A Vertex AI Large Language Model generates questions and answers from the document text
         - The questions and answers pairs are saved into Firestore
         - A fine tuning dataset is generated from the Firestore database
