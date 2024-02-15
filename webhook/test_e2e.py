@@ -27,6 +27,7 @@ from google.cloud import firestore  # type: ignore
 from main import process_document
 
 PROJECT_ID = os.environ["PROJECT_ID"]
+VECTOR_SEARCH_INDEX_ID = "3421719768057511936"
 
 
 def run_cmd(*cmd: str, **kwargs: Any) -> subprocess.CompletedProcess:
@@ -97,7 +98,7 @@ def test_end_to_end(terraform_outputs: dict[str, str]) -> None:
         docai_processor_id=terraform_outputs["documentai_processor_id"],
         output_bucket=terraform_outputs["bucket_main_name"],
         database=terraform_outputs["firestore_database_name"],
-        index_id="7217902410209951744",
+        index_id=VECTOR_SEARCH_INDEX_ID,
     )
 
     # Make sure we have a non-empty dataset.
