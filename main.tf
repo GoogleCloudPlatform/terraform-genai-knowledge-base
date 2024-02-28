@@ -74,8 +74,9 @@ resource "google_cloudfunctions2_function" "webhook" {
   location = var.region
 
   build_config {
-    runtime     = "python312"
-    entry_point = "on_cloud_event"
+    runtime           = "python312"
+    entry_point       = "on_cloud_event"
+    docker_repository = google_artifact_registry_repository.webhook_images.id
     source {
       storage_source {
         bucket = google_storage_bucket.main.name
@@ -114,6 +115,13 @@ resource "google_service_account" "webhook" {
   project      = module.project_services.project_id
   account_id   = local.webhook_sa_name
   display_name = "Cloud Functions webhook service account"
+}
+
+resource "google_artifact_registry_repository" "webhook_images" {
+  project       = module.project_services.project_id
+  location      = var.region
+  repository_id = "webhook-images"
+  format        = "DOCKER"
 }
 
 data "archive_file" "webhook_staging" {
@@ -196,6 +204,15 @@ resource "google_document_ai_processor" "ocr" {
   type         = "OCR_PROCESSOR"
 }
 
+#-- Firestore --#
+resource "google_firestore_database" "main" {
+  project         = module.project_services.project_id
+  name            = local.firestore_name
+  location_id     = var.firestore_location
+  type            = "FIRESTORE_NATIVE"
+  deletion_policy = "DELETE"
+}
+
 #-- Vertex AI Vector Search --#
 resource "google_vertex_ai_index" "docs" {
   project             = module.project_services.project_id
@@ -238,11 +255,10 @@ resource "google_storage_bucket_object" "index_initial" {
   source = abspath("initial-index.json")
 }
 
-#-- Firestore --#
-resource "google_firestore_database" "main" {
-  project         = module.project_services.project_id
-  name            = local.firestore_name
-  location_id     = var.firestore_location
-  type            = "FIRESTORE_NATIVE"
-  deletion_policy = "DELETE"
+module "gcloud_ai_index_endpoints_deploy_index" {
+  source  = "terraform-google-modules/gcloud/google"
+  version = "~> 3.0"
+
+  create_cmd_body  = "ai index-endpoints deploy-index ${google_vertex_ai_index_endpoint.docs.id} --deployed-index-id=deployed_index --display-name=deployed_index --index=${google_vertex_ai_index.docs.id} --project=${module.project_services.project_id} --region=${var.region}"
+  destroy_cmd_body = "ai index-endpoints undeploy-index ${google_vertex_ai_index_endpoint.docs.id} --deployed-index-id=deployed_index --project=${module.project_services.project_id} --region=${var.region}"
 }
