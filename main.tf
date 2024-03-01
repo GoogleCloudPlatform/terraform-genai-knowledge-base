@@ -125,8 +125,15 @@ resource "google_artifact_registry_repository" "webhook_images" {
 }
 
 data "archive_file" "webhook_staging" {
-  type        = "zip"
-  source_dir  = var.webhook_path
+  type       = "zip"
+  source_dir = var.webhook_path
+  excludes = [
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    "__pycache__",
+    "env",
+  ]
   output_path = abspath("./.tmp/webhook.zip")
 }
 
