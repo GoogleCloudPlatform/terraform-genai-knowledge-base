@@ -47,7 +47,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: webhook/env
-          key: ${{ runner.os }}-env-${{ hashFiles('webhook/requirements.txt', 'webhook/requirements-test.txt') }}
+          key: ${{ runner.os }}-lint-${{ hashFiles('webhook/requirements.txt', 'webhook/requirements-test.txt') }}
 
       - name: Install dependencies
         working-directory: webhook
@@ -107,7 +107,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: webhook/env
-          key: ${{ runner.os }}-env-${{ hashFiles('webhook/requirements.txt', 'webhook/requirements-test.txt') }}
+          key: ${{ runner.os }}-check-${{ hashFiles('webhook/requirements.txt', 'webhook/requirements-test.txt') }}
 
       - name: Install dependencies
         working-directory: webhook

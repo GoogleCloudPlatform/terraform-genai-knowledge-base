@@ -30,11 +30,9 @@ from google.cloud import firestore  # type: ignore
 from google.cloud import storage  # type: ignore
 from google.cloud.aiplatform_v1.types import IndexDatapoint
 from retry import retry
-from timeout import timeout, TimeoutException  # type: ignore
 from vertexai.language_models import TextEmbeddingModel  # type: ignore
 from vertexai.preview.generative_models import GenerativeModel  # type: ignore
 
-DEPLOYED_INDEX_ID = "deployed_index"
 DOCAI_LOCATION = os.environ.get("DOCAI_LOCATION", "us")
 
 QUESTION_RE = re.compile(r"^Q:\s*", re.MULTILINE)
@@ -65,37 +63,6 @@ ANSWER:
 # Initialize Vertex AI client libraries.
 vertexai.init(location=os.environ.get("VERTEXAI_LOCATION", "us-central1"))
 aiplatform.init(location=os.environ.get("VERTEXAI_LOCATION", "us-central1"))
-
-
-@timeout(duration=5)
-def deploy_index(index_id: str, index_endpoint_id: str) -> None:
-    """Deploy a Vector Search index to an endpoint.
-
-    Args:
-        index_id: ID of the Vector Search index.
-        index_endpoint_id: ID of the Vector Search index endpoint.
-    """
-    index = aiplatform.MatchingEngineIndex(index_id)
-    endpoint = aiplatform.MatchingEngineIndexEndpoint(index_endpoint_id)
-    if not any(index.id == DEPLOYED_INDEX_ID for index in endpoint.deployed_indexes):
-        print("⏱️ Deploying Vector Search index, this may take up to 30 minutes...")
-        endpoint.deploy_index(
-            index,
-            DEPLOYED_INDEX_ID,
-            min_replica_count=1,
-            max_replica_count=1,
-        )
-        index.remove_datapoints(["null"]).wait()
-
-
-# Deploy the Vertex AI Vector Search index if it isn't already deployed.
-try:
-    # Deploying the index can take up to 30 minutes, so don't wait for it.
-    if os.environ.get("INDEX_ID") and os.environ.get("INDEX_ENDPOINT_ID"):
-        deploy_index(os.environ["INDEX_ID"], os.environ["INDEX_ENDPOINT_ID"])
-except TimeoutException:
-    # The index is already being deployed by the service, so it's safe to ignore this.
-    pass
 
 
 @functions_framework.cloud_event
