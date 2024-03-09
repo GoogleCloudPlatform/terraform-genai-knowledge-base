@@ -90,7 +90,7 @@ def test_end_to_end(terraform_outputs: dict[str, str]) -> None:
     """
     print(">> process_document")
     process_document(
-        event_id=f"webhook-test-{terraform_outputs['unique_id']}-{uuid4().hex[:4]}",
+        event_id=f"webhook-test-{uuid4().hex[:6]}",
         input_bucket="arxiv-dataset",
         filename="arxiv/cmp-lg/pdf/9410/9410009v1.pdf",
         mime_type="application/pdf",

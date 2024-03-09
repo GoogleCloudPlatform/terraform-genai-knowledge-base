@@ -18,6 +18,7 @@ import logging
 import multiprocessing
 import os
 import re
+from collections.abc import Iterator
 from datetime import datetime
 
 import functions_framework
@@ -133,11 +134,7 @@ def process_document(
 
     input_gcs_uri = f"gs://{input_bucket}/{filename}"
     print(f"📖 {event_id}: Getting document text")
-    pages = get_document_text(
-        gcs_uri=input_gcs_uri,
-        mime_type=mime_type,
-        processor_id=docai_processor_id,
-    )
+    pages = list(get_document_text(input_gcs_uri, mime_type, docai_processor_id, output_bucket))
     doc.update({"pages": pages})
 
     print(f"🗂️ {event_id}: Indexing pages into Vector Search")
@@ -148,11 +145,11 @@ def process_document(
         event_pages = [
             {"filename": filename, "page_number": i, "text": page} for i, page in enumerate(pages)
         ]
-        results = pool.map(process_page, event_pages)
-        entries = list(itertools.chain.from_iterable(results))
+        page_entries = pool.map(process_page, event_pages)
+        document_entries = list(itertools.chain.from_iterable(page_entries))
 
-    print(f"🗃️ {event_id}: Saving Q&As to Firestore ({len(entries)} entries)")
-    for entry in entries:
+    print(f"🗃️ {event_id}: Saving Q&As to Firestore ({len(document_entries)} entries)")
+    for entry in document_entries:
         doc = db.document("dataset", entry["question"].replace("/", " "))
         if doc.get().exists:
             doc.update(entry)
@@ -192,48 +189,69 @@ def process_page(event_page: dict) -> list[dict[str, str]]:
 
 
 def get_document_text(
-    gcs_uri: str,
+    input_file: str,
     mime_type: str,
     processor_id: str,
-) -> list[str]:
+    temp_bucket: str,
+) -> Iterator[str]:
     """Perform Optical Character Recognition (OCR) with Document AI on a Cloud Storage files.
 
     For more information, see:
         https://cloud.google.com/document-ai/docs/process-documents-ocr
 
     Args:
-        gcs_uri: GCS URI of the document file.
+        input_file: GCS URI of the document file.
         mime_type: MIME type of the document file.
         processor_id: ID of the Document AI processor.
+        temp_bucket: GCS bucket to store Document AI temporary files.
 
     Returns: A list of the text in each page of the document.
     """
     # You must set the `api_endpoint` if you use a location other than "us".
-    client = documentai.DocumentProcessorServiceClient(
+    documentai_client = documentai.DocumentProcessorServiceClient(
         client_options=ClientOptions(api_endpoint=f"{DOCAI_LOCATION}-documentai.googleapis.com")
     )
-    response = client.process_document(
-        request=documentai.ProcessRequest(
+
+    # We're using batch_process_documents instead of process_document because
+    # process_document has a quota limit of 15 pages per document, while
+    # batch_process_documents has a quota limit of 500 pages per request.
+    #   https://cloud.google.com/document-ai/quotas#general_processors
+    operation = documentai_client.batch_process_documents(
+        request=documentai.BatchProcessRequest(
             name=processor_id,
-            gcs_document=documentai.GcsDocument(
-                gcs_uri=gcs_uri,
-                mime_type=mime_type,
+            input_documents=documentai.BatchDocumentsInputConfig(
+                gcs_documents=documentai.GcsDocuments(
+                    documents=[
+                        documentai.GcsDocument(
+                            gcs_uri=input_file,
+                            mime_type=mime_type,
+                        ),
+                    ],
+                ),
+            ),
+            document_output_config=documentai.DocumentOutputConfig(
+                gcs_output_config=documentai.DocumentOutputConfig.GcsOutputConfig(
+                    gcs_uri=f"gs://{temp_bucket}/ocr/{input_file.split('gs://')[-1]}",
+                ),
             ),
         ),
     )
-    page_segments = [
-        [
-            (segment.start_index, segment.end_index)
-            for segment in page.layout.text_anchor.text_segments
-        ]
-        for page in response.document.pages
-    ]
-    return [
-        "\n".join(
-            response.document.text[start_index:end_index] for start_index, end_index in segments
-        )
-        for segments in page_segments
-    ]
+    operation.result()
+
+    # Read the results of the Document AI operation from Cloud Storage.
+    storage_client = storage.Client()
+    metadata = documentai.BatchProcessMetadata(operation.metadata)
+    output_gcs_path = metadata.individual_process_statuses[0].output_gcs_destination
+    (output_bucket, output_prefix) = output_gcs_path.removeprefix("gs://").split("/", 1)
+    for blob in storage_client.list_blobs(output_bucket, prefix=output_prefix):
+        blob_contents = blob.download_as_bytes()
+        document = documentai.Document.from_json(blob_contents, ignore_unknown_fields=True)
+        for page in document.pages:
+            segments = [
+                (segment.start_index, segment.end_index)
+                for segment in page.layout.text_anchor.text_segments
+            ]
+            yield "\n".join([document.text[start:end] for (start, end) in segments])
 
 
 def index_pages(index_id: str, filename: str, pages: list[str]) -> None:
