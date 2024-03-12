@@ -26,10 +26,10 @@ This solution showcases how to extract question & answer pairs out of documents 
 
 ## Deployment Duration
 Configuration: 2 mins
-Deployment: 3 mins
+Deployment: 6 mins
 
 ## Cost
-[Cost Details](https://cloud.google.com/products/calculator-legacy#id=94ab5d75-4134-410f-b2d0-350762ae2588)
+[Cost Details](https://cloud.google.com/products/calculator-legacy#id=bf6fefb7-80fc-45f4-9475-9f6cf29428ed)
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Inputs
