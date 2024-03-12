@@ -47,11 +47,11 @@ Return a JSON list of (question, answer) objects.
 """
 
 MODEL_INPUT_PROMPT = """\
-TEXT:
+DOCUMENT:
 {text}
 ----
 
-Please answer the following question given the provided text.
+Please answer the following question given the provided document.
 
 Explain to a sixth-grader.
 
