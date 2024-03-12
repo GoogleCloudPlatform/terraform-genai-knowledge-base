@@ -86,7 +86,7 @@ resource "google_cloudfunctions2_function" "webhook" {
   }
 
   service_config {
-    available_memory      = "1G"
+    available_memory      = "4G"
     timeout_seconds       = 300 # 5 minutes
     service_account_email = google_service_account.webhook.email
     environment_variables = {
@@ -245,15 +245,10 @@ resource "google_vertex_ai_index" "docs" {
 }
 
 resource "google_vertex_ai_index_endpoint" "docs" {
-  project      = module.project_services.project_id
-  region       = var.region
-  display_name = "docs-index-endpoint"
-  private_service_connect_config {
-    enable_private_service_connect = true
-    project_allowlist = [
-      module.project_services.project_id
-    ]
-  }
+  project                 = module.project_services.project_id
+  region                  = var.region
+  display_name            = "docs-index-endpoint"
+  public_endpoint_enabled = true
 }
 
 resource "google_storage_bucket_object" "index_initial" {
@@ -262,6 +257,7 @@ resource "google_storage_bucket_object" "index_initial" {
   source = abspath("initial-index.json")
 }
 
+# https://github.com/hashicorp/terraform-provider-google/issues/12818
 module "gcloud_ai_index_endpoints_deploy_index" {
   source  = "terraform-google-modules/gcloud/google"
   version = "~> 3.0"
