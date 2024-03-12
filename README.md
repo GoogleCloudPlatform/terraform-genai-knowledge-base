@@ -5,53 +5,28 @@
 Fine tune an LLM model to answer questions from your documents.
 
 ### Detailed
-This solution showcases how to extract question & answer pairs out of documents
-using Generative AI. It provides an end-to-end demonstration of QA extraction and
-fine-tuning of a large language model (LLM) on Vertex AI. Along the way, the
-solution utilizes Document AI Character Recognition (OCR), Firestore,
-Vector Search, Vertex AI Studio, and Cloud Functions.
-
-The resources that this module creates are:
-
-- Create a GCS bucket with the provided name
-
-### PreDeploy
-To deploy this blueprint you must have an active billing account and billing permissions.
+This solution showcases how to extract question & answer pairs out of documents using Generative AI. It provides an end-to-end demonstration of QA extraction and fine-tuning of a large language model (LLM) on Vertex AI. Along the way, the solution utilizes Document AI Character Recognition (OCR), Firestore, Vector Search, Vertex AI Studio, and Cloud Functions.
 
 ## Architecture
-![Knowledge Base using Generative AI]()
-<!-- TODO: Update the image with the correct diagram -->
+![Knowledge Base using Generative AI](assets/architecture_diagram.svg)
 
-The solution has three separate, but related workflows: ingestion, training,
-and fulfillment.
-
-### Ingestion
-1. The developer uploads a document like a PDF to a Cloud Storage bucket, using `gsutil`,
-   the Console UI, or the Cloud Storage client libraries.
-1. Uploading a document file triggers a Cloud Function that processes the document.
-   - Uses Document AI OCR to extract all text from the document file.
-   - Indexes the document text in Vector Search.
-   - Uses Vertex AI LLM API to extract question and answer pairs from the document text.
-   - Stores the extracted question and answer pairs in a Firestore collection.
-   - Generates a fine tuning dataset from the Firestore collection.
-
-### Fine tuning
-1. When satisified with the fine tuning dataset, the developer launches a fine tuning job on Vertex AI.
-1. The fine tuning job deploys a tuned model to an endpoint when the job is complete.
-
-### Fulfillment
-1. Ask queries to the tuned model in a Colab notebook, and compare it with the foundation model.
+- Uploading a new document triggers the webhook Cloud Function.
+- Document AI extracts the text from the document file.
+- Indexes the document text in Vector Search.
+- A Vertex AI Large Language Model generates questions and answers from the document text.
+- The questions and answers pairs are saved into Firestore.
+- A fine tuning dataset is generated from the Firestore database.
+- After human validation, a fine tuned Large Language Model is deployed and saved in the Model Registry.
 
 ## Prerequisites
 - [Google Cloud Project](https://cloud.google.com/resource-manager/docs/creating-managing-projects)
 
 ## Documentation
-- [Knowledge Base using Generative AI]()
-{TODO: Update link}
+- [Knowledge Base using Generative AI](assets/architecture_diagram.svg)
 
 ## Deployment Duration
 Configuration: 2 mins
-Deployment: 28 mins
+Deployment: 3 mins
 
 ## Cost
 [Cost Details](https://cloud.google.com/products/calculator-legacy#id=94ab5d75-4134-410f-b2d0-350762ae2588)
