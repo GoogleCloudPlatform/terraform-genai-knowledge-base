@@ -110,8 +110,10 @@ spec:
         description: The full Document AI processor path ID
       - name: firestore_database_name
         description: The name of the Firestore database created
-      - name: neos_walkthrough_url
+      - name: neos_tutorial_url
         description: The URL to launch the in-console tutorial for the Generative AI Knowledge Base solution
+      - name: predictions_notebook_url
+        description: The URL to open the notebook for model predictions in Colab
       - name: unique_id
         description: The unique ID for this deployment
   requirements:
