@@ -53,7 +53,7 @@ DOCUMENT:
 
 Please answer the following question given the provided document.
 
-Explain to a sixth-grader.
+Explain in simple terms.
 
 QUESTION:
 {question}
