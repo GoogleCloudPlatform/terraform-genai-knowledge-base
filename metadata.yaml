@@ -51,7 +51,7 @@ spec:
         label: Cloud Storage
   content:
     architecture:
-      diagramUrl: architecture-diagram.url
+      diagramUrl: assets/architecture_diagram.svg
       description:
         - Uploading a new document triggers the webhook Cloud Function.
         - Document AI extracts the text from the document file.

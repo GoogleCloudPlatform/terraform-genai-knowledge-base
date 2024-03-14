@@ -47,18 +47,11 @@ Return a JSON list of (question, answer) objects.
 """
 
 MODEL_INPUT_PROMPT = """\
-DOCUMENT:
-{text}
-----
-
-Please answer the following question given the provided document.
-
-Explain in simple terms.
+CONTEXT:
+{context}
 
 QUESTION:
 {question}
-
-ANSWER:
 """
 
 # Initialize Vertex AI client libraries.
@@ -326,7 +319,7 @@ def write_tuning_dataset(db: firestore.Client, output_bucket: str) -> int:
             entry = doc.to_dict() or {}
             line = {
                 "input_text": MODEL_INPUT_PROMPT.format(
-                    text=doc_pages[entry["filename"]][entry["page_number"]],
+                    context=doc_pages[entry["filename"]][entry["page_number"]],
                     question=entry["question"],
                 ),
                 "output_text": entry["answer"],
