@@ -17,6 +17,7 @@
 locals {
   int_required_roles = [
     "roles/aiplatform.user",
+    "roles/artifactregistry.admin",
     "roles/documentai.editor",
     "roles/firebase.admin",
     "roles/iam.serviceAccountUser",
