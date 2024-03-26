@@ -25,11 +25,17 @@ module "project_services" {
     "aiplatform.googleapis.com",
     "artifactregistry.googleapis.com",
     "cloudbuild.googleapis.com",
+    "compute.googleapis.com",
     "cloudfunctions.googleapis.com",
+    "config.googleapis.com",
+    "iam.googleapis.com",
     "documentai.googleapis.com",
     "eventarc.googleapis.com",
     "firestore.googleapis.com",
     "run.googleapis.com",
+    "serviceusage.googleapis.com",
+    "servicenetworking.googleapis.com",
+    "storage-api.googleapis.com",
     "storage.googleapis.com",
   ]
 }
