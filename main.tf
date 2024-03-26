@@ -34,7 +34,6 @@ module "project_services" {
     "firestore.googleapis.com",
     "run.googleapis.com",
     "serviceusage.googleapis.com",
-    "servicenetworking.googleapis.com",
     "storage-api.googleapis.com",
     "storage.googleapis.com",
   ]
