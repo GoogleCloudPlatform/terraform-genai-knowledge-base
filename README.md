@@ -41,7 +41,7 @@ Deployment: 6 mins
 | firestore\_location | Firestore location, see https://firebase.google.com/docs/firestore/locations | `string` | `"nam5"` | no |
 | project\_id | The Google Cloud project ID to deploy to | `string` | n/a | yes |
 | region | The Google Cloud region to deploy to | `string` | `"us-central1"` | no |
-| unique\_names | Whether to use unique names for resources | `bool` | `false` | no |
+| unique\_names | Whether to use unique names for resources | `bool` | `true` | no |
 | webhook\_path | Path to the webhook source directory | `string` | `"webhook"` | no |
 
 ## Outputs
@@ -54,7 +54,8 @@ Deployment: 6 mins
 | docs\_index\_id | The ID of the docs index |
 | documentai\_processor\_id | The full Document AI processor path ID |
 | firestore\_database\_name | The name of the Firestore database created |
-| neos\_walkthrough\_url | The URL to launch the in-console tutorial for the Generative AI Knowledge Base solution |
+| neos\_tutorial\_url | The URL to launch the in-console tutorial for the Generative AI Knowledge Base solution |
+| predictions\_notebook\_url | The URL to open the notebook for model predictions in Colab |
 | unique\_id | The unique ID for this deployment |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

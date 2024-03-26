@@ -14,9 +14,14 @@
  * limitations under the License.
  */
 
-output "neos_walkthrough_url" {
-  value       = "https://console.cloud.google.com/products/solutions/deployments?walkthrough_id=panels--sic--document-knowledge-base-tour"
+output "neos_tutorial_url" {
+  value       = "https://console.cloud.google.com/products/solutions/deployments?walkthrough_id=panels--sic--generative-ai-knowledge-base_toc"
   description = "The URL to launch the in-console tutorial for the Generative AI Knowledge Base solution"
+}
+
+output "predictions_notebook_url" {
+  value       = "https://colab.research.google.com/github/GoogleCloudPlatform/terraform-genai-knowledge-base/blob/main/notebooks/model-predictions.ipynb"
+  description = "The URL to open the notebook for model predictions in Colab"
 }
 
 output "unique_id" {

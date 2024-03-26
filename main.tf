@@ -256,12 +256,3 @@ resource "google_storage_bucket_object" "index_initial" {
   name   = "vector-search-index/initial.json"
   source = abspath("initial-index.json")
 }
-
-# https://github.com/hashicorp/terraform-provider-google/issues/12818
-module "gcloud_ai_index_endpoints_deploy_index" {
-  source  = "terraform-google-modules/gcloud/google"
-  version = "~> 3.0"
-
-  create_cmd_body  = "ai index-endpoints deploy-index ${google_vertex_ai_index_endpoint.docs.id} --deployed-index-id=deployed_index --display-name=deployed_index --index=${google_vertex_ai_index.docs.id} --project=${module.project_services.project_id} --region=${var.region}"
-  destroy_cmd_body = "ai index-endpoints undeploy-index ${google_vertex_ai_index_endpoint.docs.id} --deployed-index-id=deployed_index --project=${module.project_services.project_id} --region=${var.region}"
-}

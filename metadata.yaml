@@ -51,7 +51,7 @@ spec:
         label: Cloud Storage
   content:
     architecture:
-      diagramUrl: architecture-diagram.url
+      diagramUrl: assets/architecture_diagram.svg
       description:
         - Uploading a new document triggers the webhook Cloud Function.
         - Document AI extracts the text from the document file.
@@ -92,7 +92,7 @@ spec:
       - name: unique_names
         description: Whether to use unique names for resources
         varType: bool
-        defaultValue: false
+        defaultValue: true
       - name: webhook_path
         description: Path to the webhook source directory
         varType: string
@@ -110,8 +110,10 @@ spec:
         description: The full Document AI processor path ID
       - name: firestore_database_name
         description: The name of the Firestore database created
-      - name: neos_walkthrough_url
+      - name: neos_tutorial_url
         description: The URL to launch the in-console tutorial for the Generative AI Knowledge Base solution
+      - name: predictions_notebook_url
+        description: The URL to open the notebook for model predictions in Colab
       - name: unique_id
         description: The unique ID for this deployment
   requirements:
@@ -119,6 +121,7 @@ spec:
       - level: Project
         roles:
           - roles/aiplatform.user
+          - roles/artifactregistry.admin
           - roles/documentai.editor
           - roles/firebase.admin
           - roles/iam.serviceAccountUser
