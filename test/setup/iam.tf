@@ -21,6 +21,7 @@ locals {
     "roles/documentai.editor",
     "roles/firebase.admin",
     "roles/iam.serviceAccountUser",
+    "roles/serviceusage.serviceUsageAdmin",
   ]
 }
 
