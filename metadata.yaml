@@ -92,7 +92,7 @@ spec:
       - name: unique_names
         description: Whether to use unique names for resources
         varType: bool
-        defaultValue: true
+        defaultValue: false
       - name: webhook_path
         description: Path to the webhook source directory
         varType: string
