@@ -22,6 +22,7 @@ locals {
     "roles/firebase.admin",
     "roles/iam.serviceAccountAdmin",
     "roles/iam.serviceAccountUser",
+    "roles/resourcemanager.projectIamAdmin"
     "roles/serviceusage.serviceUsageAdmin",
   ]
 }
