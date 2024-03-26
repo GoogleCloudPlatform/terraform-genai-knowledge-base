@@ -48,7 +48,7 @@ locals {
   bucket_main_name   = var.unique_names ? "${var.project_id}-main-${random_id.unique_id.hex}" : "${var.project_id}-main"
   bucket_docs_name   = var.unique_names ? "${var.project_id}-docs-${random_id.unique_id.hex}" : "${var.project_id}-docs"
   webhook_name       = var.unique_names ? "webhook-${random_id.unique_id.hex}" : "webhook"
-  webhook_sa_name    = var.unique_names ? "webhook-service-account-${random_id.unique_id.hex}" : "webhook-service-account"
+  webhook_sa_name    = var.unique_names ? "webhook-service-account-kb-${random_id.unique_id.hex}" : "webhook-service-account-kb"
   trigger_name       = var.unique_names ? "trigger-${random_id.unique_id.hex}" : "trigger"
   trigger_sa_name    = var.unique_names ? "trigger-service-account-${random_id.unique_id.hex}" : "trigger-service-account"
   ocr_processor_name = var.unique_names ? "ocr-processor-${random_id.unique_id.hex}" : "ocr-processor"
