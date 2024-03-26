@@ -30,20 +30,14 @@ spec:
       version: ">= 0.13"
     description:
       tagline: Fine tune an LLM model to answer questions from your documents.
-      detailed: |-
-        This solution showcases how to extract question & answer pairs out of documents
-        using Generative AI. It provides an end-to-end demonstration of QA extraction and
-        fine-tuning of a large language model (LLM) on Vertex AI. Along the way, the
-        solution utilizes Document AI Character Recognition (OCR), Firestore,
-        Vertex AI Studio, and Cloud Functions.
-      preDeploy: To deploy this blueprint you must have an active billing account and billing permissions.
+      detailed: This solution showcases how to extract question & answer pairs out of documents using Generative AI. It provides an end-to-end demonstration of QA extraction and fine-tuning of a large language model (LLM) on Vertex AI. Along the way, the solution utilizes Document AI Character Recognition (OCR), Firestore, Vector Search, Vertex AI Studio, and Cloud Functions.
     icon: assets/icon.png
     deploymentDuration:
       configurationSecs: 120
-      deploymentSecs: 480
+      deploymentSecs: 360
     costEstimate:
       description: Cost Details
-      url: https://cloud.google.com/products/calculator-legacy#id=94ab5d75-4134-410f-b2d0-350762ae2588
+      url: https://cloud.google.com/products/calculator-legacy#id=2ed62cc0-d0ab-4bff-918a-d5cb297b4201
     cloudProducts:
       - productId: ai-platform
         label: Vertex AI
@@ -57,16 +51,18 @@ spec:
         label: Cloud Storage
   content:
     architecture:
-      diagramUrl: architecture-diagram.url
+      diagramUrl: assets/architecture_diagram.svg
       description:
-        - Uploading a new document triggers the webhook Cloud Function
-        - Document AI extracts the text from the document file
-        - A Vertex AI Large Language Model generates questions and answers from the document text
-        - The questions and answers pairs are saved into Firestore
-        - A fine tuning dataset is generated from the Firestore database
-        - After human validation, a fine tuned Large Language Model is deployed and saved in the Model Registry
+        - Uploading a new document triggers the webhook Cloud Function.
+        - Document AI extracts the text from the document file.
+        - Indexes the document text in Vector Search.
+        - A Vertex AI Large Language Model generates questions and answers from the document text.
+        - The questions and answers pairs are saved into Firestore.
+        - A fine tuning dataset is generated from the Firestore database.
+        - After human validation, a fine tuned Large Language Model is deployed and saved in the Model Registry.
     documentation:
       - title: Knowledge Base using Generative AI
+        url: assets/architecture_diagram.svg
     examples:
       - name: simple_example
         location: examples/simple_example
@@ -87,6 +83,7 @@ spec:
       - name: project_id
         description: The Google Cloud project ID to deploy to
         varType: string
+        defaultValue: null
         required: true
       - name: region
         description: The Google Cloud region to deploy to
@@ -95,7 +92,7 @@ spec:
       - name: unique_names
         description: Whether to use unique names for resources
         varType: bool
-        defaultValue: false
+        defaultValue: true
       - name: webhook_path
         description: Path to the webhook source directory
         varType: string
@@ -113,8 +110,10 @@ spec:
         description: The full Document AI processor path ID
       - name: firestore_database_name
         description: The name of the Firestore database created
-      - name: neos_walkthrough_url
+      - name: neos_tutorial_url
         description: The URL to launch the in-console tutorial for the Generative AI Knowledge Base solution
+      - name: predictions_notebook_url
+        description: The URL to open the notebook for model predictions in Colab
       - name: unique_id
         description: The unique ID for this deployment
   requirements:
@@ -122,6 +121,7 @@ spec:
       - level: Project
         roles:
           - roles/aiplatform.user
+          - roles/artifactregistry.admin
           - roles/documentai.editor
           - roles/firebase.admin
           - roles/iam.serviceAccountUser
@@ -134,4 +134,5 @@ spec:
       - eventarc.googleapis.com
       - firestore.googleapis.com
       - run.googleapis.com
+      - serviceusage.googleapis.com
       - storage.googleapis.com

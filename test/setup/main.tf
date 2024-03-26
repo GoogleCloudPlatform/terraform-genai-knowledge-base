@@ -33,6 +33,7 @@ module "project" {
     "eventarc.googleapis.com",
     "firestore.googleapis.com",
     "run.googleapis.com",
+    "serviceusage.googleapis.com",
     "storage.googleapis.com",
   ]
 }

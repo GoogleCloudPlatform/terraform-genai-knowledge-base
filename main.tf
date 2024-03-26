@@ -74,8 +74,9 @@ resource "google_cloudfunctions2_function" "webhook" {
   location = var.region
 
   build_config {
-    runtime     = "python312"
-    entry_point = "on_cloud_event"
+    runtime           = "python312"
+    entry_point       = "on_cloud_event"
+    docker_repository = google_artifact_registry_repository.webhook_images.id
     source {
       storage_source {
         bucket = google_storage_bucket.main.name
@@ -85,7 +86,7 @@ resource "google_cloudfunctions2_function" "webhook" {
   }
 
   service_config {
-    available_memory      = "1G"
+    available_memory      = "4G"
     timeout_seconds       = 300 # 5 minutes
     service_account_email = google_service_account.webhook.email
     environment_variables = {
@@ -116,9 +117,23 @@ resource "google_service_account" "webhook" {
   display_name = "Cloud Functions webhook service account"
 }
 
+resource "google_artifact_registry_repository" "webhook_images" {
+  project       = module.project_services.project_id
+  location      = var.region
+  repository_id = "webhook-images"
+  format        = "DOCKER"
+}
+
 data "archive_file" "webhook_staging" {
-  type        = "zip"
-  source_dir  = var.webhook_path
+  type       = "zip"
+  source_dir = var.webhook_path
+  excludes = [
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    "__pycache__",
+    "env",
+  ]
   output_path = abspath("./.tmp/webhook.zip")
 }
 
@@ -196,6 +211,15 @@ resource "google_document_ai_processor" "ocr" {
   type         = "OCR_PROCESSOR"
 }
 
+#-- Firestore --#
+resource "google_firestore_database" "main" {
+  project         = module.project_services.project_id
+  name            = local.firestore_name
+  location_id     = var.firestore_location
+  type            = "FIRESTORE_NATIVE"
+  deletion_policy = "DELETE"
+}
+
 #-- Vertex AI Vector Search --#
 resource "google_vertex_ai_index" "docs" {
   project             = module.project_services.project_id
@@ -221,28 +245,14 @@ resource "google_vertex_ai_index" "docs" {
 }
 
 resource "google_vertex_ai_index_endpoint" "docs" {
-  project      = module.project_services.project_id
-  region       = var.region
-  display_name = "docs-index-endpoint"
-  private_service_connect_config {
-    enable_private_service_connect = true
-    project_allowlist = [
-      module.project_services.project_id
-    ]
-  }
+  project                 = module.project_services.project_id
+  region                  = var.region
+  display_name            = "docs-index-endpoint"
+  public_endpoint_enabled = true
 }
 
 resource "google_storage_bucket_object" "index_initial" {
   bucket = google_storage_bucket.main.name
   name   = "vector-search-index/initial.json"
   source = abspath("initial-index.json")
-}
-
-#-- Firestore --#
-resource "google_firestore_database" "main" {
-  project         = module.project_services.project_id
-  name            = local.firestore_name
-  location_id     = var.firestore_location
-  type            = "FIRESTORE_NATIVE"
-  deletion_policy = "DELETE"
 }

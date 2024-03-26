@@ -18,6 +18,7 @@ import logging
 import multiprocessing
 import os
 import re
+from collections.abc import Iterator
 from datetime import datetime
 
 import functions_framework
@@ -30,11 +31,9 @@ from google.cloud import firestore  # type: ignore
 from google.cloud import storage  # type: ignore
 from google.cloud.aiplatform_v1.types import IndexDatapoint
 from retry import retry
-from timeout import timeout, TimeoutException  # type: ignore
 from vertexai.language_models import TextEmbeddingModel  # type: ignore
 from vertexai.preview.generative_models import GenerativeModel  # type: ignore
 
-DEPLOYED_INDEX_ID = "deployed_index"
 DOCAI_LOCATION = os.environ.get("DOCAI_LOCATION", "us")
 
 QUESTION_RE = re.compile(r"^Q:\s*", re.MULTILINE)
@@ -48,54 +47,16 @@ Return a JSON list of (question, answer) objects.
 """
 
 MODEL_INPUT_PROMPT = """\
-TEXT:
-{text}
-----
-
-Please answer the following question given the provided text.
-
-Explain to a sixth-grader.
+CONTEXT:
+{context}
 
 QUESTION:
 {question}
-
-ANSWER:
 """
 
 # Initialize Vertex AI client libraries.
 vertexai.init(location=os.environ.get("VERTEXAI_LOCATION", "us-central1"))
 aiplatform.init(location=os.environ.get("VERTEXAI_LOCATION", "us-central1"))
-
-
-@timeout(duration=5)
-def deploy_index(index_id: str, index_endpoint_id: str) -> None:
-    """Deploy a Vector Search index to an endpoint.
-
-    Args:
-        index_id: ID of the Vector Search index.
-        index_endpoint_id: ID of the Vector Search index endpoint.
-    """
-    index = aiplatform.MatchingEngineIndex(index_id)
-    endpoint = aiplatform.MatchingEngineIndexEndpoint(index_endpoint_id)
-    if not any(index.id == DEPLOYED_INDEX_ID for index in endpoint.deployed_indexes):
-        print("⏱️ Deploying Vector Search index, this may take up to 30 minutes...")
-        endpoint.deploy_index(
-            index,
-            DEPLOYED_INDEX_ID,
-            min_replica_count=1,
-            max_replica_count=1,
-        )
-        index.remove_datapoints(["null"]).wait()
-
-
-# Deploy the Vertex AI Vector Search index if it isn't already deployed.
-try:
-    # Deploying the index can take up to 30 minutes, so don't wait for it.
-    if os.environ.get("INDEX_ID") and os.environ.get("INDEX_ENDPOINT_ID"):
-        deploy_index(os.environ["INDEX_ID"], os.environ["INDEX_ENDPOINT_ID"])
-except TimeoutException:
-    # The index is already being deployed by the service, so it's safe to ignore this.
-    pass
 
 
 @functions_framework.cloud_event
@@ -166,11 +127,7 @@ def process_document(
 
     input_gcs_uri = f"gs://{input_bucket}/{filename}"
     print(f"📖 {event_id}: Getting document text")
-    pages = get_document_text(
-        gcs_uri=input_gcs_uri,
-        mime_type=mime_type,
-        processor_id=docai_processor_id,
-    )
+    pages = list(get_document_text(input_gcs_uri, mime_type, docai_processor_id, output_bucket))
     doc.update({"pages": pages})
 
     print(f"🗂️ {event_id}: Indexing pages into Vector Search")
@@ -181,11 +138,11 @@ def process_document(
         event_pages = [
             {"filename": filename, "page_number": i, "text": page} for i, page in enumerate(pages)
         ]
-        results = pool.map(process_page, event_pages)
-        entries = list(itertools.chain.from_iterable(results))
+        page_entries = pool.map(process_page, event_pages)
+        document_entries = list(itertools.chain.from_iterable(page_entries))
 
-    print(f"🗃️ {event_id}: Saving Q&As to Firestore ({len(entries)} entries)")
-    for entry in entries:
+    print(f"🗃️ {event_id}: Saving Q&As to Firestore ({len(document_entries)} entries)")
+    for entry in document_entries:
         doc = db.document("dataset", entry["question"].replace("/", " "))
         if doc.get().exists:
             doc.update(entry)
@@ -225,48 +182,69 @@ def process_page(event_page: dict) -> list[dict[str, str]]:
 
 
 def get_document_text(
-    gcs_uri: str,
+    input_file: str,
     mime_type: str,
     processor_id: str,
-) -> list[str]:
+    temp_bucket: str,
+) -> Iterator[str]:
     """Perform Optical Character Recognition (OCR) with Document AI on a Cloud Storage files.
 
     For more information, see:
         https://cloud.google.com/document-ai/docs/process-documents-ocr
 
     Args:
-        gcs_uri: GCS URI of the document file.
+        input_file: GCS URI of the document file.
         mime_type: MIME type of the document file.
         processor_id: ID of the Document AI processor.
+        temp_bucket: GCS bucket to store Document AI temporary files.
 
     Returns: A list of the text in each page of the document.
     """
     # You must set the `api_endpoint` if you use a location other than "us".
-    client = documentai.DocumentProcessorServiceClient(
+    documentai_client = documentai.DocumentProcessorServiceClient(
         client_options=ClientOptions(api_endpoint=f"{DOCAI_LOCATION}-documentai.googleapis.com")
     )
-    response = client.process_document(
-        request=documentai.ProcessRequest(
+
+    # We're using batch_process_documents instead of process_document because
+    # process_document has a quota limit of 15 pages per document, while
+    # batch_process_documents has a quota limit of 500 pages per request.
+    #   https://cloud.google.com/document-ai/quotas#general_processors
+    operation = documentai_client.batch_process_documents(
+        request=documentai.BatchProcessRequest(
             name=processor_id,
-            gcs_document=documentai.GcsDocument(
-                gcs_uri=gcs_uri,
-                mime_type=mime_type,
+            input_documents=documentai.BatchDocumentsInputConfig(
+                gcs_documents=documentai.GcsDocuments(
+                    documents=[
+                        documentai.GcsDocument(
+                            gcs_uri=input_file,
+                            mime_type=mime_type,
+                        ),
+                    ],
+                ),
+            ),
+            document_output_config=documentai.DocumentOutputConfig(
+                gcs_output_config=documentai.DocumentOutputConfig.GcsOutputConfig(
+                    gcs_uri=f"gs://{temp_bucket}/ocr/{input_file.split('gs://')[-1]}",
+                ),
             ),
         ),
     )
-    page_segments = [
-        [
-            (segment.start_index, segment.end_index)
-            for segment in page.layout.text_anchor.text_segments
-        ]
-        for page in response.document.pages
-    ]
-    return [
-        "\n".join(
-            response.document.text[start_index:end_index] for start_index, end_index in segments
-        )
-        for segments in page_segments
-    ]
+    operation.result()
+
+    # Read the results of the Document AI operation from Cloud Storage.
+    storage_client = storage.Client()
+    metadata = documentai.BatchProcessMetadata(operation.metadata)
+    output_gcs_path = metadata.individual_process_statuses[0].output_gcs_destination
+    (output_bucket, output_prefix) = output_gcs_path.removeprefix("gs://").split("/", 1)
+    for blob in storage_client.list_blobs(output_bucket, prefix=output_prefix):
+        blob_contents = blob.download_as_bytes()
+        document = documentai.Document.from_json(blob_contents, ignore_unknown_fields=True)
+        for page in document.pages:
+            segments = [
+                (segment.start_index, segment.end_index)
+                for segment in page.layout.text_anchor.text_segments
+            ]
+            yield "\n".join([document.text[start:end] for (start, end) in segments])
 
 
 def index_pages(index_id: str, filename: str, pages: list[str]) -> None:
@@ -341,7 +319,7 @@ def write_tuning_dataset(db: firestore.Client, output_bucket: str) -> int:
             entry = doc.to_dict() or {}
             line = {
                 "input_text": MODEL_INPUT_PROMPT.format(
-                    text=doc_pages[entry["filename"]][entry["page_number"]],
+                    context=doc_pages[entry["filename"]][entry["page_number"]],
                     question=entry["question"],
                 ),
                 "output_text": entry["answer"],

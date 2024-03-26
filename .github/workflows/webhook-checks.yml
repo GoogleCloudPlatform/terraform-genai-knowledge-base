@@ -44,10 +44,10 @@ jobs:
           python-version: 3.12
 
       - name: Cache dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: webhook/env
-          key: ${{ runner.os }}-env-${{ hashFiles('webhook/requirements.txt', 'webhook/requirements-test.txt') }}
+          key: ${{ runner.os }}-lint-${{ hashFiles('webhook/requirements.txt', 'webhook/requirements-test.txt') }}
 
       - name: Install dependencies
         working-directory: webhook
@@ -104,10 +104,10 @@ jobs:
           service_account: github-actions@jss-22p1-test.iam.gserviceaccount.com
 
       - name: Cache dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: webhook/env
-          key: ${{ runner.os }}-env-${{ hashFiles('webhook/requirements.txt', 'webhook/requirements-test.txt') }}
+          key: ${{ runner.os }}-check-${{ hashFiles('webhook/requirements.txt', 'webhook/requirements-test.txt') }}
 
       - name: Install dependencies
         working-directory: webhook
