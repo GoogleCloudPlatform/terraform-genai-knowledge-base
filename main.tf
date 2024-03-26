@@ -27,6 +27,7 @@ module "project_services" {
     "cloudbuild.googleapis.com",
     "compute.googleapis.com",
     "cloudfunctions.googleapis.com",
+    "cloudresourcemanager.googleapis.com",
     "config.googleapis.com",
     "iam.googleapis.com",
     "documentai.googleapis.com",
