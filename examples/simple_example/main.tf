@@ -18,5 +18,5 @@ module "simple" {
   source                  = "../../"
   project_id              = var.project_id
   webhook_path            = abspath("../../webhook")
-  initial_index_json_path = abspath("../../intial-index.json")
+  initial_index_json_path = abspath("../../initial-index.json")
 }
