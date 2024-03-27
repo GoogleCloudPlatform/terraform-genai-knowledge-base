@@ -60,7 +60,7 @@ variable "webhook_path" {
 variable "initial_index_json_path" {
   description = "Path to the initial (placeholder) Vector Search index"
   type        = string
-  default     = abspath("initial-index.json")
+  default     = "initial-index.json"
 }
 
 variable "unique_names" {
