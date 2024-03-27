@@ -29,6 +29,7 @@ module "project" {
     "artifactregistry.googleapis.com",
     "cloudbuild.googleapis.com",
     "cloudfunctions.googleapis.com",
+    "cloudresourcemanager.googleapis.com",
     "documentai.googleapis.com",
     "eventarc.googleapis.com",
     "firestore.googleapis.com",
