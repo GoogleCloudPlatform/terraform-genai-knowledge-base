@@ -37,6 +37,9 @@ spec:
         firestore_location:
           name: firestore_location
           title: Firestore Location
+        initial_index_json_path:
+          name: initial_index_json_path
+          title: Initial Index Json Path
         project_id:
           name: project_id
           title: Project Id
