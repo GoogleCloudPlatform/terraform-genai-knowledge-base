@@ -33,8 +33,8 @@ spec:
       detailed: This solution showcases how to extract question & answer pairs out of documents using Generative AI. It provides an end-to-end demonstration of QA extraction and fine-tuning of a large language model (LLM) on Vertex AI. Along the way, the solution utilizes Document AI Character Recognition (OCR), Firestore, Vector Search, Vertex AI Studio, and Cloud Functions.
     icon: assets/icon.png
     deploymentDuration:
-      configurationSecs: 120
-      deploymentSecs: 360
+      configurationSecs: "120"
+      deploymentSecs: "360"
     costEstimate:
       description: Cost Details
       url: https://cloud.google.com/products/calculator-legacy#id=2ed62cc0-d0ab-4bff-918a-d5cb297b4201
@@ -83,7 +83,6 @@ spec:
       - name: project_id
         description: The Google Cloud project ID to deploy to
         varType: string
-        defaultValue: null
         required: true
       - name: region
         description: The Google Cloud region to deploy to
@@ -124,12 +123,16 @@ spec:
           - roles/artifactregistry.admin
           - roles/documentai.editor
           - roles/firebase.admin
+          - roles/iam.serviceAccountAdmin
           - roles/iam.serviceAccountUser
+          - roles/resourcemanager.projectIamAdmin
+          - roles/serviceusage.serviceUsageAdmin
     services:
       - aiplatform.googleapis.com
       - artifactregistry.googleapis.com
       - cloudbuild.googleapis.com
       - cloudfunctions.googleapis.com
+      - cloudresourcemanager.googleapis.com
       - documentai.googleapis.com
       - eventarc.googleapis.com
       - firestore.googleapis.com
