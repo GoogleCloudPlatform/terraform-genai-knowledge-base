@@ -45,15 +45,15 @@ resource "random_id" "unique_id" {
 }
 
 locals {
-  bucket_main_name   = var.unique_names ? "${var.project_id}-main-${random_id.unique_id.hex}" : "${var.project_id}-main"
-  bucket_docs_name   = var.unique_names ? "${var.project_id}-docs-${random_id.unique_id.hex}" : "${var.project_id}-docs"
-  webhook_name       = var.unique_names ? "webhook-${random_id.unique_id.hex}" : "webhook"
-  webhook_sa_name    = var.unique_names ? "webhook-service-account-${random_id.unique_id.hex}" : "webhook-service-account"
-  trigger_name       = var.unique_names ? "trigger-${random_id.unique_id.hex}" : "trigger"
-  trigger_sa_name    = var.unique_names ? "trigger-service-account-${random_id.unique_id.hex}" : "trigger-service-account"
-  ocr_processor_name = var.unique_names ? "ocr-processor-${random_id.unique_id.hex}" : "ocr-processor"
-  docs_index_name    = var.unique_names ? "docs-index-${random_id.unique_id.hex}" : "docs-index"
-  firestore_name     = var.unique_names ? "knowledge-base-${random_id.unique_id.hex}" : "knowledge-base"
+  bucket_main_name   = var.unique_names ? "knowledge-base-bucket-${var.project_id}-${random_id.unique_id.hex}" : "knowledge-base-bucket-${var.project_id}"
+  bucket_docs_name   = var.unique_names ? "knowledge-base-docs-${var.project_id}-${random_id.unique_id.hex}" : "knowledge-base-docs-${var.project_id}"
+  webhook_name       = var.unique_names ? "knowledge-base-webhook-${random_id.unique_id.hex}" : "knowledge-base-webhook"
+  webhook_sa_name    = var.unique_names ? "knowledge-base-webhook-sa-${random_id.unique_id.hex}" : "knowledge-base-webhook-sa"
+  trigger_name       = var.unique_names ? "knowledge-base-trigger-${random_id.unique_id.hex}" : "knowledge-base-trigger"
+  trigger_sa_name    = var.unique_names ? "knowledge-base-trigger-sa-${random_id.unique_id.hex}" : "knowledge-base-trigger-sa"
+  ocr_processor_name = var.unique_names ? "knowledge-base-ocr-processor-${random_id.unique_id.hex}" : "knowledge-base-ocr-processor"
+  docs_index_name    = var.unique_names ? "knowledge-base-index-${random_id.unique_id.hex}" : "knowledge-base-index"
+  firestore_name     = var.unique_names ? "knowledge-base-database-${random_id.unique_id.hex}" : "knowledge-base-database"
 }
 
 #-- Cloud Storage buckets --#
