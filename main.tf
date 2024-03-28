@@ -209,7 +209,7 @@ resource "google_project_service_identity" "eventarc_agent" {
   service  = "eventarc.googleapis.com"
 }
 
-#-- Document AI (OCR) --#
+#-- Document AI --#
 resource "google_document_ai_processor" "ocr" {
   project      = module.project_services.project_id
   location     = var.documentai_location
