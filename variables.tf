@@ -66,5 +66,5 @@ variable "initial_index_json_path" {
 variable "unique_names" {
   description = "Whether to use unique names for resources"
   type        = bool
-  default     = true
+  default     = false
 }

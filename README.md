@@ -42,7 +42,7 @@ Deployment: 6 mins
 | initial\_index\_json\_path | Path to the initial (placeholder) Vector Search index | `string` | `"initial-index.json"` | no |
 | project\_id | The Google Cloud project ID to deploy to | `string` | n/a | yes |
 | region | The Google Cloud region to deploy to | `string` | `"us-central1"` | no |
-| unique\_names | Whether to use unique names for resources | `bool` | `true` | no |
+| unique\_names | Whether to use unique names for resources | `bool` | `false` | no |
 | webhook\_path | Path to the webhook source directory | `string` | `"webhook"` | no |
 
 ## Outputs
