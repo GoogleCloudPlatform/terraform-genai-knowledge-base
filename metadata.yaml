@@ -24,7 +24,7 @@ spec:
     source:
       repo: https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base.git
       sourceType: git
-    version: 0.1.1
+    version: 0.2.0
     actuationTool:
       flavor: Terraform
       version: ">= 0.13"
