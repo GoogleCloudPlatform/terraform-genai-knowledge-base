@@ -84,10 +84,13 @@ spec:
         description: Path to the initial (placeholder) Vector Search index
         varType: string
         defaultValue: initial-index.json
+      - name: labels
+        description: A set of key/value label pairs to assign to the resources deployed by this blueprint.
+        varType: map(string)
+        defaultValue: {}
       - name: project_id
         description: The Google Cloud project ID to deploy to
         varType: string
-        defaultValue: null
         required: true
       - name: region
         description: The Google Cloud region to deploy to
