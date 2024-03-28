@@ -37,7 +37,7 @@ spec:
       deploymentSecs: "360"
     costEstimate:
       description: Cost Details
-      url: https://cloud.google.com/products/calculator-legacy#id=2ed62cc0-d0ab-4bff-918a-d5cb297b4201
+      url: https://cloud.google.com/products/calculator-legacy#id=dcdd11ca-ca20-428b-86be-1c9b3c651042
     cloudProducts:
       - productId: ai-platform
         label: Vertex AI
@@ -87,6 +87,7 @@ spec:
       - name: project_id
         description: The Google Cloud project ID to deploy to
         varType: string
+        defaultValue: null
         required: true
       - name: region
         description: The Google Cloud region to deploy to
