@@ -29,7 +29,7 @@ Configuration: 2 mins
 Deployment: 6 mins
 
 ## Cost
-[Cost Details](https://cloud.google.com/products/calculator-legacy#id=2ed62cc0-d0ab-4bff-918a-d5cb297b4201)
+[Cost Details](https://cloud.google.com/products/calculator-legacy#id=dcdd11ca-ca20-428b-86be-1c9b3c651042)
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Inputs
@@ -39,6 +39,7 @@ Deployment: 6 mins
 | disable\_services\_on\_destroy | Whether project services will be disabled when the resources are destroyed. | `bool` | `false` | no |
 | documentai\_location | Document AI location, see https://cloud.google.com/document-ai/docs/regions | `string` | `"us"` | no |
 | firestore\_location | Firestore location, see https://firebase.google.com/docs/firestore/locations | `string` | `"nam5"` | no |
+| initial\_index\_json\_path | Path to the initial (placeholder) Vector Search index | `string` | `"initial-index.json"` | no |
 | project\_id | The Google Cloud project ID to deploy to | `string` | n/a | yes |
 | region | The Google Cloud region to deploy to | `string` | `"us-central1"` | no |
 | unique\_names | Whether to use unique names for resources | `bool` | `false` | no |
