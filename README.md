@@ -29,7 +29,7 @@ Configuration: 2 mins
 Deployment: 6 mins
 
 ## Cost
-[Cost Details](https://cloud.google.com/products/calculator-legacy#id=2ed62cc0-d0ab-4bff-918a-d5cb297b4201)
+[Cost Details](https://cloud.google.com/products/calculator-legacy#id=dcdd11ca-ca20-428b-86be-1c9b3c651042)
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Inputs
