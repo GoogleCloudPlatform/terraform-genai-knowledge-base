@@ -40,6 +40,9 @@ spec:
         initial_index_json_path:
           name: initial_index_json_path
           title: Initial Index Json Path
+        labels:
+          name: labels
+          title: Labels
         project_id:
           name: project_id
           title: Project Id

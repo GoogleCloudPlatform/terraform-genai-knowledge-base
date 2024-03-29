@@ -64,6 +64,7 @@ resource "google_storage_bucket" "main" {
   location                    = var.region
   force_destroy               = true
   uniform_bucket_level_access = true
+  labels                      = var.labels
 }
 
 resource "google_storage_bucket" "docs" {
@@ -72,6 +73,7 @@ resource "google_storage_bucket" "docs" {
   location                    = var.region
   force_destroy               = true
   uniform_bucket_level_access = true
+  labels                      = var.labels
 }
 
 #-- Cloud Function webhook --#
@@ -79,6 +81,7 @@ resource "google_cloudfunctions2_function" "webhook" {
   project  = module.project_services.project_id
   name     = local.webhook_name
   location = var.region
+  labels   = var.labels
 
   build_config {
     runtime           = "python312"
@@ -129,6 +132,7 @@ resource "google_artifact_registry_repository" "webhook_images" {
   location      = var.region
   repository_id = "webhook-images"
   format        = "DOCKER"
+  labels        = var.labels
 }
 
 data "archive_file" "webhook_staging" {
@@ -156,6 +160,7 @@ resource "google_eventarc_trigger" "trigger" {
   location        = var.region
   name            = local.trigger_name
   service_account = google_service_account.trigger.email
+  labels          = var.labels
 
   matching_criteria {
     attribute = "type"
@@ -233,6 +238,7 @@ resource "google_vertex_ai_index" "docs" {
   region              = var.region
   display_name        = local.docs_index_name
   index_update_method = "STREAM_UPDATE"
+  labels              = var.labels
   metadata {
     contents_delta_uri = "gs://${google_storage_bucket.main.name}/vector-search-index"
     config {
@@ -256,6 +262,7 @@ resource "google_vertex_ai_index_endpoint" "docs" {
   region                  = var.region
   display_name            = local.docs_index_endpoint_name
   public_endpoint_enabled = true
+  labels                  = var.labels
 }
 
 resource "google_storage_bucket_object" "index_initial" {
