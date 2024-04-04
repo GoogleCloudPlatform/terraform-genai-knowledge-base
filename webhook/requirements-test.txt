@@ -12,5 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-mypy==1.8.0
+mypy==1.9.0
 pytest==8.1.1
