@@ -15,6 +15,6 @@
  */
 
 module "simple" {
-  source                  = "../../"
-  project_id              = var.project_id
+  source     = "../../"
+  project_id = var.project_id
 }
