@@ -68,3 +68,9 @@ variable "unique_names" {
   type        = bool
   default     = false
 }
+
+variable "labels" {
+  type        = map(string)
+  default     = {}
+  description = "A set of key/value label pairs to assign to the resources deployed by this blueprint."
+}
