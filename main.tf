@@ -25,14 +25,14 @@ module "project_services" {
     "aiplatform.googleapis.com",
     "artifactregistry.googleapis.com",
     "cloudbuild.googleapis.com",
-    "compute.googleapis.com",
     "cloudfunctions.googleapis.com",
     "cloudresourcemanager.googleapis.com",
+    "compute.googleapis.com",
     "config.googleapis.com",
-    "iam.googleapis.com",
     "documentai.googleapis.com",
     "eventarc.googleapis.com",
     "firestore.googleapis.com",
+    "iam.googleapis.com",
     "run.googleapis.com",
     "serviceusage.googleapis.com",
     "storage-api.googleapis.com",
@@ -51,6 +51,7 @@ locals {
   webhook_sa_name          = var.unique_names ? "kb-webhook-sa-${random_id.unique_id.hex}" : "knowledge-base-webhook-sa"
   trigger_name             = var.unique_names ? "kb-trigger-${random_id.unique_id.hex}" : "knowledge-base-trigger"
   trigger_sa_name          = var.unique_names ? "kb-trigger-sa-${random_id.unique_id.hex}" : "knowledge-base-trigger-sa"
+  artifact_repo_name       = var.unique_names ? "kb-repo-${random_id.unique_id.hex}" : "knowledge-base-repo"
   ocr_processor_name       = var.unique_names ? "kb-ocr-processor-${random_id.unique_id.hex}" : "knowledge-base-ocr-processor"
   docs_index_name          = var.unique_names ? "kb-index-${random_id.unique_id.hex}" : "knowledge-base-index"
   docs_index_endpoint_name = var.unique_names ? "kb-index-endpoint-${random_id.unique_id.hex}" : "knowledge-base-index-endpoint"
@@ -130,14 +131,15 @@ resource "google_service_account" "webhook" {
 resource "google_artifact_registry_repository" "webhook_images" {
   project       = module.project_services.project_id
   location      = var.region
-  repository_id = "webhook-images"
+  repository_id = local.artifact_repo_name
   format        = "DOCKER"
   labels        = var.labels
 }
 
 data "archive_file" "webhook_staging" {
-  type       = "zip"
-  source_dir = var.webhook_path
+  type        = "zip"
+  source_dir  = var.webhook_path
+  output_path = abspath("./.tmp/webhook.zip")
   excludes = [
     ".mypy_cache",
     ".pytest_cache",
@@ -145,7 +147,6 @@ data "archive_file" "webhook_staging" {
     "__pycache__",
     "env",
   ]
-  output_path = abspath("./.tmp/webhook.zip")
 }
 
 resource "google_storage_bucket_object" "webhook_staging" {
