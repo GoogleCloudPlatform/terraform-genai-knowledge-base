@@ -138,8 +138,8 @@ resource "google_artifact_registry_repository" "webhook_images" {
 
 data "archive_file" "webhook_staging" {
   type        = "zip"
-  source_dir  = var.webhook_path
-  output_path = abspath("./.tmp/webhook.zip")
+  source_dir  = "${module.path}/webhook"
+  output_path = "${module.path}/.terraform/webhook.zip"
   excludes = [
     ".mypy_cache",
     ".pytest_cache",
@@ -268,6 +268,6 @@ resource "google_vertex_ai_index_endpoint" "docs" {
 
 resource "google_storage_bucket_object" "index_initial" {
   bucket = google_storage_bucket.main.name
-  name   = "vector-search-index/initial.json"
+  name   = "${module.path}/vector-search-index/initial.json"
   source = var.initial_index_json_path
 }

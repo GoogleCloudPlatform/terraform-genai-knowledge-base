@@ -50,19 +50,6 @@ variable "disable_services_on_destroy" {
 }
 
 # Used for testing.
-variable "webhook_path" {
-  description = "Path to the webhook source directory"
-  type        = string
-  default     = "webhook"
-}
-
-# Used for testing.
-variable "initial_index_json_path" {
-  description = "Path to the initial (placeholder) Vector Search index"
-  type        = string
-  default     = "initial-index.json"
-}
-
 variable "unique_names" {
   description = "Whether to use unique names for resources"
   type        = bool
