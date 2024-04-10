@@ -268,6 +268,6 @@ resource "google_vertex_ai_index_endpoint" "docs" {
 
 resource "google_storage_bucket_object" "index_initial" {
   bucket = google_storage_bucket.main.name
-  name   = "${path.module}/vector-search-index/initial.json"
-  source = var.initial_index_json_path
+  name   = "vector-search-index/initial-index.json"
+  source = "${path.module}/initial-index.json"
 }
