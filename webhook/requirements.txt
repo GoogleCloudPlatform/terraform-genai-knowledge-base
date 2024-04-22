@@ -14,7 +14,7 @@
 
 flask==3.0.3
 functions-framework==3.5.0
-google-cloud-aiplatform==1.46.0
+google-cloud-aiplatform==1.48.0
 google-cloud-documentai==2.26.0
 google-cloud-firestore==2.16.0
 google-cloud-storage==2.16.0
