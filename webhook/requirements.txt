@@ -12,11 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-flask==3.0.2
+flask==3.0.3
 functions-framework==3.5.0
-google-cloud-aiplatform==1.46.0
-google-cloud-documentai==2.24.2
+google-cloud-aiplatform==1.48.0
+google-cloud-documentai==2.26.0
 google-cloud-firestore==2.16.0
 google-cloud-storage==2.16.0
 retry2==0.9.5
-bigframes<1.0.0
