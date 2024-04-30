@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.2.0](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/compare/v0.1.1...v0.2.0) (2024-04-30)
+
+
+### Features
+
+* add notebook for predictions ([#78](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/issues/78)) ([1ebde35](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/commit/1ebde35e8802f243e36d483f6304cd704f5de703))
+* add support for make it mine and deploy via cloudbuild trigger ([#96](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/issues/96)) ([bb0c209](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/commit/bb0c209e14a04b2c595e512ae369043ec230a38e))
+* add vector search ([#43](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/issues/43)) ([257d718](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/commit/257d71817a22a4f3090de1f9dc4b92cd545b4f6d))
+* improve image building performance ([#67](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/issues/67)) ([2723991](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/commit/2723991fce72604bc1d53a834b4a82ed3e99424c))
+* terraform to auto deploy index ([#66](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/issues/66)) ([1f9caec](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/commit/1f9caecaf33448f3083cef3896f22225b3d39fb9))
+* use document ai batch process ([#71](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/issues/71)) ([dcb2e48](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/commit/dcb2e48acf8915a85e868c454ba10af44eb00dd4))
+
+
+### Bug Fixes
+
+* back out unique names and use unique webhook_sa_name ([#87](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/issues/87)) ([eb6965c](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/commit/eb6965cec703528859fe503141308cb94a89ab7d))
+* Fix Blueprint integration test ([#88](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/issues/88)) ([0457df4](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/commit/0457df4e39f9f83363cda303327b6f666045debf))
+* Pin bigframes to &lt; 1.0.0 ([#91](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/issues/91)) ([e708452](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/commit/e708452c6fa6d1150d7041ad5f08a989f3ef607f))
+* Pin bigframes to &lt;1.0.0 in notebook ([#92](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/issues/92)) ([fc0016f](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/commit/fc0016f30229f7631932c9823e9ad38aee932ea3))
+* Set labels of all labels-supporting resources ([#95](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/issues/95)) ([4aa6b6c](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/commit/4aa6b6c64687d614febd8150a0664f24e35ae055))
+* set unique_names to true ([#83](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/issues/83)) ([37a13fa](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/commit/37a13fa95d2d944ddad26c80ed0923620cc70699))
+* Update architecture diagram ([#80](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/issues/80)) ([0a28eef](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/commit/0a28eef03e6bf7c6c6ec6727d10fc98a0a4359a6))
+
 ## [0.1.1](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/compare/v0.1.0...v0.1.1) (2023-12-08)
 
 
