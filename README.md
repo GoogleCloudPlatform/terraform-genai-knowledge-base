@@ -39,12 +39,10 @@ Deployment: 6 mins
 | disable\_services\_on\_destroy | Whether project services will be disabled when the resources are destroyed. | `bool` | `false` | no |
 | documentai\_location | Document AI location, see https://cloud.google.com/document-ai/docs/regions | `string` | `"us"` | no |
 | firestore\_location | Firestore location, see https://firebase.google.com/docs/firestore/locations | `string` | `"nam5"` | no |
-| initial\_index\_json\_path | Path to the initial (placeholder) Vector Search index | `string` | `"initial-index.json"` | no |
 | labels | A set of key/value label pairs to assign to the resources deployed by this blueprint. | `map(string)` | `{}` | no |
 | project\_id | The Google Cloud project ID to deploy to | `string` | n/a | yes |
 | region | The Google Cloud region to deploy to | `string` | `"us-central1"` | no |
-| unique\_names | Whether to use unique names for resources | `bool` | `true` | no |
-| webhook\_path | Path to the webhook source directory | `string` | `"webhook"` | no |
+| unique\_names | Whether to use unique names for resources | `bool` | `false` | no |
 
 ## Outputs
 

@@ -80,10 +80,6 @@ spec:
         description: Firestore location, see https://firebase.google.com/docs/firestore/locations
         varType: string
         defaultValue: nam5
-      - name: initial_index_json_path
-        description: Path to the initial (placeholder) Vector Search index
-        varType: string
-        defaultValue: initial-index.json
       - name: labels
         description: A set of key/value label pairs to assign to the resources deployed by this blueprint.
         varType: map(string)
@@ -91,6 +87,7 @@ spec:
       - name: project_id
         description: The Google Cloud project ID to deploy to
         varType: string
+        defaultValue: null
         required: true
       - name: region
         description: The Google Cloud region to deploy to
@@ -99,11 +96,7 @@ spec:
       - name: unique_names
         description: Whether to use unique names for resources
         varType: bool
-        defaultValue: true
-      - name: webhook_path
-        description: Path to the webhook source directory
-        varType: string
-        defaultValue: webhook
+        defaultValue: false
     outputs:
       - name: bucket_docs_name
         description: The name of the docs bucket created

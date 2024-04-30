@@ -25,14 +25,14 @@ module "project_services" {
     "aiplatform.googleapis.com",
     "artifactregistry.googleapis.com",
     "cloudbuild.googleapis.com",
-    "compute.googleapis.com",
     "cloudfunctions.googleapis.com",
     "cloudresourcemanager.googleapis.com",
+    "compute.googleapis.com",
     "config.googleapis.com",
-    "iam.googleapis.com",
     "documentai.googleapis.com",
     "eventarc.googleapis.com",
     "firestore.googleapis.com",
+    "iam.googleapis.com",
     "run.googleapis.com",
     "serviceusage.googleapis.com",
     "storage-api.googleapis.com",
@@ -45,15 +45,17 @@ resource "random_id" "unique_id" {
 }
 
 locals {
-  bucket_main_name   = var.unique_names ? "${var.project_id}-main-${random_id.unique_id.hex}" : "${var.project_id}-main"
-  bucket_docs_name   = var.unique_names ? "${var.project_id}-docs-${random_id.unique_id.hex}" : "${var.project_id}-docs"
-  webhook_name       = var.unique_names ? "webhook-${random_id.unique_id.hex}" : "webhook"
-  webhook_sa_name    = var.unique_names ? "webhook-service-account-${random_id.unique_id.hex}" : "webhook-service-account"
-  trigger_name       = var.unique_names ? "trigger-${random_id.unique_id.hex}" : "trigger"
-  trigger_sa_name    = var.unique_names ? "trigger-service-account-${random_id.unique_id.hex}" : "trigger-service-account"
-  ocr_processor_name = var.unique_names ? "ocr-processor-${random_id.unique_id.hex}" : "ocr-processor"
-  docs_index_name    = var.unique_names ? "docs-index-${random_id.unique_id.hex}" : "docs-index"
-  firestore_name     = var.unique_names ? "knowledge-base-${random_id.unique_id.hex}" : "knowledge-base"
+  bucket_main_name         = var.unique_names ? "kb-bucket-${var.project_id}-${random_id.unique_id.hex}" : "knowledge-base-bucket-${var.project_id}"
+  bucket_docs_name         = var.unique_names ? "kb-docs-${var.project_id}-${random_id.unique_id.hex}" : "knowledge-base-docs-${var.project_id}"
+  webhook_name             = var.unique_names ? "kb-webhook-${random_id.unique_id.hex}" : "knowledge-base-webhook"
+  webhook_sa_name          = var.unique_names ? "kb-webhook-sa-${random_id.unique_id.hex}" : "knowledge-base-webhook-sa"
+  trigger_name             = var.unique_names ? "kb-trigger-${random_id.unique_id.hex}" : "knowledge-base-trigger"
+  trigger_sa_name          = var.unique_names ? "kb-trigger-sa-${random_id.unique_id.hex}" : "knowledge-base-trigger-sa"
+  artifact_repo_name       = var.unique_names ? "kb-repo-${random_id.unique_id.hex}" : "knowledge-base-repo"
+  ocr_processor_name       = var.unique_names ? "kb-ocr-processor-${random_id.unique_id.hex}" : "knowledge-base-ocr-processor"
+  docs_index_name          = var.unique_names ? "kb-index-${random_id.unique_id.hex}" : "knowledge-base-index"
+  docs_index_endpoint_name = var.unique_names ? "kb-index-endpoint-${random_id.unique_id.hex}" : "knowledge-base-index-endpoint"
+  firestore_name           = var.unique_names ? "kb-database-${random_id.unique_id.hex}" : "knowledge-base-database"
 }
 
 #-- Cloud Storage buckets --#
@@ -129,14 +131,15 @@ resource "google_service_account" "webhook" {
 resource "google_artifact_registry_repository" "webhook_images" {
   project       = module.project_services.project_id
   location      = var.region
-  repository_id = "webhook-images"
+  repository_id = local.artifact_repo_name
   format        = "DOCKER"
   labels        = var.labels
 }
 
 data "archive_file" "webhook_staging" {
-  type       = "zip"
-  source_dir = var.webhook_path
+  type        = "zip"
+  source_dir  = "${path.module}/webhook"
+  output_path = "${path.module}/.terraform/webhook.zip"
   excludes = [
     ".mypy_cache",
     ".pytest_cache",
@@ -144,7 +147,6 @@ data "archive_file" "webhook_staging" {
     "__pycache__",
     "env",
   ]
-  output_path = abspath("./.tmp/webhook.zip")
 }
 
 resource "google_storage_bucket_object" "webhook_staging" {
@@ -259,13 +261,13 @@ resource "google_vertex_ai_index" "docs" {
 resource "google_vertex_ai_index_endpoint" "docs" {
   project                 = module.project_services.project_id
   region                  = var.region
-  display_name            = "docs-index-endpoint"
+  display_name            = local.docs_index_endpoint_name
   public_endpoint_enabled = true
   labels                  = var.labels
 }
 
 resource "google_storage_bucket_object" "index_initial" {
   bucket = google_storage_bucket.main.name
-  name   = "vector-search-index/initial.json"
-  source = var.initial_index_json_path
+  name   = "vector-search-index/initial-index.json"
+  source = "${path.module}/initial-index.json"
 }
