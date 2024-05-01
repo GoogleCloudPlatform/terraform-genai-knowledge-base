@@ -8,7 +8,7 @@ Fine tune an LLM model to answer questions from your documents.
 This solution showcases how to extract question & answer pairs out of documents using Generative AI. It provides an end-to-end demonstration of QA extraction and fine-tuning of a large language model (LLM) on Vertex AI. Along the way, the solution utilizes Document AI Character Recognition (OCR), Firestore, Vector Search, Vertex AI Studio, and Cloud Functions.
 
 ## Architecture
-![Knowledge Base using Generative AI](assets/architecture_diagram.svg)
+![Knowledge Base using Generative AI](assets/architecture.svg)
 
 - Uploading a new document triggers the webhook Cloud Function.
 - Document AI extracts the text from the document file.
@@ -22,7 +22,7 @@ This solution showcases how to extract question & answer pairs out of documents 
 - [Google Cloud Project](https://cloud.google.com/resource-manager/docs/creating-managing-projects)
 
 ## Documentation
-- [Knowledge Base using Generative AI](assets/architecture_diagram.svg)
+- [Knowledge Base using Generative AI](assets/architecture.svg)
 
 ## Deployment Duration
 Configuration: 2 mins
