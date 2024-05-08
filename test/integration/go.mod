@@ -2,7 +2,7 @@ module github.com/terraform-google-modules/genai-knowledge-base/test/integration
 
 go 1.21
 
-toolchain go1.21.9
+toolchain go1.21.10
 
 require (
 	github.com/GoogleCloudPlatform/cloud-foundation-toolkit/infra/blueprint-test v0.14.1
