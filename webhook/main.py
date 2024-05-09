@@ -323,11 +323,13 @@ def write_tuning_dataset(db: firestore.Client, output_bucket: str) -> int:
         for doc in db.collection("dataset").stream():
             entry = doc.to_dict() or {}
             document_page_text = doc_pages[entry["filename"]][entry["page_number"]]
-            messages = [
-                {"role": "system", "content": document_page_text},
-                {"role": "user", "content": entry["question"]},
-                {"role": "model", "content": entry["answer"]},
-            ]
-            f.write(f"{json.dumps({"messages": messages})}\n")
+            messages = {
+                "messages": [
+                    {"role": "system", "content": document_page_text},
+                    {"role": "user", "content": entry["question"]},
+                    {"role": "model", "content": entry["answer"]},
+                ]
+            }
+            f.write(f"{json.dumps(messages)}\n")
             dataset_size += 1
     return dataset_size
