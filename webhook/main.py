@@ -32,7 +32,7 @@ from google.cloud import storage  # type: ignore
 from google.cloud.aiplatform_v1.types import IndexDatapoint
 from retry import retry
 from vertexai.language_models import TextEmbeddingModel  # type: ignore
-from vertexai.preview.generative_models import GenerativeModel  # type: ignore
+from vertexai.generative_models import GenerativeModel  # type: ignore
 
 DOCAI_LOCATION = os.environ.get("DOCAI_LOCATION", "us")
 
@@ -43,15 +43,7 @@ TEXT:
 {text}
 
 Give me 20 self-contained questions and answers that can be answered from the above text.
-Return a JSON list of (question, answer) objects.
-"""
-
-MODEL_INPUT_PROMPT = """\
-CONTEXT:
-{context}
-
-QUESTION:
-{question}
+Return a JSON list of ("question", "answer") objects.
 """
 
 # Initialize Vertex AI client libraries.
@@ -117,7 +109,6 @@ def process_document(
     }
     if (entry := doc.get().to_dict() or {}) and entry.get("event_id") == event_id:
         # We've already processed this event, this is probably an event retry.
-        print(f"✅ {event_id}: Already processed")
         return
 
     if doc.get().exists:
@@ -287,20 +278,34 @@ def generate_questions(text: str) -> list[dict[str, str]]:
     Returns: A list of (question, answer) tuples
     """
     # Ask the model to generate the questions and answers.
-    model = GenerativeModel("gemini-pro")
-    prompt = GENERATE_QUESTIONS_PROMPT.format(text=text)
+    model = GenerativeModel(
+        model_name="gemini-1.0-pro",
+        system_instruction=[
+            'Respond with a JSON list of {"question", "answer"} objects.',
+            "Use simple language and words that are easy to understand.",
+            "Avoid technical terms in the answers.",
+            f"TEXT: {text}",
+        ],
+    )
+    prompt = "Give me 20 self-contained questions and answers that can be answered from the text"
     response = model.generate_content(prompt).text
-    if response.startswith("```"):
-        response = "\n".join(response.splitlines()[1:-1])
+    code_block_start = response.find("```")
+    if code_block_start == -1:
+        code_block = response
+    else:
+        code_block = "\n".join(response[code_block_start:].splitlines()[1:-1])
     try:
-        return json.loads(response)
+        return json.loads(code_block)
     except json.decoder.JSONDecodeError:
-        print(f"Failed to parse response:\n{response}")
-        return []
+        logging.debug(f"Failed to parse response:\n{response}")
+        raise
 
 
 def write_tuning_dataset(db: firestore.Client, output_bucket: str) -> int:
     """Write the tuning dataset to Cloud Storage.
+
+    For more information on the tuning dataset file format:
+        https://cloud.google.com/vertex-ai/generative-ai/docs/models/gemini-supervised-tuning-about
 
     Args:
         db: Firestore client.
@@ -317,13 +322,12 @@ def write_tuning_dataset(db: firestore.Client, output_bucket: str) -> int:
     with storage_client.get_bucket(output_bucket).blob("dataset.jsonl").open("w") as f:
         for doc in db.collection("dataset").stream():
             entry = doc.to_dict() or {}
-            line = {
-                "input_text": MODEL_INPUT_PROMPT.format(
-                    context=doc_pages[entry["filename"]][entry["page_number"]],
-                    question=entry["question"],
-                ),
-                "output_text": entry["answer"],
-            }
-            f.write(f"{json.dumps(line)}\n")
+            document_page_text = doc_pages[entry["filename"]][entry["page_number"]]
+            messages = [
+                {"role": "system", "content": document_page_text},
+                {"role": "user", "content": entry["question"]},
+                {"role": "model", "content": entry["answer"]},
+            ]
+            f.write(f"{json.dumps({"messages": messages})}\n")
             dataset_size += 1
     return dataset_size
