@@ -49,6 +49,8 @@ spec:
         label: Cloud Functions
       - productId: STORAGE_SECTION
         label: Cloud Storage
+      - productId: EVENTARC_SECTION
+        label: Eventarc
   content:
     architecture:
       diagramUrl: assets/architecture_diagram.svg
