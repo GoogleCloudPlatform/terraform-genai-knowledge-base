@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.0](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/compare/v0.2.0...v0.3.0) (2024-05-29)
+
+
+### Features
+
+* add unique prefix to resource names ([#90](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/issues/90)) ([50ce35e](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/commit/50ce35ece4baf601053be1f643c60479ba7dc8d4))
+* use gemini for tuning ([#125](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/issues/125)) ([9e18fea](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/commit/9e18feae6cac89bddf33d32271cdcf5409833a90))
+
 ## [0.2.0](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/compare/v0.1.1...v0.2.0) (2024-04-30)
 
 
