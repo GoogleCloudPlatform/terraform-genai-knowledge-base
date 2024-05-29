@@ -208,7 +208,11 @@ data "google_storage_project_service_account" "gcs_account" {
 resource "google_project_iam_member" "eventarc_agent" {
   project = module.project_services.project_id
   member  = "serviceAccount:${google_project_service_identity.eventarc_agent.email}"
-  role    = "roles/eventarc.serviceAgent" # https://cloud.google.com/iam/docs/service-agents
+  for_each = toset([
+    "roles/eventarc.serviceAgent",             # https://cloud.google.com/iam/docs/service-agents
+    "roles/serviceusage.serviceUsageConsumer", # https://cloud.google.com/service-usage/docs/access-control
+  ])
+  role = each.key
 }
 resource "google_project_service_identity" "eventarc_agent" {
   provider = google-beta
