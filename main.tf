@@ -16,7 +16,7 @@
 
 module "project_services" {
   source                      = "terraform-google-modules/project-factory/google//modules/project_services"
-  version                     = "~> 14.4"
+  version                     = "~> 15.0"
   disable_services_on_destroy = var.disable_services_on_destroy
 
   project_id = var.project_id
@@ -208,7 +208,11 @@ data "google_storage_project_service_account" "gcs_account" {
 resource "google_project_iam_member" "eventarc_agent" {
   project = module.project_services.project_id
   member  = "serviceAccount:${google_project_service_identity.eventarc_agent.email}"
-  role    = "roles/eventarc.serviceAgent" # https://cloud.google.com/iam/docs/service-agents
+  for_each = toset([
+    "roles/eventarc.serviceAgent",             # https://cloud.google.com/iam/docs/service-agents
+    "roles/serviceusage.serviceUsageConsumer", # https://cloud.google.com/service-usage/docs/access-control
+  ])
+  role = each.key
 }
 resource "google_project_service_identity" "eventarc_agent" {
   provider = google-beta
