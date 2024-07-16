@@ -108,6 +108,7 @@ resource "google_cloudfunctions2_function" "webhook" {
       DOCAI_LOCATION    = google_document_ai_processor.ocr.location
       DATABASE          = google_firestore_database.main.name
       INDEX_ID          = google_vertex_ai_index.docs.id
+      LOG_EXECUTION_ID  = true
     }
   }
 }
