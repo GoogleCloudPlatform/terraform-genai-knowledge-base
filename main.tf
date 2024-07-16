@@ -78,7 +78,6 @@ resource "google_storage_bucket" "docs" {
 }
 
 #-- Cloud Function webhook --#
-# Placeholder change to allow myself to create a temporary pull-request and trigger integration tests.
 resource "google_cloudfunctions2_function" "webhook" {
   project  = module.project_services.project_id
   name     = local.webhook_name
