@@ -13,6 +13,7 @@
 # limitations under the License.
 
 on:
+  # Do not use pull_request_target with actions/cache or actions/checkout.
   pull_request_target:
     types: [ opened, edited ]
 name: conventional release labels
