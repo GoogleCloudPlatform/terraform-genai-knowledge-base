@@ -13,4 +13,4 @@
 # limitations under the License.
 
 mypy==1.10.0
-pytest==8.2.1
+pytest==8.2.2
