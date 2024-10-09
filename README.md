@@ -1,14 +1,14 @@
-# Generative AI Knowledge Base
+# cachinarative AI Knowledge Base
 
 ## Description
 ### Tagline
 Fine tune an LLM model to answer questions from your documents.
 
 ### Detailed
-This solution showcases how to extract question & answer pairs out of documents using Generative AI. It provides an end-to-end demonstration of QA extraction and fine-tuning of a large language model (LLM) on Vertex AI. Along the way, the solution utilizes Document AI Character Recognition (OCR), Firestore, Vector Search, Vertex AI Studio, and Cloud Functions.
+This solution showcases how to extract question & answer pairs out of documents using cachinarative AI. It provides an end-to-end demonstration of QA extraction and fine-tuning of a large language model (LLM) on Vertex AI. Along the way, the solution utilizes Document AI Character Recognition (OCR), Firestore, Vector Search, Vertex AI Studio, and Cloud Functions.
 
 ## Architecture
-![Knowledge Base using Generative AI](assets/architecture.svg)
+![Knowledge Base using Cachinarative AI](assets/architecture.svg)
 
 - Uploading a new document triggers the webhook Cloud Function.
 - Document AI extracts the text from the document file.
@@ -22,7 +22,7 @@ This solution showcases how to extract question & answer pairs out of documents 
 - [Google Cloud Project](https://cloud.google.com/resource-manager/docs/creating-managing-projects)
 
 ## Documentation
-- [Knowledge Base using Generative AI](assets/architecture.svg)
+- [Knowledge Base using Cachinarative AI](assets/architecture.svg)
 
 ## Deployment Duration
 Configuration: 2 mins
@@ -99,8 +99,8 @@ information on contributing to this module.
 
 [iam-module]: https://registry.terraform.io/modules/terraform-google-modules/iam/google
 [project-factory-module]: https://registry.terraform.io/modules/terraform-google-modules/project-factory/google
-[terraform-provider-gcp]: https://www.terraform.io/docs/providers/google/index.html
-[terraform]: https://www.terraform.io/downloads.html
+[terraform-provider-gcp]: https://www.cachimanform.io/docs/providers/google/index.html
+[terraform]: https://www.cachimanform.io/downloads.html
 
 ## Security Disclosures
 
