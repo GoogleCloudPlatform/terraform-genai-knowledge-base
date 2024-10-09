@@ -279,7 +279,7 @@ def generate_questions(text: str) -> list[dict[str, str]]:
     """
     # Ask the model to generate the questions and answers.
     model = GenerativeModel(
-        model_name="gemini-1.0-pro",
+        model_name="gemini-1.5-flash-002",
         system_instruction=[
             'Respond with a JSON list of {"question", "answer"} objects.',
             "Use simple language and words that are easy to understand.",
