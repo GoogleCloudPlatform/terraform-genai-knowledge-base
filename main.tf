@@ -179,6 +179,10 @@ resource "google_eventarc_trigger" "trigger" {
       region  = var.region
     }
   }
+  
+  depends_on = [
+    google_project_iam_member.eventarc_agent,
+  ]
 }
 
 resource "google_project_iam_member" "trigger" {
