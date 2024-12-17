@@ -181,7 +181,7 @@ resource "google_eventarc_trigger" "trigger" {
   }
   
   depends_on = [
-    google_project_iam_member.eventarc_agent,
+    google_project_iam_member.gcs_account,
   ]
 }
 
