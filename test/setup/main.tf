@@ -18,11 +18,12 @@ module "project" {
   source  = "terraform-google-modules/project-factory/google"
   version = "~> 15.0"
 
-  name              = "ci-genai-knowledge-base"
-  random_project_id = "true"
-  org_id            = var.org_id
-  folder_id         = var.folder_id
-  billing_account   = var.billing_account
+  name                    = "ci-genai-knowledge-base"
+  random_project_id       = "true"
+  org_id                  = var.org_id
+  folder_id               = var.folder_id
+  billing_account         = var.billing_account
+  default_service_account = "deprivilege"
 
   activate_apis = [
     "aiplatform.googleapis.com",
