@@ -23,7 +23,7 @@ module "project" {
   org_id                  = var.org_id
   folder_id               = var.folder_id
   billing_account         = var.billing_account
-  default_service_account = "deprivilege"
+  default_service_account = "disable"
 
   activate_apis = [
     "aiplatform.googleapis.com",
