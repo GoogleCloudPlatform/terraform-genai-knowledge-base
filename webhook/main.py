@@ -17,12 +17,10 @@ import json
 import logging
 import multiprocessing
 import os
-import re
 from collections.abc import Iterator
 from datetime import datetime
 
 import functions_framework
-import vertexai  # type: ignore
 from cloudevents.http import CloudEvent
 from google import genai  # type: ignore
 from google.genai.types import GenerateContentConfig  # type: ignore
@@ -296,7 +294,7 @@ def index_pages(
     index.upsert_datapoints(points).wait()
 
 
-# @Retry(lambda _: True)  # any exception since models are non-deterministic.
+@Retry(lambda _: True)  # any exception since models are non-deterministic.
 def generate_questions(project: str, location: str, text: str) -> list[dict[str, str]]:
     """Extract questions & answers using a large language model (LLM).
 
