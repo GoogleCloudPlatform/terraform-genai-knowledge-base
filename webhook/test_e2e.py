@@ -27,7 +27,10 @@ from google.cloud import firestore  # type: ignore
 from main import process_document
 
 PROJECT_ID = os.environ["PROJECT_ID"]
-VECTOR_SEARCH_INDEX_ID = "3421719768057511936"
+LOCATION = os.environ.get("LOCATION", "us-central1")
+
+# Persistent resource because it takes ~30 minutes to deploy.
+VECTOR_SEARCH_INDEX_ID = os.environ.get("VECTOR_SEARCH_INDEX_ID", "3421719768057511936")
 
 
 def run_cmd(*cmd: str, **kwargs: Any) -> subprocess.CompletedProcess:
@@ -95,6 +98,8 @@ def test_end_to_end(terraform_outputs: dict[str, str]) -> None:
         filename="arxiv/cmp-lg/pdf/9410/9410009v1.pdf",
         mime_type="application/pdf",
         time_uploaded=datetime.datetime.now(),
+        project=PROJECT_ID,
+        location=LOCATION,
         docai_processor_id=terraform_outputs["documentai_processor_id"],
         output_bucket=terraform_outputs["bucket_main_name"],
         database=terraform_outputs["firestore_database_name"],
@@ -103,7 +108,7 @@ def test_end_to_end(terraform_outputs: dict[str, str]) -> None:
 
     # Make sure we have a non-empty dataset.
     print(">> Checking output bucket")
-    storage_client = storage.Client()
+    storage_client = storage.Client(project=PROJECT_ID)
     output_bucket = terraform_outputs["bucket_main_name"]
     with storage_client.get_bucket(output_bucket).blob("dataset.jsonl").open("r") as f:
         lines = [line.strip() for line in f]
@@ -112,7 +117,7 @@ def test_end_to_end(terraform_outputs: dict[str, str]) -> None:
 
     # Make sure the Firestore database is populated.
     print(">> Checking Firestore database")
-    db = firestore.Client(database=terraform_outputs["firestore_database_name"])
+    db = firestore.Client(project=PROJECT_ID, database=terraform_outputs["firestore_database_name"])
     entries = list(db.collection("dataset").stream())
     print(f"database {len(entries)=}")
     assert len(entries) == len(lines), "database entries do not match the dataset"
