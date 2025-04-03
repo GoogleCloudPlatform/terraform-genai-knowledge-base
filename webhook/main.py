@@ -17,7 +17,7 @@ import json
 import logging
 import multiprocessing
 import os
-from collections.abc import Iterator
+from collections.abc import Iterable
 from datetime import datetime
 
 import functions_framework
@@ -114,7 +114,7 @@ def process_document(
     doc.update({"pages": pages})
 
     print(f"🗂️ {event_id}: Indexing pages into Vector Search")
-    embeddings = list(get_pages_embeddings(project, location, pages))
+    embeddings = get_pages_embeddings(project, location, pages)
     index_pages(index_id, filename, embeddings)
 
     print(f"🔍 {event_id}: Generating Q&As with model ({len(pages)} pages)")
@@ -180,7 +180,7 @@ def get_document_text(
     mime_type: str,
     processor_id: str,
     temp_bucket: str,
-) -> Iterator[str]:
+) -> Iterable[str]:
     """Perform Optical Character Recognition (OCR) with Document AI on a Cloud Storage files.
 
     For more information, see:
@@ -244,8 +244,8 @@ def get_document_text(
 def get_pages_embeddings(
     project: str,
     location: str,
-    pages: list[str],
-) -> Iterator[list[float]]:
+    pages: Iterable[str],
+) -> Iterable[list[float]]:
     """Get embeddings for a list of pages.
 
     For more information, see:
@@ -272,7 +272,7 @@ def get_pages_embeddings(
 def index_pages(
     index_id: str,
     filename: str,
-    embeddings: list[list[float]],
+    embeddings: Iterable[list[float]],
 ) -> None:
     """Index pages into Vertex AI's Vector Search.
 
