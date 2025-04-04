@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.0](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/compare/v0.3.0...v0.4.0) (2025-04-04)
+
+
+### Features
+
+* upgrade to gemini-2.0-flash ([#259](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/issues/259)) ([41637c0](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/commit/41637c01c6052a2e8d1035c4c0b0903cbf7d69f9))
+
+
+### Bug Fixes
+
+* Pin Google provider to 5.37.0 & set LOG_EXECUTION_ID ([#166](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/issues/166)) ([1ac2543](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/commit/1ac25438ad378313aa54a12b879cfe4291c75c84))
+
 ## [0.3.0](https://github.com/GoogleCloudPlatform/terraform-genai-knowledge-base/compare/v0.2.0...v0.3.0) (2024-05-29)
 
 
