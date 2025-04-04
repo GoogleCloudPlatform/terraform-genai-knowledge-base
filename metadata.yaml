@@ -27,7 +27,7 @@ spec:
     version: 0.3.0
     actuationTool:
       flavor: Terraform
-      version: ">= 0.13"
+      version: ">= 0.18"
     description:
       tagline: Fine tune an LLM model to answer questions from your documents.
       detailed: This solution showcases how to extract question & answer pairs out of documents using Generative AI. It provides an end-to-end demonstration of QA extraction and fine-tuning of a large language model (LLM) on Vertex AI. Along the way, the solution utilizes Document AI Character Recognition (OCR), Firestore, Vector Search, Vertex AI Studio, and Cloud Functions.

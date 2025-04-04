@@ -50,11 +50,11 @@ output "firestore_database_name" {
 }
 
 output "docs_index_id" {
-  value       = google_vertex_ai_index.docs.id
+  value       = google_vertex_ai_index.main.id
   description = "The ID of the docs index"
 }
 
 output "docs_index_endpoint_id" {
-  value       = google_vertex_ai_index_endpoint.docs.id
+  value       = google_vertex_ai_index_endpoint.main.id
   description = "The ID of the docs index endpoint"
 }

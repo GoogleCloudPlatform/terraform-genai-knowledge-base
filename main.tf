@@ -16,7 +16,7 @@
 
 module "project_services" {
   source                      = "terraform-google-modules/project-factory/google//modules/project_services"
-  version                     = "~> 15.0"
+  version                     = "~> 18.0"
   disable_services_on_destroy = var.disable_services_on_destroy
 
   project_id = var.project_id
@@ -101,14 +101,14 @@ resource "google_cloudfunctions2_function" "webhook" {
     timeout_seconds       = 300 # 5 minutes
     service_account_email = google_service_account.webhook.email
     environment_variables = {
-      PROJECT_ID        = module.project_services.project_id
-      VERTEXAI_LOCATION = var.region
-      OUTPUT_BUCKET     = google_storage_bucket.main.name
-      DOCAI_PROCESSOR   = google_document_ai_processor.ocr.id
-      DOCAI_LOCATION    = google_document_ai_processor.ocr.location
-      DATABASE          = google_firestore_database.main.name
-      INDEX_ID          = google_vertex_ai_index.docs.id
-      LOG_EXECUTION_ID  = true
+      PROJECT_ID       = module.project_services.project_id
+      LOCATION         = var.region
+      OUTPUT_BUCKET    = google_storage_bucket.main.name
+      DOCAI_PROCESSOR  = google_document_ai_processor.ocr.id
+      DOCAI_LOCATION   = google_document_ai_processor.ocr.location
+      DATABASE         = google_firestore_database.main.name
+      INDEX_ID         = google_vertex_ai_index.main.id
+      LOG_EXECUTION_ID = true
     }
   }
 }
@@ -239,7 +239,7 @@ resource "google_firestore_database" "main" {
 }
 
 #-- Vertex AI Vector Search --#
-resource "google_vertex_ai_index" "docs" {
+resource "google_vertex_ai_index" "main" {
   project             = module.project_services.project_id
   region              = var.region
   display_name        = local.docs_index_name
@@ -263,13 +263,28 @@ resource "google_vertex_ai_index" "docs" {
   depends_on = [google_storage_bucket_object.index_initial]
 }
 
-resource "google_vertex_ai_index_endpoint" "docs" {
+resource "google_vertex_ai_index_endpoint" "main" {
   project                 = module.project_services.project_id
   region                  = var.region
   display_name            = local.docs_index_endpoint_name
   public_endpoint_enabled = true
   labels                  = var.labels
 }
+
+# TODO: Uncomment to enable deploying the index automatically.
+#       Also update metadata.yaml deployment duration to ~40 minutes
+# provider "google" {
+#   region = "us-central1" # needed for google_vertex_ai_index_endpoint_deployed_index
+# }
+# resource "google_vertex_ai_index_endpoint_deployed_index" "main" {
+#   index             = google_vertex_ai_index.main.id
+#   index_endpoint    = google_vertex_ai_index_endpoint.main.id
+#   deployed_index_id = "deployed_index"
+#   automatic_resources {
+#     min_replica_count = 1
+#     max_replica_count = 1
+#   }
+# }
 
 resource "google_storage_bucket_object" "index_initial" {
   bucket = google_storage_bucket.main.name
