@@ -375,15 +375,15 @@ def write_tuning_dataset(db: firestore.Client, output_bucket: str) -> int:
             context = doc_pages[entry["filename"]][entry["page_number"]]
             row = {
                 "systemInstruction": {
-                    "parts": [
-                        {"text": "Answer the question based on the following text"},
-                        {"text": context},
-                    ],
+                    "parts": [{"text": "Answer the question based on the following text"}],
                 },
                 "contents": [
                     {
                         "role": "user",
-                        "parts": [{"text": entry["question"]}],
+                        "parts": [
+                            {"text": f"Text: {context}"},
+                            {"text": entry["question"]},
+                        ],
                     },
                     {
                         "role": "model",
