@@ -13,7 +13,7 @@
 # limitations under the License.
 
 flask==3.1.0
-functions-framework==3.8.2
+functions-framework==3.10.0
 google-cloud-aiplatform==1.87.0
 google-cloud-documentai==3.3.0
 google-cloud-firestore==2.20.1
