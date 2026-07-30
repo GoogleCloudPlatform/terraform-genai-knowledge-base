@@ -94,8 +94,8 @@ EOF
 
 echo "Creating the cloud storage bucket if it does not exist already"
 BUCKET_NAME="${PROJECT_ID}_infra_manager_staging"
-if ! gsutil ls "gs://$BUCKET_NAME" &> /dev/null; then
-    gsutil mb "gs://$BUCKET_NAME/"
+if ! gcloud storage ls "gs://$BUCKET_NAME" &> /dev/null; then
+    gcloud storage buckets create "gs://$BUCKET_NAME/"
     echo "Bucket $BUCKET_NAME created successfully."
 else
     echo "Bucket $BUCKET_NAME already exists. Moving on to the next step."

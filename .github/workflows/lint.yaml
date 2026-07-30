@@ -35,7 +35,7 @@ jobs:
     name: 'lint'
     runs-on: 'ubuntu-latest'
     steps:
-      - uses: 'actions/checkout@v4'
+      - uses: 'actions/checkout@v6'
       - id: variables
         run: |
           MAKEFILE=$(find . -name Makefile -print -quit)
@@ -47,21 +47,25 @@ jobs:
             REGISTRY=$(grep "REGISTRY_URL := " $MAKEFILE | cut -d\  -f3)
             echo dev-tools=${REGISTRY}/${IMAGE}:${VERSION} >> "$GITHUB_OUTPUT"
           fi
-      - run: docker run --rm -v ${{ github.workspace }}:/workspace ${{ steps.variables.outputs.dev-tools }} module-swapper
-      - run: docker run --rm -v ${{ github.workspace }}:/workspace ${{ steps.variables.outputs.dev-tools }} /usr/local/bin/test_lint.sh
+      - run: docker run --rm -v ${{ github.workspace }}:/workspace ${STEPS_VARIABLES_OUTPUTS_DEV_TOOLS} module-swapper
+        env:
+          STEPS_VARIABLES_OUTPUTS_DEV_TOOLS: ${{ steps.variables.outputs.dev-tools }}
+      - run: docker run --rm -v ${{ github.workspace }}:/workspace ${STEPS_VARIABLES_OUTPUTS_DEV_TOOLS} /usr/local/bin/test_lint.sh
+        env:
+          STEPS_VARIABLES_OUTPUTS_DEV_TOOLS: ${{ steps.variables.outputs.dev-tools }}
   commitlint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: lts/*
       - name: Install commitlint
         run: |
-          npm install -D @commitlint/cli@20.1.0 @commitlint/config-conventional@20.0.0
+          npm install -D @commitlint/cli@20.2.0 @commitlint/config-conventional@20.2.0
           echo "module.exports = { extends: ['@commitlint/config-conventional'], rules: {'subject-case': [0], 'header-max-length': [0]} };" > commitlint.config.js
           npx commitlint --version
       - name: Validate PR commits with commitlint
