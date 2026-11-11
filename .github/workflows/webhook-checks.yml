@@ -38,13 +38,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: 3.12
 
       - name: Cache dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: webhook/env
           key: ${{ runner.os }}-lint-${{ hashFiles('webhook/requirements.txt', 'webhook/requirements-test.txt') }}
@@ -88,9 +88,9 @@ jobs:
       contents: read   # This is required for actions/checkout
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: hashicorp/setup-terraform@v3
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: hashicorp/setup-terraform@v4
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -98,13 +98,13 @@ jobs:
       # https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-google-cloud-platform
       - id: auth
         name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@v3
         with:
           workload_identity_provider: projects/886556137211/locations/global/workloadIdentityPools/github-actions/providers/github-actions
           service_account: github-actions@jss-22p1-test.iam.gserviceaccount.com
 
       - name: Cache dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: webhook/env
           key: ${{ runner.os }}-check-${{ hashFiles('webhook/requirements.txt', 'webhook/requirements-test.txt') }}
